@@ -1,0 +1,34 @@
+{
+  "appTitle": "fotonoza",
+  "mode": {
+    "import": "Import",
+    "view": "Widok",
+    "edit": "Edycja"
+  },
+  "actions": {
+    "importFromDevice": "Importuj z urzadzenia",
+    "approve": "Akceptuj",
+    "decline": "Odrzuc",
+    "export": "Eksport",
+    "undo": "Cofnij",
+    "redo": "Ponow",
+    "close": "Zamknij"
+  },
+  "labels": {
+    "selectedCount": "Zaznaczone zdjecia",
+    "histogram": "Histogram",
+    "effects": "Efekty",
+    "filmstrip": "Pasek filmowy",
+    "history": "Historia",
+    "noPhotos": "Brak zdjec"
+  },
+  "exportModal": {
+    "title": "Ustawienia eksportu",
+    "directory": "Katalog",
+    "format": "Format",
+    "quality": "Jakosc",
+    "maxWidth": "Maks szerokosc",
+    "maxHeight": "Maks wysokosc",
+    "dontEnlarge": "Nie powiekszaj"
+  }
+}

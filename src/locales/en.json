@@ -1,0 +1,34 @@
+{
+  "appTitle": "fotonoza",
+  "mode": {
+    "import": "Import",
+    "view": "View",
+    "edit": "Edit"
+  },
+  "actions": {
+    "importFromDevice": "Import from device",
+    "approve": "Approve",
+    "decline": "Decline",
+    "export": "Export",
+    "undo": "Undo",
+    "redo": "Redo",
+    "close": "Close"
+  },
+  "labels": {
+    "selectedCount": "Selected photos",
+    "histogram": "Histogram",
+    "effects": "Effects",
+    "filmstrip": "Filmstrip",
+    "history": "History",
+    "noPhotos": "No photos yet"
+  },
+  "exportModal": {
+    "title": "Export settings",
+    "directory": "Directory",
+    "format": "Format",
+    "quality": "Quality",
+    "maxWidth": "Max width",
+    "maxHeight": "Max height",
+    "dontEnlarge": "Don't enlarge"
+  }
+}
