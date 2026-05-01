@@ -1,0 +1,20 @@
+---
+description: Keep histogram data pipeline and rendering constraints stable
+alwaysApply: true
+---
+
+# Histogram Behavior
+
+- Histogram in edit sidebar should be driven by real image data, not placeholder curves.
+- Backend histogram command should prefer `darktable-cli` output when available.
+- Keep a direct image decode fallback when `darktable-cli` fails so histogram remains available.
+- Return and render RGB + luma bins with consistent bin count.
+
+# Histogram UI Constraints
+
+- Histogram card height must remain fixed regardless of loading/error text.
+- Reserve a fixed status row to prevent layout jumps.
+- Histogram stage width should be responsive to container width.
+- Chart content must not overflow card bounds.
+- Fill channel areas with channel colors.
+- Fill RGB overlap/intersection region with a subtle light neutral shade.

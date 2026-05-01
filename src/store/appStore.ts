@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { loadAppState, saveAppState, savePhotoState } from "../lib/persistence";
-import type { AppMode, AppState, HistoryEntry, Photo } from "../types/domain";
+import { loadAppState, saveStoreSnapshot, savePhotoState } from "../lib/persistence";
+import type { AppMode, AppState, HistoryEntry, Photo, UiLayoutState } from "../types/domain";
+import { defaultUiLayout } from "../types/domain";
 
 interface AppActions {
   initialize: () => Promise<void>;
@@ -20,6 +21,7 @@ interface AppActions {
     key: K,
     value: AppState["exportSettings"][K]
   ) => void;
+  patchLayout: (partial: Partial<UiLayoutState>) => void;
 }
 
 interface StoreShape {
@@ -42,7 +44,8 @@ const initialState: AppState = {
     maxHeight: 4000,
     dontEnlarge: true
   },
-  locale: "en"
+  locale: "en",
+  layout: { ...defaultUiLayout }
 };
 
 function historyEntry(label: string): HistoryEntry {
@@ -57,9 +60,10 @@ function pushHistory(state: AppState, label: string): AppState {
 
 function withUndo(set: (fn: (current: StoreShape) => StoreShape) => void, label: string, mutator: (s: AppState) => AppState): void {
   set((current) => {
-    const nextPresent = pushHistory(mutator(current.present), label);
+    const layout = current.present.layout ?? defaultUiLayout;
+    const nextPresent = pushHistory({ ...mutator(current.present), layout }, label);
     const trimmedPast = [...current.past, current.present].slice(-100);
-    void saveAppState(nextPresent);
+    void saveStoreSnapshot(nextPresent, trimmedPast, []);
     return { ...current, present: nextPresent, past: trimmedPast, future: [] };
   });
 }
@@ -87,7 +91,32 @@ export const useAppStore = create<StoreShape>((set, get) => ({
     initialize: async () => {
       const loaded = await loadAppState();
       if (!loaded) return;
-      set((current) => ({ ...current, present: loaded }));
+      const rawLayout = loaded.present.layout as unknown as Record<string, unknown> | undefined;
+      const mergedLayout: UiLayoutState = { ...defaultUiLayout, ...(loaded.present.layout ?? {}) };
+      if (rawLayout && typeof rawLayout.leftSidebarCollapsed !== "boolean") {
+        if (typeof rawLayout.leftSidebarVisible === "boolean") {
+          mergedLayout.leftSidebarCollapsed = !rawLayout.leftSidebarVisible;
+        }
+        if (typeof rawLayout.rightSidebarVisible === "boolean") {
+          mergedLayout.rightSidebarCollapsed = !rawLayout.rightSidebarVisible;
+        }
+        if (typeof rawLayout.timelineVisible === "boolean") {
+          mergedLayout.timelineCollapsed = !rawLayout.timelineVisible;
+        }
+        if (typeof rawLayout.topBarVisible === "boolean") {
+          mergedLayout.topBarCollapsed = !rawLayout.topBarVisible;
+        }
+      }
+      let present = { ...loaded.present, layout: mergedLayout };
+      if (loaded.past.length === 0 && present.history.length > 0) {
+        present = { ...present, history: [], historyCursor: 0 };
+      }
+      set((current) => ({
+        ...current,
+        present,
+        past: loaded.past,
+        future: loaded.future
+      }));
     },
     setMode: (mode) => withUndo(set, `switch-mode-${mode}`, (s) => ({ ...s, mode })),
     importPreviewPhotos: (paths) =>
@@ -166,9 +195,10 @@ export const useAppStore = create<StoreShape>((set, get) => ({
     undo: () => {
       const { past, present, future } = get();
       if (past.length === 0) return;
-      const previous = past[past.length - 1];
+      const layout = present.layout ?? defaultUiLayout;
+      const previous = { ...past[past.length - 1], layout };
       const remainingPast = past.slice(0, -1);
-      void saveAppState(previous);
+      void saveStoreSnapshot(previous, remainingPast, [present, ...future].slice(0, 100));
       set((current) => ({
         ...current,
         present: previous,
@@ -179,8 +209,9 @@ export const useAppStore = create<StoreShape>((set, get) => ({
     redo: () => {
       const { past, present, future } = get();
       if (future.length === 0) return;
-      const next = future[0];
-      void saveAppState(next);
+      const layout = present.layout ?? defaultUiLayout;
+      const next = { ...future[0], layout };
+      void saveStoreSnapshot(next, [...past, present].slice(-100), future.slice(1));
       set((current) => ({
         ...current,
         present: next,
@@ -191,14 +222,20 @@ export const useAppStore = create<StoreShape>((set, get) => ({
     jumpToHistory: (index) => {
       const { past, present } = get();
       const timeline = [...past, present];
-      if (index < 0 || index >= timeline.length) return;
-      const target = timeline[index];
-      void saveAppState(target);
+      const { history } = present;
+      if (index < 0 || index >= history.length) return;
+      const targetIdx = index + 1;
+      if (targetIdx >= timeline.length) return;
+      const layout = present.layout ?? defaultUiLayout;
+      const target = { ...timeline[targetIdx], layout };
+      const newPast = timeline.slice(0, targetIdx);
+      const newFuture = timeline.slice(targetIdx + 1).slice(0, 100);
+      void saveStoreSnapshot(target, newPast, newFuture);
       set((current) => ({
         ...current,
         present: target,
-        past: timeline.slice(0, index),
-        future: timeline.slice(index + 1).reverse().slice(0, 100)
+        past: newPast,
+        future: newFuture
       }));
     },
     setLocale: (locale) => withUndo(set, `set-locale-${locale}`, (s) => ({ ...s, locale })),
@@ -209,6 +246,14 @@ export const useAppStore = create<StoreShape>((set, get) => ({
           ...s.exportSettings,
           [key]: value
         }
-      }))
+      })),
+    patchLayout: (partial) => {
+      set((current) => {
+        const layout = { ...(current.present.layout ?? defaultUiLayout), ...partial };
+        const present = { ...current.present, layout };
+        void saveStoreSnapshot(present, current.past, current.future);
+        return { ...current, present };
+      });
+    }
   }
 }));

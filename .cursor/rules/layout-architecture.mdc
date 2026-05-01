@@ -1,0 +1,17 @@
+---
+description: Preserve Chrome layout architecture and state ownership
+alwaysApply: true
+---
+
+# Chrome Layout Architecture
+
+- Keep `ChromeLayout` thin: composition shell + panel slots, no heavy panel prop forwarding.
+- Child layout pieces (for example `ChromeEdgePanel`) should read app state via `useAppStore` and shared controller context.
+- Prefer geometry-derived panel config from one source of truth (`position`/edge mapping) over duplicated per-panel props.
+- Keep resize/drag orchestration in dedicated controller/hook modules, not inline in layout render components.
+- Use global layout patch actions for chrome dimensions/collapse state; avoid local duplicated state for these values.
+
+# Implementation Guardrails
+
+- When adding new chrome sections, derive border/collapse/resize behavior from edge position mappings.
+- Avoid reintroducing broad prop drilling (`onResize*`, collapse booleans, border classes) through multiple component levels.

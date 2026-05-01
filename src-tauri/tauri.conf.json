@@ -13,14 +13,18 @@
     "windows": [
       {
         "title": "fotonoza",
-        "width": 1440,
-        "height": 900,
-        "minWidth": 1200,
-        "minHeight": 720
+        "width": 1920,
+        "height": 1080,
+        "minWidth": 960,
+        "minHeight": 600
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self' ipc: http://ipc.localhost asset: http://asset.localhost; img-src 'self' asset: http://asset.localhost data: blob:; connect-src 'self' ws://localhost:* http://localhost:* http://127.0.0.1:*",
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
     }
   },
   "bundle": {

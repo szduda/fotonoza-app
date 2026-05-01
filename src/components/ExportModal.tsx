@@ -1,28 +1,35 @@
+import type { ReactElement } from "react";
 import { useAppStore } from "../store/appStore";
 import { t } from "../lib/i18n";
+import { chrome } from "./layout/chromeTheme";
 
 interface ExportModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-export function ExportModal({ open, onClose }: ExportModalProps): JSX.Element | null {
+const field =
+  "mt-1 w-full rounded border border-neutral-600/45 bg-neutral-500/80 px-2 py-1 text-neutral-800 placeholder:text-neutral-600";
+
+export function ExportModal({ open, onClose }: ExportModalProps): ReactElement | null {
   const { exportSettings, locale } = useAppStore((state) => state.present);
   const setExportField = useAppStore((state) => state.actions.setExportField);
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-[560px] rounded-lg border border-zinc-700 bg-zinc-900 p-5">
-        <h2 className="mb-4 text-lg font-semibold">{t(locale, (m) => m.exportModal.title)}</h2>
-        <div className="grid grid-cols-2 gap-3 text-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
+      <div
+        className={`w-[560px] rounded-lg border border-neutral-600/50 p-5 shadow-xl ${chrome.panelBg} ${chrome.panelText}`}
+      >
+        <h2 className={`mb-4 text-lg font-medium ${chrome.panelText}`}>{t(locale, (m) => m.exportModal.title)}</h2>
+        <div className={`grid grid-cols-2 gap-3 text-sm ${chrome.mutedText}`}>
           <label className="col-span-2">
             {t(locale, (m) => m.exportModal.directory)}
             <input
               value={exportSettings.directory}
               onChange={(e) => setExportField("directory", e.target.value)}
-              className="mt-1 w-full rounded border border-zinc-700 bg-zinc-950 px-2 py-1"
+              className={field}
             />
           </label>
           <label>
@@ -30,7 +37,7 @@ export function ExportModal({ open, onClose }: ExportModalProps): JSX.Element | 
             <select
               value={exportSettings.format}
               onChange={(e) => setExportField("format", e.target.value as "jpg" | "png")}
-              className="mt-1 w-full rounded border border-zinc-700 bg-zinc-950 px-2 py-1"
+              className={field}
             >
               <option value="jpg">jpg</option>
               <option value="png">png</option>
@@ -44,7 +51,7 @@ export function ExportModal({ open, onClose }: ExportModalProps): JSX.Element | 
               max={100}
               value={exportSettings.quality}
               onChange={(e) => setExportField("quality", Number(e.target.value))}
-              className="mt-1 w-full"
+              className="mt-1 w-full accent-neutral-600"
             />
           </label>
           <label>
@@ -53,7 +60,7 @@ export function ExportModal({ open, onClose }: ExportModalProps): JSX.Element | 
               type="number"
               value={exportSettings.maxWidth}
               onChange={(e) => setExportField("maxWidth", Number(e.target.value))}
-              className="mt-1 w-full rounded border border-zinc-700 bg-zinc-950 px-2 py-1"
+              className={field}
             />
           </label>
           <label>
@@ -62,12 +69,13 @@ export function ExportModal({ open, onClose }: ExportModalProps): JSX.Element | 
               type="number"
               value={exportSettings.maxHeight}
               onChange={(e) => setExportField("maxHeight", Number(e.target.value))}
-              className="mt-1 w-full rounded border border-zinc-700 bg-zinc-950 px-2 py-1"
+              className={field}
             />
           </label>
           <label className="col-span-2 flex items-center gap-2 pt-2">
             <input
               type="checkbox"
+              className="rounded border border-neutral-600/45 accent-neutral-600"
               checked={exportSettings.dontEnlarge}
               onChange={(e) => setExportField("dontEnlarge", e.target.checked)}
             />
@@ -75,7 +83,11 @@ export function ExportModal({ open, onClose }: ExportModalProps): JSX.Element | 
           </label>
         </div>
         <div className="mt-4 flex justify-end">
-          <button className="rounded bg-zinc-700 px-3 py-1 text-sm" onClick={onClose}>
+          <button
+            type="button"
+            className={`rounded border border-neutral-600/50 px-3 py-1.5 text-sm ${chrome.panelBg} ${chrome.mutedText} hover:bg-neutral-400/40 hover:text-neutral-800`}
+            onClick={onClose}
+          >
             {t(locale, (m) => m.actions.close)}
           </button>
         </div>

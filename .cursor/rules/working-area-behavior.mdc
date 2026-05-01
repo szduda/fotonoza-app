@@ -1,0 +1,23 @@
+---
+description: Keep WorkingArea view/edit behavior consistent
+alwaysApply: true
+---
+
+# WorkingArea Behavior
+
+## View mode
+
+- Grid cell image area must remain square.
+- Image content inside view thumbnails should preserve photo aspect ratio (`contain`), not crop by default.
+- View grid controls: columns bounded to 1..8 with default 4.
+- View bottom action bar remains fixed height (32px).
+- Grid items must not grow beyond visible working area height.
+
+## Edit mode
+
+- Mouse wheel zoom range is fixed to 50%..400%.
+- Zoom must be cursor-anchored: the point under cursor stays anchored while zooming.
+- Freehand panning is always allowed, even when image is smaller than viewport.
+- Pan constraints must clamp at viewport/image boundary collision and avoid jitter/premature lock from rounding.
+- “Fit To View” must reset to centered, non-cropped contain fit.
+- When worked photo changes (timeline click or selection change), apply fit-to-view behavior.

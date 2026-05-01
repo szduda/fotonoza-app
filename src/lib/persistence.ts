@@ -1,14 +1,29 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { AppState, Photo } from "../types/domain";
+import type { AppState, HistogramData, Photo } from "../types/domain";
 
-interface PersistableState extends AppState {}
+export type LoadedStore = {
+  present: AppState;
+  past: AppState[];
+  future: AppState[];
+};
 
-export async function saveAppState(state: PersistableState): Promise<void> {
-  await invoke("save_app_state", { state });
+type DiskRoot = AppState & { undoPast?: AppState[]; undoFuture?: AppState[] };
+
+export async function saveStoreSnapshot(
+  present: AppState,
+  past: AppState[],
+  future: AppState[]
+): Promise<void> {
+  await invoke("save_app_state", {
+    snapshot: { ...present, undoPast: past, undoFuture: future }
+  });
 }
 
-export async function loadAppState(): Promise<PersistableState | null> {
-  return invoke<PersistableState | null>("load_app_state");
+export async function loadAppState(): Promise<LoadedStore | null> {
+  const raw = await invoke<DiskRoot | null>("load_app_state");
+  if (!raw) return null;
+  const { undoPast = [], undoFuture = [], ...present } = raw;
+  return { present, past: undoPast, future: undoFuture };
 }
 
 export async function savePhotoState(photo: Photo): Promise<void> {
@@ -17,4 +32,8 @@ export async function savePhotoState(photo: Photo): Promise<void> {
 
 export async function runDarktableOperation(photoPath: string, xmpPath: string): Promise<void> {
   await invoke("run_darktable_operation", { photoPath, xmpPath });
+}
+
+export async function getPhotoHistogram(photoPath: string): Promise<HistogramData> {
+  return invoke<HistogramData>("get_photo_histogram", { photoPath });
 }

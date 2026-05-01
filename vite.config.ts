@@ -10,5 +10,8 @@ export default defineConfig({
     watch: {
       ignored: ["**/src-tauri/**"]
     }
+  },
+  build: {
+    emptyOutDir: true
   }
 });

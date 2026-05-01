@@ -28,11 +28,43 @@ export interface ExportSettings {
   dontEnlarge: boolean;
 }
 
+export interface HistogramData {
+  red: number[];
+  green: number[];
+  blue: number[];
+  luma: number[];
+}
+
 export interface HistoryEntry {
   id: string;
   at: number;
   label: string;
 }
+
+/** Width/height of each chrome section when collapsed (strip stays visible). */
+export const CHROME_STRIP_PX = 5;
+
+export interface UiLayoutState {
+  leftSidebarWidthPx: number;
+  rightSidebarWidthPx: number;
+  timelineHeightPx: number;
+  topBarHeightPx: number;
+  leftSidebarCollapsed: boolean;
+  rightSidebarCollapsed: boolean;
+  timelineCollapsed: boolean;
+  topBarCollapsed: boolean;
+}
+
+export const defaultUiLayout: UiLayoutState = {
+  leftSidebarWidthPx: 300,
+  rightSidebarWidthPx: 300,
+  timelineHeightPx: 200,
+  topBarHeightPx: 100,
+  leftSidebarCollapsed: false,
+  rightSidebarCollapsed: false,
+  timelineCollapsed: false,
+  topBarCollapsed: false
+};
 
 export interface AppState {
   mode: AppMode;
@@ -42,6 +74,7 @@ export interface AppState {
   historyCursor: number;
   exportSettings: ExportSettings;
   locale: "en" | "pl";
+  layout: UiLayoutState;
 }
 
 export interface TranslationSchema {

@@ -1,13 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-html,
-body,
-#root {
-  margin: 0;
-  width: 100%;
-  height: 100%;
+/* Tailwind v4: explicit sources so utilities in TS string constants (e.g. chromeTheme.ts) are generated */
+@source "../index.html";
+@source "./**/*.{ts,tsx}";
+
+@layer base {
+  html,
+  body,
+  #root {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
 }
 
 * {
