@@ -31,7 +31,9 @@ export function PhotoThumbnail({
   }
 
   const fitClass =
-    fit === "contain" ? "max-h-full max-w-full object-contain" : "h-full w-full object-cover";
+    fit === "contain"
+      ? "block h-full w-full min-h-0 min-w-0 object-contain object-center"
+      : "h-full w-full object-cover";
 
   return (
     <img

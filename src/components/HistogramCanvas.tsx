@@ -1,19 +1,17 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { Stage, Layer, Line } from "react-konva";
-import type { HistogramData } from "../types/domain";
+import { useHistogramForEdit } from "../hooks/useHistogramForEdit";
 
 interface HistogramCanvasProps {
   width?: number;
   height?: number;
-  data?: HistogramData;
-  loading?: boolean;
 }
 
 function seriesToPolyline(
   series: number[],
   width: number,
   height: number,
-  maxValue: number
+  maxValue: number,
 ): number[] {
   if (series.length === 0) return [];
   return series.flatMap((value, i) => {
@@ -27,7 +25,7 @@ function seriesToArea(
   series: number[],
   width: number,
   height: number,
-  maxValue: number
+  maxValue: number,
 ): number[] {
   const line = seriesToPolyline(series, width, height, maxValue);
   if (line.length === 0) return [];
@@ -37,9 +35,9 @@ function seriesToArea(
 export function HistogramCanvas({
   width = 280,
   height = 120,
-  data,
-  loading = false
 }: HistogramCanvasProps): ReactElement {
+  const { data, loading } = useHistogramForEdit();
+
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [stageWidth, setStageWidth] = useState(width);
   const stageHeight = height;
@@ -61,8 +59,14 @@ export function HistogramCanvas({
   }, [width]);
 
   const rgbMax = useMemo(
-    () => Math.max(...(data?.red ?? []), ...(data?.green ?? []), ...(data?.blue ?? []), 1),
-    [data]
+    () =>
+      Math.max(
+        ...(data?.red ?? []),
+        ...(data?.green ?? []),
+        ...(data?.blue ?? []),
+        1,
+      ),
+    [data],
   );
   const lumaMax = useMemo(() => Math.max(...(data?.luma ?? []), 1), [data]);
   const overlapSeries = useMemo(() => {
@@ -74,48 +78,46 @@ export function HistogramCanvas({
     return Array.from({ length: n }, (_, i) => Math.min(r[i], g[i], b[i]));
   }, [data]);
 
-
   const redPoints = useMemo(
     () => seriesToPolyline(data?.red ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax]
+    [data, stageWidth, stageHeight, rgbMax],
   );
   const greenPoints = useMemo(
     () => seriesToPolyline(data?.green ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax]
+    [data, stageWidth, stageHeight, rgbMax],
   );
   const bluePoints = useMemo(
     () => seriesToPolyline(data?.blue ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax]
+    [data, stageWidth, stageHeight, rgbMax],
   );
 
   const lumaArea = useMemo(
     () => seriesToArea(data?.luma ?? [], stageWidth, stageHeight, lumaMax),
-    [data, stageWidth, stageHeight, lumaMax]
+    [data, stageWidth, stageHeight, lumaMax],
   );
   const redArea = useMemo(
     () => seriesToArea(data?.red ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax]
+    [data, stageWidth, stageHeight, rgbMax],
   );
   const greenArea = useMemo(
     () => seriesToArea(data?.green ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax]
+    [data, stageWidth, stageHeight, rgbMax],
   );
   const blueArea = useMemo(
     () => seriesToArea(data?.blue ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax]
+    [data, stageWidth, stageHeight, rgbMax],
   );
   const overlapArea = useMemo(
     () => seriesToArea(overlapSeries, stageWidth, stageHeight, rgbMax),
-    [overlapSeries, stageWidth, stageHeight, rgbMax]
+    [overlapSeries, stageWidth, stageHeight, rgbMax],
   );
 
   const showSkeleton = loading && !data;
 
   return (
     <div
-      className="rounded-md border border-neutral-600/45 bg-neutral-500/20 overflow-hidden"
-      style={{ height: `${stageHeight}px` }}
-    >
+      className="rounded-md border border-neutral-600/50 bg-neutral-500/20 overflow-hidden"
+      style={{ height: `${stageHeight}px` }}>
       <div ref={hostRef} className="h-[120px] w-full overflow-hidden">
         {showSkeleton ? (
           <div className="h-full w-full animate-pulse rounded bg-neutral-700/30">
@@ -129,9 +131,24 @@ export function HistogramCanvas({
               <Line points={blueArea} closed fill="#3b82f6" opacity={0.7} />
               <Line points={overlapArea} closed fill="#afafaf" opacity={0.9} />
               <Line points={lumaArea} closed fill="#ccc" opacity={0.4} />
-              <Line points={redPoints} stroke="#ef4444" strokeWidth={1} tension={0.2} />
-              <Line points={greenPoints} stroke="#22c55e" strokeWidth={1} tension={0.2} />
-              <Line points={bluePoints} stroke="#3b82f6" strokeWidth={1} tension={0.2} />
+              <Line
+                points={redPoints}
+                stroke="#ef4444"
+                strokeWidth={1}
+                tension={0.2}
+              />
+              <Line
+                points={greenPoints}
+                stroke="#22c55e"
+                strokeWidth={1}
+                tension={0.2}
+              />
+              <Line
+                points={bluePoints}
+                stroke="#3b82f6"
+                strokeWidth={1}
+                tension={0.2}
+              />
             </Layer>
           </Stage>
         )}

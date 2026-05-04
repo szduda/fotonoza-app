@@ -1,6 +1,6 @@
 ---
 description: Keep WorkingArea view/edit behavior consistent
-glob: WorkingArea.tsx
+glob: "**/WorkingArea/**"
 alwaysApply: false
 ---
 
