@@ -6,29 +6,29 @@
     "edit": "Edycja"
   },
   "actions": {
-    "importFromDevice": "Importuj z urzadzenia",
+    "importFromDevice": "Importuj",
     "approve": "Akceptuj",
-    "decline": "Odrzuc",
+    "decline": "Odrzuć",
     "export": "Eksport",
     "undo": "Cofnij",
-    "redo": "Ponow",
+    "redo": "Ponów",
     "close": "Zamknij"
   },
   "labels": {
-    "selectedCount": "Zaznaczone zdjecia",
+    "selectedCount": "Zaznaczone zdjęcia",
     "histogram": "Histogram",
     "effects": "Efekty",
-    "filmstrip": "Pasek filmowy",
+    "filmstrip": "Bieżąca kolekcja",
     "history": "Historia",
-    "noPhotos": "Brak zdjec"
+    "noPhotos": "Brak zdjęć"
   },
   "exportModal": {
     "title": "Ustawienia eksportu",
     "directory": "Katalog",
     "format": "Format",
-    "quality": "Jakosc",
-    "maxWidth": "Maks szerokosc",
-    "maxHeight": "Maks wysokosc",
-    "dontEnlarge": "Nie powiekszaj"
+    "quality": "Jakość",
+    "maxWidth": "Maks szerokość",
+    "maxHeight": "Maks wysokość",
+    "dontEnlarge": "Nie powiększaj"
   }
 }

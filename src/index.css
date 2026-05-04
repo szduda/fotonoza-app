@@ -5,6 +5,7 @@
 @source "./**/*.{ts,tsx}";
 
 @layer base {
+
   html,
   body,
   #root {
@@ -16,4 +17,9 @@
 
 * {
   box-sizing: border-box;
+}
+
+details summary {
+  list-style: none;
+  position: relative;
 }

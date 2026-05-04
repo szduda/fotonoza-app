@@ -8,6 +8,7 @@ interface AppActions {
   setMode: (mode: AppMode) => void;
   importPreviewPhotos: (paths: string[]) => void;
   toggleSelectPhoto: (photoId: string) => void;
+  clearSelectedPhotos: () => void;
   openInEditor: (photoId: string) => void;
   approvePhoto: (photoId: string) => void;
   declinePhoto: (photoId: string) => void;
@@ -21,6 +22,7 @@ interface AppActions {
     key: K,
     value: AppState["exportSettings"][K]
   ) => void;
+  setTogglePanelExpanded: (id: string, expanded: boolean) => void;
   patchLayout: (partial: Partial<UiLayoutState>) => void;
 }
 
@@ -36,6 +38,7 @@ const initialState: AppState = {
   photos: [],
   history: [],
   historyCursor: 0,
+  togglePanelExpanded: {},
   exportSettings: {
     directory: "",
     format: "jpg",
@@ -54,7 +57,8 @@ function historyEntry(label: string): HistoryEntry {
 
 function pushHistory(state: AppState, label: string): AppState {
   const maxOps = 100;
-  const updatedHistory = [...state.history.slice(-(maxOps - 1)), historyEntry(label)];
+  const rollbackSafe = state.history.slice(0, Math.max(0, state.historyCursor + 1));
+  const updatedHistory = [...rollbackSafe.slice(-(maxOps - 1)), historyEntry(label)];
   return { ...state, history: updatedHistory, historyCursor: updatedHistory.length - 1 };
 }
 
@@ -108,6 +112,14 @@ export const useAppStore = create<StoreShape>((set, get) => ({
         }
       }
       let present = { ...loaded.present, layout: mergedLayout };
+      const legacyCurrentPhotoId = (present as unknown as { selectedPhotoId?: string }).selectedPhotoId;
+      if (!present.currentPhotoId && typeof legacyCurrentPhotoId === "string") {
+        present = { ...present, currentPhotoId: legacyCurrentPhotoId };
+      }
+      const panelState = (present as Partial<AppState>).togglePanelExpanded;
+      if (!panelState || typeof panelState !== "object" || Array.isArray(panelState)) {
+        present = { ...present, togglePanelExpanded: {} };
+      }
       if (loaded.past.length === 0 && present.history.length > 0) {
         present = { ...present, history: [], historyCursor: 0 };
       }
@@ -118,7 +130,13 @@ export const useAppStore = create<StoreShape>((set, get) => ({
         future: loaded.future
       }));
     },
-    setMode: (mode) => withUndo(set, `switch-mode-${mode}`, (s) => ({ ...s, mode })),
+    setMode: (mode) => {
+      set((current) => {
+        const present = { ...current.present, mode };
+        void saveStoreSnapshot(present, current.past, current.future);
+        return { ...current, present };
+      });
+    },
     importPreviewPhotos: (paths) =>
       withUndo(set, "import-preview", (s) => ({
         ...s,
@@ -132,12 +150,18 @@ export const useAppStore = create<StoreShape>((set, get) => ({
           photo.id === photoId ? { ...photo, selected: !photo.selected } : photo
         )
       })),
-    openInEditor: (photoId) =>
-      withUndo(set, "open-edit-mode", (s) => ({
+    clearSelectedPhotos: () =>
+      withUndo(set, "clear-selected-photos", (s) => ({
         ...s,
-        mode: "edit",
-        selectedPhotoId: photoId
+        photos: s.photos.map((photo) => (photo.selected ? { ...photo, selected: false } : photo))
       })),
+    openInEditor: (photoId) => {
+      set((current) => {
+        const present = { ...current.present, mode: "edit" as AppMode, currentPhotoId: photoId };
+        void saveStoreSnapshot(present, current.past, current.future);
+        return { ...current, present };
+      });
+    },
     approvePhoto: (photoId) =>
       withUndo(set, "approve-photo", (s) => ({
         ...s,
@@ -149,7 +173,7 @@ export const useAppStore = create<StoreShape>((set, get) => ({
       withUndo(set, "decline-photo", (s) => ({
         ...s,
         photos: s.photos.filter((photo) => photo.id !== photoId),
-        selectedPhotoId: s.selectedPhotoId === photoId ? undefined : s.selectedPhotoId
+        currentPhotoId: s.currentPhotoId === photoId ? undefined : s.currentPhotoId
       })),
     addAdjustment: (photoId, adjustmentName) =>
       withUndo(set, `add-adjustment-${adjustmentName}`, (s) => {
@@ -196,7 +220,13 @@ export const useAppStore = create<StoreShape>((set, get) => ({
       const { past, present, future } = get();
       if (past.length === 0) return;
       const layout = present.layout ?? defaultUiLayout;
-      const previous = { ...past[past.length - 1], layout };
+      const previous = {
+        ...past[past.length - 1],
+        layout,
+        history: present.history,
+        historyCursor: Math.max(0, present.historyCursor - 1),
+        togglePanelExpanded: present.togglePanelExpanded
+      };
       const remainingPast = past.slice(0, -1);
       void saveStoreSnapshot(previous, remainingPast, [present, ...future].slice(0, 100));
       set((current) => ({
@@ -210,7 +240,13 @@ export const useAppStore = create<StoreShape>((set, get) => ({
       const { past, present, future } = get();
       if (future.length === 0) return;
       const layout = present.layout ?? defaultUiLayout;
-      const next = { ...future[0], layout };
+      const next = {
+        ...future[0],
+        layout,
+        history: present.history,
+        historyCursor: Math.min(present.history.length - 1, present.historyCursor + 1),
+        togglePanelExpanded: present.togglePanelExpanded
+      };
       void saveStoreSnapshot(next, [...past, present].slice(-100), future.slice(1));
       set((current) => ({
         ...current,
@@ -220,14 +256,20 @@ export const useAppStore = create<StoreShape>((set, get) => ({
       }));
     },
     jumpToHistory: (index) => {
-      const { past, present } = get();
-      const timeline = [...past, present];
+      const { past, present, future } = get();
+      const timeline = [...past, present, ...future];
       const { history } = present;
       if (index < 0 || index >= history.length) return;
       const targetIdx = index + 1;
       if (targetIdx >= timeline.length) return;
       const layout = present.layout ?? defaultUiLayout;
-      const target = { ...timeline[targetIdx], layout };
+      const target = {
+        ...timeline[targetIdx],
+        layout,
+        history: present.history,
+        historyCursor: index,
+        togglePanelExpanded: present.togglePanelExpanded
+      };
       const newPast = timeline.slice(0, targetIdx);
       const newFuture = timeline.slice(targetIdx + 1).slice(0, 100);
       void saveStoreSnapshot(target, newPast, newFuture);
@@ -247,6 +289,14 @@ export const useAppStore = create<StoreShape>((set, get) => ({
           [key]: value
         }
       })),
+    setTogglePanelExpanded: (id, expanded) => {
+      set((current) => {
+        const nextExpanded = { ...current.present.togglePanelExpanded, [id]: expanded };
+        const present = { ...current.present, togglePanelExpanded: nextExpanded };
+        void saveStoreSnapshot(present, current.past, current.future);
+        return { ...current, present };
+      });
+    },
     patchLayout: (partial) => {
       set((current) => {
         const layout = { ...(current.present.layout ?? defaultUiLayout), ...partial };

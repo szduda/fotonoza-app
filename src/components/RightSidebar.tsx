@@ -6,25 +6,51 @@ import { HistogramCanvas } from "./HistogramCanvas";
 import { chrome } from "./layout/chromeTheme";
 import type { HistogramData } from "../types/domain";
 
+const histCache = new Map<string, HistogramData>();
+const histPending = new Map<string, Promise<HistogramData>>();
+
+function cachedHistogram(path: string): Promise<HistogramData> {
+  const ready = histCache.get(path);
+  if (ready) return Promise.resolve(ready);
+  const pending = histPending.get(path);
+  if (pending) return pending;
+
+  const req = getPhotoHistogram(path).then((data) => {
+    histCache.set(path, data);
+    if (histCache.size > 60) {
+      const oldest = histCache.keys().next().value;
+      if (oldest) histCache.delete(oldest);
+    }
+    histPending.delete(path);
+    return data;
+  });
+  histPending.set(path, req);
+  return req;
+}
+
 export function RightSidebar(): ReactElement {
-  const { mode, photos, selectedPhotoId, locale } = useAppStore((s) => s.present);
+  const { mode, photos, currentPhotoId, locale } = useAppStore((s) => s.present);
   const actions = useAppStore((s) => s.actions);
-  const selectedPhoto = photos.find((p) => p.id === selectedPhotoId);
+  const selectedPhoto = photos.find((p) => p.id === currentPhotoId);
   const [histogram, setHistogram] = useState<HistogramData | undefined>(undefined);
   const [histLoading, setHistLoading] = useState(false);
-  const [histError, setHistError] = useState<string | null>(null);
 
   useEffect(() => {
     if (mode !== "edit" || !selectedPhoto?.sourcePath) {
       setHistogram(undefined);
       setHistLoading(false);
-      setHistError(null);
+      return;
+    }
+    const cached = histCache.get(selectedPhoto.sourcePath);
+    if (cached) {
+      setHistogram(cached);
+      setHistLoading(false);
       return;
     }
     let active = true;
+    setHistogram(undefined);
     setHistLoading(true);
-    setHistError(null);
-    void getPhotoHistogram(selectedPhoto.sourcePath)
+    void cachedHistogram(selectedPhoto.sourcePath)
       .then((data) => {
         if (!active) return;
         setHistogram(data);
@@ -32,9 +58,9 @@ export function RightSidebar(): ReactElement {
       })
       .catch((err) => {
         if (!active) return;
+        console.warn("Histogram unavailable", err);
         setHistogram(undefined);
         setHistLoading(false);
-        setHistError(err instanceof Error ? err.message : "Histogram unavailable");
       });
     return () => {
       active = false;
@@ -48,7 +74,7 @@ export function RightSidebar(): ReactElement {
           <h3 className={`mb-2 text-xs font-medium uppercase tracking-wide ${chrome.faintText}`}>
             {t(locale, (m) => m.labels.histogram)}
           </h3>
-          <HistogramCanvas data={histogram} loading={histLoading} error={histError} />
+          <HistogramCanvas data={histogram} loading={histLoading} />
           <h3 className={`mb-2 mt-4 text-xs font-medium uppercase tracking-wide ${chrome.faintText}`}>
             {t(locale, (m) => m.labels.effects)}
           </h3>
@@ -56,7 +82,7 @@ export function RightSidebar(): ReactElement {
             <button
               type="button"
               className={`w-full rounded border border-neutral-600/45 px-2 py-1.5 text-left ${chrome.panelBg} ${chrome.mutedText} hover:bg-neutral-400/35`}
-              onClick={() => selectedPhotoId && actions.addAdjustment(selectedPhotoId, "exposure")}
+              onClick={() => currentPhotoId && actions.addAdjustment(currentPhotoId, "exposure")}
             >
               + Exposure
             </button>
@@ -69,7 +95,7 @@ export function RightSidebar(): ReactElement {
                   type="checkbox"
                   className="rounded border border-neutral-600/45"
                   checked={adj.enabled}
-                  onChange={() => selectedPhotoId && actions.toggleAdjustment(selectedPhotoId, adj.id)}
+                  onChange={() => currentPhotoId && actions.toggleAdjustment(currentPhotoId, adj.id)}
                 />
                 {adj.name}
               </label>

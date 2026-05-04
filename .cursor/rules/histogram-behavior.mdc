@@ -1,6 +1,7 @@
 ---
 description: Keep histogram data pipeline and rendering constraints stable
-alwaysApply: true
+glob: HistogramCanvas.tsx
+alwaysApply: false
 ---
 
 # Histogram Behavior

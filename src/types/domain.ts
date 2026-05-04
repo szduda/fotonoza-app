@@ -28,6 +28,22 @@ export interface ExportSettings {
   dontEnlarge: boolean;
 }
 
+export interface ExportTaskPhoto {
+  sourcePath: string;
+  fileName: string;
+}
+
+export interface ExportJobStatus {
+  jobId: string;
+  total: number;
+  completed: number;
+  failed: number;
+  running: boolean;
+  finished: boolean;
+  outputDir: string;
+  lastError?: string;
+}
+
 export interface HistogramData {
   red: number[];
   green: number[];
@@ -69,9 +85,10 @@ export const defaultUiLayout: UiLayoutState = {
 export interface AppState {
   mode: AppMode;
   photos: Photo[];
-  selectedPhotoId?: string;
+  currentPhotoId?: string;
   history: HistoryEntry[];
   historyCursor: number;
+  togglePanelExpanded: Record<string, boolean>;
   exportSettings: ExportSettings;
   locale: "en" | "pl";
   layout: UiLayoutState;

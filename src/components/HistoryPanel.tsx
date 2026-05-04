@@ -1,33 +1,46 @@
-import type { ReactElement } from "react";
+import { useEffect, useRef, type ReactElement } from "react";
 import { useAppStore } from "../store/appStore";
 import { t } from "../lib/i18n";
 import { chrome } from "./layout/chromeTheme";
+import { ToggledPanel } from "./ToggledPanel";
 
 export function HistoryPanel(): ReactElement {
   const { history, locale, historyCursor } = useAppStore((state) => state.present);
   const jumpToHistory = useAppStore((state) => state.actions.jumpToHistory);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const prevLenRef = useRef(history.length);
+
+  useEffect(() => {
+    const prevLen = prevLenRef.current;
+    const appended = history.length > prevLen;
+    if (appended && historyCursor === history.length - 1 && contentRef.current) {
+      contentRef.current.scrollTop = contentRef.current.scrollHeight;
+    }
+    prevLenRef.current = history.length;
+  }, [history.length, historyCursor]);
 
   return (
-    <aside className="flex h-full min-h-0 max-h-full flex-col">
-      <h3 className={`mb-2 shrink-0 px-1 text-[10px] font-medium uppercase tracking-wide ${chrome.faintText}`}>
-        {t(locale, (m) => m.labels.history)}
-      </h3>
-      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overflow-x-hidden pr-0.5">
-        {history.map((entry, idx) => (
-          <button
-            key={entry.id}
-            type="button"
-            onClick={() => jumpToHistory(idx)}
-            className={`w-full rounded border px-2 py-1 text-left text-[11px] leading-snug transition-colors ${
-              idx === historyCursor
-                ? `border-neutral-500/70 ${chrome.panelBg} ${chrome.panelText} ring-1 ring-neutral-500/40`
-                : `border-neutral-700/60 bg-neutral-950/80 ${chrome.panelText} hover:border-neutral-500/50 hover:bg-neutral-900`
+    <ToggledPanel
+      id="history"
+      label={t(locale, (m) => m.labels.history)}
+      height="200px"
+      contentRef={contentRef}
+    >
+      {history.map((entry, idx) => (
+        <button
+          key={entry.id}
+          type="button"
+          onClick={() => jumpToHistory(idx)}
+          className={`flex w-full items-center px-2 py-1 text-left text-[11px] transition-colors ${idx === historyCursor
+              ? `${chrome.panelBg} ${chrome.panelText} bg-neutral-950/80 font-bold`
+              : idx > historyCursor
+                ? `${chrome.faintText} opacity-70 hover:bg-neutral-800/70 cursor-pointer`
+                : `${chrome.panelText} hover:bg-neutral-800/90 cursor-pointer`
             }`}
-          >
-            {entry.label}
-          </button>
-        ))}
-      </div>
-    </aside>
+        >
+          {entry.label}
+        </button>
+      ))}
+    </ToggledPanel>
   );
 }

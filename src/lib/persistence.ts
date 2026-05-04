@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { AppState, HistogramData, Photo } from "../types/domain";
+import type { AppState, ExportJobStatus, ExportSettings, ExportTaskPhoto, HistogramData, Photo } from "../types/domain";
 
 export type LoadedStore = {
   present: AppState;
@@ -36,4 +36,19 @@ export async function runDarktableOperation(photoPath: string, xmpPath: string):
 
 export async function getPhotoHistogram(photoPath: string): Promise<HistogramData> {
   return invoke<HistogramData>("get_photo_histogram", { photoPath });
+}
+
+export async function getDefaultExportDirectory(collectionName: string): Promise<string> {
+  return invoke<string>("get_default_export_directory", { collectionName });
+}
+
+export async function startExportJob(
+  photos: ExportTaskPhoto[],
+  settings: ExportSettings
+): Promise<string> {
+  return invoke<string>("start_export_job", { photos, settings });
+}
+
+export async function getExportJobStatus(jobId: string): Promise<ExportJobStatus | null> {
+  return invoke<ExportJobStatus | null>("get_export_job_status", { jobId });
 }

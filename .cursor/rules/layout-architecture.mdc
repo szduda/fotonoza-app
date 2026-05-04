@@ -15,3 +15,9 @@ alwaysApply: true
 
 - When adding new chrome sections, derive border/collapse/resize behavior from edge position mappings.
 - Avoid reintroducing broad prop drilling (`onResize*`, collapse booleans, border classes) through multiple component levels.
+- Use component props mainly to configure a reusable component. That means - if adding a prop will allow to reuse it somewhere, where the diff is small, e.g. 3 different wrapper props or an extra icon/text.
+- If a piece of tsx repeats 3 or more times it's often worth extracting it to a new component.
+- If a piece of ts/tsx logic repeates 3 or more times it's often worth extracting to a separate function or hook.
+- If it repeats within a single file the new component should be placed in the same file, below the main export. If it needs exporting it should be placed in a separate file in the same directory. If the directory is generic, create a new directory and move both related files into it.
+- Most files should not exceed 200 lines of code. No file should exceed 400 lines of code. If the file is over 150 consider refactoring
+- Avoid file, component and exported item names longer than 20 characters. For local variables avoid names longer than 15 chars.

@@ -78,7 +78,7 @@ function PlusIcon({ className }: { className?: string }): ReactElement {
 }
 
 export function WorkingArea(): ReactElement {
-  const { mode, photos, locale, selectedPhotoId } = useAppStore((s) => s.present);
+  const { mode, photos, locale, currentPhotoId } = useAppStore((s) => s.present);
   const actions = useAppStore((s) => s.actions);
   const [viewGridCols, setViewGridCols] = useState(VIEW_GRID_COLS_DEFAULT);
   const [zoom, setZoom] = useState(1);
@@ -93,8 +93,8 @@ export function WorkingArea(): ReactElement {
   const dragRef = useRef<{ pointerId: number; lastX: number; lastY: number } | null>(null);
   const previousWorkedPhotoRef = useRef<{ id: string; sourcePath: string } | undefined>(undefined);
   const selectedPhoto = useMemo(
-    () => photos.find((photo) => photo.id === selectedPhotoId),
-    [photos, selectedPhotoId]
+    () => photos.find((photo) => photo.id === currentPhotoId),
+    [photos, currentPhotoId]
   );
   const editImageSrc = selectedPhoto ? localImageSrc(selectedPhoto.sourcePath) : "";
   const rendered = useMemo(
@@ -151,10 +151,10 @@ export function WorkingArea(): ReactElement {
 
   useEffect(() => {
     if (mode !== "edit") return;
-    if (selectedPhotoId) return;
+    if (currentPhotoId) return;
     if (photos.length === 0) return;
     actions.openInEditor(photos[0].id);
-  }, [mode, selectedPhotoId, photos, actions]);
+  }, [mode, currentPhotoId, photos, actions]);
 
   const onEditWheel = (e: ReactWheelEvent<HTMLDivElement>) => {
     if (!selectedPhoto || !editImageSrc || imageFailed) return;
@@ -253,33 +253,30 @@ export function WorkingArea(): ReactElement {
             <button
               key={photo.id}
               type="button"
-              className={`flex w-full max-w-full flex-col self-start rounded border p-2 text-left text-xs transition-colors ${
-                photo.selected
-                  ? `border border-neutral-600/45 ${chrome.panelBg} ${chrome.panelText} ring-1 ring-neutral-600/40`
-                  : `border border-neutral-600/45 bg-neutral-500/40 ${chrome.mutedText} hover:bg-neutral-400/35`
-              }`}
+              className={`border hover:border-neutral-400/70 flex w-full max-w-full flex-col self-start rounded p-2 text-left text-xs transition-colors ${photo.selected
+                ? `bg-neutral-500/40 border-neutral-500/50 ${chrome.panelText}`
+                : `bg-neutral-700/20 border-neutral-600/20 ${chrome.mutedText}`
+                }`}
               onClick={() => actions.toggleSelectPhoto(photo.id)}
               onDoubleClick={() => actions.openInEditor(photo.id)}
             >
               <div
-                className={`mx-auto flex aspect-square min-w-0 items-center justify-center overflow-hidden rounded ${chrome.panelBg}`}
+                className={`mx-auto flex aspect-photo min-w-0 items-center justify-center overflow-hidden rounded ${chrome.panelBg}`}
                 style={{ width: `min(100%, ${maxThumbSidePx}px)` }}
               >
                 <PhotoThumbnail
                   sourcePath={photo.sourcePath}
                   alt={photo.fileName}
                   fit="contain"
-                  className="!rounded"
                 />
               </div>
               <div className={`mt-2 truncate ${chrome.panelText}`}>{photo.fileName}</div>
               <div className="mt-1 flex gap-1">
                 <span
-                  className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${
-                    photo.approved
-                      ? `${chrome.panelBg} ${chrome.mutedText}`
-                      : "bg-neutral-500/50 text-neutral-400"
-                  }`}
+                  className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${photo.approved
+                    ? `${chrome.panelBg} ${chrome.mutedText}`
+                    : "bg-neutral-500/20 text-neutral-400"
+                    }`}
                 >
                   {photo.approved ? "approved" : "pending"}
                 </span>
@@ -293,18 +290,19 @@ export function WorkingArea(): ReactElement {
           <button
             type="button"
             className={iconBtn}
-            aria-label="More columns"
-            disabled={viewGridCols >= VIEW_GRID_COLS_MAX}
-            onClick={() => setViewGridCols((c) => Math.min(VIEW_GRID_COLS_MAX, c + 1))}
+            aria-label="Zoom in"
+            disabled={viewGridCols <= VIEW_GRID_COLS_MIN}
+            onClick={() => setViewGridCols((c) => Math.max(VIEW_GRID_COLS_MIN, c - 1))}
           >
             <PlusIcon />
           </button>
           <button
             type="button"
             className={iconBtn}
-            aria-label="Fewer columns"
-            disabled={viewGridCols <= VIEW_GRID_COLS_MIN}
-            onClick={() => setViewGridCols((c) => Math.max(VIEW_GRID_COLS_MIN, c - 1))}
+            aria-label="Zoom out"
+            disabled={viewGridCols >= VIEW_GRID_COLS_MAX}
+            onClick={() => setViewGridCols((c) => Math.min(VIEW_GRID_COLS_MAX, c + 1))}
+
           >
             <MinusIcon />
           </button>
@@ -318,9 +316,8 @@ export function WorkingArea(): ReactElement {
       <div className={`min-h-0 flex-1 ${chrome.borderB}`}>
         <div
           ref={viewportRef}
-          className={`relative h-full w-full overflow-hidden rounded border border-neutral-600/45 bg-neutral-950/70 ${
-            isDragging ? "cursor-grabbing" : "cursor-grab"
-          }`}
+          className={`relative h-full w-full overflow-hidden rounded border border-neutral-600/45 bg-neutral-950/70 ${isDragging ? "cursor-grabbing" : "cursor-grab"
+            }`}
           onWheel={onEditWheel}
           onPointerDown={onEditPointerDown}
           onPointerMove={onEditPointerMove}

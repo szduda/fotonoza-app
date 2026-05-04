@@ -32,10 +32,15 @@ export function ChromeEdgePanel({
   panel: ChromePanelId;
   className?: string;
   children: ReactNode;
-}): ReactElement {
+}): ReactElement | null {
+  const mode = useAppStore((s) => s.present.mode);
   const layout = useAppStore((s) => s.present.layout ?? defaultUiLayout);
   const patchLayout = useAppStore((s) => s.actions.patchLayout);
   const ctx = useChromeLayoutControllerContext();
+
+  if (panel === "timeline" && mode === "view") {
+    return null;
+  }
 
   const cfg = chromeEdgeLayout(CHROME_PANEL_EDGE[panel]);
   const collapsed = readCollapsed(panel, layout);
