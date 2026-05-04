@@ -28,8 +28,8 @@ export function TopBar({ onOpenExport }: { onOpenExport: () => void }): ReactEle
   const modeBtnInactive = `${chrome.mutedText} hover:bg-neutral-800/90 cursor-pointer`;
 
   return (
-    <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-2">
-      <div className="flex min-w-0 items-baseline gap-3">
+    <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-3 pl-1 pr-4 py-2">
+      <div className="flex min-w-0 items-center gap-2">
         <img src={logoUrl} alt={t(locale, (m) => m.appTitle)} className="h-8 w-8 shrink-0 select-none" />
 
         <div className="hidden shrink-0 items-center overflow-hidden rounded sm:flex">
