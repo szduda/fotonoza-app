@@ -6,14 +6,52 @@ import { chrome } from "./layout/chromeTheme";
 import { SelectedCount } from "./SelectedCount";
 import logoUrl from "../assets/fotonoza-logo.svg";
 
+/** WebKit on macOS; avoids extra Tauri OS plugin for import dialog filters only. */
+function isMacClient(): boolean {
+  if (typeof navigator === "undefined") return false;
+  if (/mac os x/i.test(navigator.userAgent)) return true;
+  const p = navigator.platform;
+  return typeof p === "string" && p.toLowerCase().includes("mac");
+}
+
+const IMPORT_EXT_DEFAULT = ["jpg", "jpeg", "png", "raw"] as const;
+/** Common camera / Photos / screenshot extensions on macOS (lowercase for dialog API). */
+const IMPORT_EXT_MAC = [
+  ...IMPORT_EXT_DEFAULT,
+  "webp",
+  "tif",
+  "tiff",
+  "heic",
+  "heif",
+  "dng",
+  "cr2",
+  "cr3",
+  "nef",
+  "nrw",
+  "arw",
+  "orf",
+  "rw2",
+  "raf",
+  "pef",
+  "srw",
+  "3fr",
+  "fff",
+  "mef",
+  "mrw",
+  "x3f",
+  "kdc",
+  "dcr"
+] as const;
+
 export function TopBar({ onOpenExport }: { onOpenExport: () => void }): ReactElement {
   const { locale, mode } = useAppStore((s) => s.present);
   const actions = useAppStore((s) => s.actions);
 
   const pickImportFiles = async () => {
+    const exts = isMacClient() ? IMPORT_EXT_MAC : IMPORT_EXT_DEFAULT;
     const picked = await open({
       multiple: true,
-      filters: [{ name: "Images", extensions: ["jpg", "jpeg", "png", "raw"] }]
+      filters: [{ name: "Images", extensions: [...exts] }]
     });
     if (Array.isArray(picked) && picked.length) {
       actions.importPreviewPhotos(picked);
@@ -29,7 +67,7 @@ export function TopBar({ onOpenExport }: { onOpenExport: () => void }): ReactEle
 
   return (
     <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-3 pl-1 pr-4 py-2">
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 items-center gap-2 ">
         <img src={logoUrl} alt={t(locale, (m) => m.appTitle)} className="h-8 w-8 shrink-0 select-none" />
 
         <div className="hidden shrink-0 items-center overflow-hidden rounded sm:flex">
