@@ -25,6 +25,7 @@ export function HistoryPanel(): ReactElement {
       label={t(locale, (m) => m.labels.history)}
       height="200px"
       contentRef={contentRef}
+      className="border-b border-neutral-600/50"
     >
       {history.map((entry, idx) => (
         <button

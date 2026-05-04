@@ -4,14 +4,13 @@ import { useAppStore } from "../../store/appStore";
 import { chrome } from "../layout/chromeTheme";
 import { GridColsProvider } from "./components/GridCols";
 import { EditModeArea } from "./EditModeArea";
-import { useEditMode } from "./hooks/useEditMode";
+import type { EditModeModel } from "./hooks/useEditMode";
 import { useViewGridLayout } from "./hooks/useViewGridLayout";
 import { ViewModeArea } from "./ViewModeArea";
 
-export function WorkingArea(): ReactElement {
+export function WorkingArea({ edit }: { edit: EditModeModel }): ReactElement {
   const { mode, locale } = useAppStore((s) => s.present);
   const viewGrid = useViewGridLayout();
-  const edit = useEditMode();
 
   return (
     <GridColsProvider>

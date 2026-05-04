@@ -25,11 +25,17 @@ export type EditModeModel = {
   isDragging: boolean;
   rendered: Size;
   pan: Pan;
+  zoom: number;
+  canZoomIn: boolean;
+  canZoomOut: boolean;
   onEditWheel: (e: ReactWheelEvent<HTMLDivElement>) => void;
   onEditPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => void;
   onEditPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => void;
   endDrag: (e: ReactPointerEvent<HTMLDivElement>) => void;
   fitToView: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+  centerView: () => void;
 };
 
 export function useEditMode(): EditModeModel {
@@ -55,6 +61,18 @@ export function useEditMode(): EditModeModel {
     [viewport, imageNatural, zoom]
   );
 
+  const canZoomIn = useMemo(() => {
+    if (!selectedPhoto || !editImageSrc || imageFailed) return false;
+    const next = clamp(zoom * EDIT_ZOOM_STEP, EDIT_ZOOM_MIN, EDIT_ZOOM_MAX);
+    return next > zoom + 1e-9;
+  }, [zoom, selectedPhoto, editImageSrc, imageFailed]);
+
+  const canZoomOut = useMemo(() => {
+    if (!selectedPhoto || !editImageSrc || imageFailed) return false;
+    const next = clamp(zoom / EDIT_ZOOM_STEP, EDIT_ZOOM_MIN, EDIT_ZOOM_MAX);
+    return next < zoom - 1e-9;
+  }, [zoom, selectedPhoto, editImageSrc, imageFailed]);
+
   useEffect(() => {
     const node = viewportRef.current;
     if (!node || mode !== "edit") return;
@@ -71,6 +89,52 @@ export function useEditMode(): EditModeModel {
   const fitToView = () => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
+  };
+
+  const centerView = () => {
+    setPan({ x: 0, y: 0 });
+  };
+
+  const applyZoomAtCenter = (nextZoom: number) => {
+    if (!selectedPhoto || !editImageSrc || imageFailed) return;
+    const currentZoom = zoom;
+    if (nextZoom === currentZoom) return;
+
+    const currentRendered = fitContainSize(viewport, imageNatural, currentZoom);
+    const nextRendered = fitContainSize(viewport, imageNatural, nextZoom);
+    if (
+      currentRendered.width <= 0 ||
+      currentRendered.height <= 0 ||
+      nextRendered.width <= 0 ||
+      nextRendered.height <= 0
+    ) {
+      setZoom(nextZoom);
+      return;
+    }
+
+    const cursorFromCenterX = 0;
+    const cursorFromCenterY = 0;
+    const nextPan = {
+      x:
+        cursorFromCenterX -
+        ((cursorFromCenterX - pan.x) / currentRendered.width) * nextRendered.width,
+      y:
+        cursorFromCenterY -
+        ((cursorFromCenterY - pan.y) / currentRendered.height) * nextRendered.height
+    };
+
+    setZoom(nextZoom);
+    setPan(clampPan(nextPan, nextRendered, viewport));
+  };
+
+  const zoomIn = () => {
+    if (!canZoomIn) return;
+    applyZoomAtCenter(clamp(zoom * EDIT_ZOOM_STEP, EDIT_ZOOM_MIN, EDIT_ZOOM_MAX));
+  };
+
+  const zoomOut = () => {
+    if (!canZoomOut) return;
+    applyZoomAtCenter(clamp(zoom / EDIT_ZOOM_STEP, EDIT_ZOOM_MIN, EDIT_ZOOM_MAX));
   };
 
   useEffect(() => {
@@ -175,10 +239,16 @@ export function useEditMode(): EditModeModel {
     isDragging,
     rendered,
     pan,
+    zoom,
+    canZoomIn,
+    canZoomOut,
     onEditWheel,
     onEditPointerDown,
     onEditPointerMove,
     endDrag,
-    fitToView
+    fitToView,
+    zoomIn,
+    zoomOut,
+    centerView
   };
 }

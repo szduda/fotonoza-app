@@ -10,10 +10,12 @@ import { LeftSidebar } from "./LeftSidebar";
 import { RightSidebar } from "./RightSidebar";
 import { Timeline } from "./Timeline";
 import { WorkingArea } from "./WorkingArea";
+import { useEditMode } from "./WorkingArea/hooks/useEditMode";
 import { ExportModal } from "./ExportModal";
 
 export function AppLayout(): ReactElement {
   const [exportOpen, setExportOpen] = useState(false);
+  const edit = useEditMode();
 
   return (
     <>
@@ -25,12 +27,20 @@ export function AppLayout(): ReactElement {
         }
         leftSidebar={
           <LeftSidebarLayout>
-            <LeftSidebar />
+            <LeftSidebar
+              fitToView={edit.fitToView}
+              centerView={edit.centerView}
+              zoomIn={edit.zoomIn}
+              zoomOut={edit.zoomOut}
+              canUseView={!!edit.selectedPhoto}
+              canZoomIn={edit.canZoomIn}
+              canZoomOut={edit.canZoomOut}
+            />
           </LeftSidebarLayout>
         }
         workingArea={
           <WorkingAreaLayout>
-            <WorkingArea />
+            <WorkingArea edit={edit} />
           </WorkingAreaLayout>
         }
         rightSidebar={
