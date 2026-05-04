@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { useMemo } from "react";
 import { useAppStore } from "../store/appStore";
+import { Button } from "./Button";
 import { chrome } from "./layout/chromeTheme";
 
 export function SelectedCount(): ReactElement {
@@ -16,15 +17,16 @@ export function SelectedCount(): ReactElement {
       <span className="opacity-50">{total}</span>
       <span className="text-[10px] opacity-50">selected</span>
       {selected > 0 && (
-        <button
-          type="button"
-          className="ml-1 text-[10px] opacity-50 transition-opacity hover:opacity-80"
+        <Button
+          variant="subtle"
+          size="xs"
+          className="ml-1 min-h-0 border-0 bg-transparent px-1 py-0 text-[10px] font-normal opacity-50 enabled:hover:bg-transparent enabled:hover:opacity-80"
           onClick={clearSelectedPhotos}
           aria-label="Deselect all photos"
           title="Deselect all photos"
         >
           X
-        </button>
+        </Button>
       )}
     </div>
   );

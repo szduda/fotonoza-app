@@ -30,7 +30,11 @@ export function ToggledPanel({
   return (
     <div
       className={`relative flex shrink-0 flex-col overflow-hidden ${className}`}
-      style={{ height, minHeight: height, maxHeight: height }}>
+      style={
+        expanded
+          ? { height, minHeight: height, maxHeight: height }
+          : { height: 'min-content' }
+      }>
       <button
         className={`hover:text-neutral-500 text-left relative shrink-0 cursor-pointer px-2 py-1 text-[10px] font-medium uppercase tracking-wide ${chrome.faintText}`}
         onClick={() => setTogglePanelExpanded(id, !expanded)}>

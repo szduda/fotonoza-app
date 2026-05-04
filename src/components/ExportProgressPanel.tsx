@@ -1,4 +1,6 @@
+import clsx from "clsx";
 import type { ReactElement } from "react";
+import { Button } from "./Button";
 import { ToggledPanel } from "./ToggledPanel";
 import { chrome } from "./layout/chromeTheme";
 import { useExportMonitor } from "../hooks/useExportMonitor";
@@ -29,13 +31,14 @@ export function ExportProgressPanel(): ReactElement | null {
               <DoneIcon />
               <span>Export finished</span>
             </div>
-            <button
-              type="button"
-              className={`rounded border border-neutral-600/50 px-2 py-1 text-[11px] ${chrome.panelBg} ${chrome.mutedText} hover:bg-neutral-400/40 hover:text-neutral-800`}
+            <Button
+              variant="outlined"
+              size="sm"
+              className={clsx(chrome.mutedText, "font-normal hover:text-neutral-800 enabled:hover:bg-neutral-400/40")}
               onClick={close}
             >
               Close
-            </button>
+            </Button>
           </div>
         )}
         </div>

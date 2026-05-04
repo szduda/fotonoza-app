@@ -1,7 +1,9 @@
+import clsx from "clsx";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useEffect, useState, type ReactElement } from "react";
 import { useAppStore } from "../store/appStore";
 import { t } from "../lib/i18n";
+import { Button } from "./Button";
 import { chrome } from "./layout/chromeTheme";
 import { getDefaultExportDirectory } from "../lib/persistence";
 import { useExportMonitor } from "../hooks/useExportMonitor";
@@ -78,13 +80,14 @@ export function ExportModal({ open, onClose }: ExportModalProps): ReactElement |
                   className={field}
                 />
               ) : (
-                <button
-                  type="button"
+                <Button
+                  variant="outlined"
+                  size="md"
                   onClick={() => setEditingCollection(true)}
-                  className={`rounded border border-neutral-600/45 px-2 py-1 text-left text-sm ${chrome.panelBg} ${chrome.panelText} hover:bg-neutral-400/40`}
+                  className="w-full justify-start text-left font-normal enabled:hover:bg-neutral-400/40"
                 >
                   {collectionName}
-                </button>
+                </Button>
               )}
             </div>
           </label>
@@ -99,13 +102,17 @@ export function ExportModal({ open, onClose }: ExportModalProps): ReactElement |
                 }}
                 className={field}
               />
-              <button
-                type="button"
-                className={`rounded border border-neutral-600/50 px-2 py-1 text-xs ${chrome.panelBg} ${chrome.mutedText} hover:bg-neutral-400/40 hover:text-neutral-800`}
+              <Button
+                variant="outlined"
+                size="sm"
+                className={clsx(
+                  chrome.mutedText,
+                  "shrink-0 font-normal enabled:hover:bg-neutral-400/40 enabled:hover:text-neutral-800"
+                )}
                 onClick={() => void onPickDirectory()}
               >
                 ...
-              </button>
+              </Button>
             </div>
           </label>
           <label>
@@ -159,21 +166,26 @@ export function ExportModal({ open, onClose }: ExportModalProps): ReactElement |
           </label>
         </div>
         <div className="mt-4 flex justify-end gap-2">
-          <button
-            type="button"
-            className={`rounded border border-neutral-600/50 px-3 py-1.5 text-sm ${chrome.panelBg} ${chrome.panelText} hover:bg-neutral-400/40 disabled:opacity-40`}
+          <Button
+            variant="outlined"
+            size="md"
+            className="px-3 py-1.5 font-normal enabled:hover:bg-neutral-400/40"
             onClick={() => void onStartExport()}
             disabled={selectedPhotos.length === 0}
           >
             Export {selectedPhotos.length} photos
-          </button>
-          <button
-            type="button"
-            className={`rounded border border-neutral-600/50 px-3 py-1.5 text-sm ${chrome.panelBg} ${chrome.mutedText} hover:bg-neutral-400/40 hover:text-neutral-800`}
+          </Button>
+          <Button
+            variant="outlined"
+            size="md"
+            className={clsx(
+              chrome.mutedText,
+              "px-3 py-1.5 font-normal enabled:hover:bg-neutral-400/40 enabled:hover:text-neutral-800"
+            )}
             onClick={onClose}
           >
             {t(locale, (m) => m.actions.close)}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

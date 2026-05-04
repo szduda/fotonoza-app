@@ -1,10 +1,12 @@
-import type { ReactElement } from "react";
+import { Fragment, type ReactElement } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useAppStore } from "../store/appStore";
 import { t } from "../lib/i18n";
+import { Button } from "./Button";
 import { chrome } from "./layout/chromeTheme";
 import { SelectedCount } from "./SelectedCount";
 import logoUrl from "../assets/fotonoza-logo.svg";
+import { AppMode } from "../types/domain";
 
 /** WebKit on macOS; avoids extra Tauri OS plugin for import dialog filters only. */
 function isMacClient(): boolean {
@@ -43,6 +45,15 @@ const IMPORT_EXT_MAC = [
   "dcr",
 ] as const;
 
+const getModes = (locale: "en" | "pl") => ({
+  view: {
+    label: t(locale, (m) => m.mode.view),
+  },
+  edit: {
+    label: t(locale, (m) => m.mode.edit),
+  },
+});
+
 export function TopBar({
   onOpenExport,
 }: {
@@ -50,6 +61,8 @@ export function TopBar({
 }): ReactElement {
   const { locale, mode } = useAppStore((s) => s.present);
   const actions = useAppStore((s) => s.actions);
+
+  const modes = getModes(locale);
 
   const pickImportFiles = async () => {
     const exts = isMacClient() ? IMPORT_EXT_MAC : IMPORT_EXT_DEFAULT;
@@ -62,37 +75,32 @@ export function TopBar({
     }
   };
 
-  const iconBtn = `inline-flex h-8 px-2 items-center justify-center rounded border border-neutral-600/50 text-sm transition-colors ${chrome.panelBg} ${chrome.panelText} hover:bg-neutral-400/10 cursor-pointer`;
-  const iconBtnSubtle = `inline-flex h-8 px-2 items-center justify-center rounded border border-transparent text-sm transition-colors ${chrome.panelBg} ${chrome.mutedText} hover:bg-neutral-400/10 cursor-pointer`;
-
-  const modeBtnBase =
-    "px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide transition-colors";
-  const modeBtnActive = `${chrome.panelBg} ${chrome.panelText}`;
-  const modeBtnInactive = `${chrome.mutedText} hover:bg-neutral-800/90 cursor-pointer`;
-
   return (
     <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-3 pl-1 pr-4 py-2">
-      <div className="flex min-w-0 items-center gap-2 ">
+      <div className="flex min-w-0 items-center gap-2">
         <img
           src={logoUrl}
           alt={t(locale, (m) => m.appTitle)}
-          className="h-8 w-8 shrink-0 select-none"
+          className="h-8 w-8 shrink-0 select-none pl-1"
         />
 
         <div className="hidden shrink-0 items-center overflow-hidden rounded sm:flex">
-          <button
-            className={`${modeBtnBase} ${mode === "view" ? modeBtnActive : modeBtnInactive}`}
-            disabled={mode === "view"}
-            onClick={() => actions.setMode("view")}>
-            {t(locale, (m) => m.mode.view)}
-          </button>
-          <span className="h-4 border-l border-neutral-600/70" />
-          <button
-            className={`${modeBtnBase} ${mode === "edit" ? modeBtnActive : modeBtnInactive}`}
-            disabled={mode === "edit"}
-            onClick={() => actions.setMode("edit")}>
-            {t(locale, (m) => m.mode.edit)}
-          </button>
+          {Object.entries(modes).map(([key, value], index) => (
+            <Fragment key={key}>
+              <Button
+                variant="subtleText"
+                size="xs"
+                disabled={mode === key}
+                onClick={() => actions.setMode(key as AppMode)}>
+                <span className="uppercase tracking-wide text-nowrap">
+                  {value.label}
+                </span>
+              </Button>
+              {index < Object.entries(modes).length - 1 && (
+                <span className="h-4 border-l border-neutral-600/70" />
+              )}
+            </Fragment>
+          ))}
         </div>
       </div>
 
@@ -100,34 +108,44 @@ export function TopBar({
 
       <div
         className={`flex flex-wrap items-center justify-end gap-2 text-sm ${chrome.mutedText}`}>
-        <button
-          className={iconBtnSubtle}
+        <Button
+          variant="subtle"
+          size="md"
+          iconOnly
           aria-label={t(locale, (m) => m.actions.undo)}
           title={t(locale, (m) => m.actions.undo)}
           onClick={actions.undo}>
           <UndoIcon />
-        </button>
-        <button
-          className={iconBtnSubtle}
+        </Button>
+
+        <Button
+          variant="subtle"
+          size="md"
+          iconOnly
           aria-label={t(locale, (m) => m.actions.redo)}
           title={t(locale, (m) => m.actions.redo)}
           onClick={actions.redo}>
           <RedoIcon />
-        </button>
-        <button
-          className={iconBtn}
+        </Button>
+
+        <Button
+          variant="outlined"
+          size="md"
           aria-label={t(locale, (m) => m.actions.importFromDevice)}
           title={t(locale, (m) => m.actions.importFromDevice)}
           onClick={() => void pickImportFiles()}>
           Import
-        </button>
-        <button
-          className={iconBtn}
+        </Button>
+
+        <Button
+          variant="outlined"
+          size="md"
+          iconOnly
           aria-label={t(locale, (m) => m.actions.export)}
           title={t(locale, (m) => m.actions.export)}
           onClick={onOpenExport}>
           <ExportIcon />
-        </button>
+        </Button>
       </div>
     </div>
   );
