@@ -2,8 +2,8 @@
   "appTitle": "fotonoza",
   "mode": {
     "import": "Import",
-    "view": "View",
-    "edit": "Edit"
+    "view": "Browse",
+    "edit": "Adjust"
   },
   "actions": {
     "importFromDevice": "Import from device",
