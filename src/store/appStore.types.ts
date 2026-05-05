@@ -27,8 +27,6 @@ export interface AppActions {
 
 export interface StoreShape {
   present: AppState
-  past: AppState[]
-  future: AppState[]
   editPreviewPath?: string
   editPreviewPhotoId?: string
   editPreviewEpoch: number

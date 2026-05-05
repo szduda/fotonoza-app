@@ -1,7 +1,7 @@
 import { saveStoreSnapshot } from "../lib/persistence"
 import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
-import { withUndo } from "./history.store"
+import { getTemporalSnapshots, withUndo } from "./history.store"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
 
@@ -31,7 +31,8 @@ export function createLibraryActions(
           mode: "edit" as const,
           currentPhotoId: photoId,
         }
-        void saveStoreSnapshot(present, current.past, current.future)
+        const { past, future } = getTemporalSnapshots()
+        void saveStoreSnapshot(present, past, future)
         current.present = present
         current.editPreviewPath = undefined
         current.editPreviewPhotoId = undefined

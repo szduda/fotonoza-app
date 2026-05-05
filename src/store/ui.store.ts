@@ -1,7 +1,7 @@
 import { saveStoreSnapshot } from "../lib/persistence"
 import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
-import { withUndo } from "./history.store"
+import { getTemporalSnapshots, withUndo } from "./history.store"
 import { defaultUiLayout, type AppMode } from "../types/domain"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
@@ -14,7 +14,8 @@ export function createUiActions(
       set(
         produce((current: StoreShape) => {
         const present = { ...current.present, mode }
-        void saveStoreSnapshot(present, current.past, current.future)
+        const { past, future } = getTemporalSnapshots()
+        void saveStoreSnapshot(present, past, future)
         current.present = present
       }),
       )
@@ -34,7 +35,8 @@ export function createUiActions(
           ...current.present,
           togglePanelExpanded: nextExpanded,
         }
-        void saveStoreSnapshot(present, current.past, current.future)
+        const { past, future } = getTemporalSnapshots()
+        void saveStoreSnapshot(present, past, future)
         current.present = present
       }),
       )
@@ -47,7 +49,8 @@ export function createUiActions(
           ...partial,
         }
         const present = { ...current.present, layout }
-        void saveStoreSnapshot(present, current.past, current.future)
+        const { past, future } = getTemporalSnapshots()
+        void saveStoreSnapshot(present, past, future)
         current.present = present
       }),
       )

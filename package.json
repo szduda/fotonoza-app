@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:build": "tauri build",
+    "reset-config": "node scripts/reset-config.mjs",
     "format": "prettier --write .",
     "lint": "eslint . --fix"
   },
@@ -23,6 +24,7 @@
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "react-konva": "19.2.3",
+    "zundo": "^2.3.0",
     "zustand": "5.0.12"
   },
   "devDependencies": {

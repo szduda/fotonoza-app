@@ -5,6 +5,7 @@ import { withUndo } from "./history.store"
 import { defaultUiLayout, type AppState, type Photo } from "../types/domain"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
+type SetTemporalSnapshots = (past: AppState[], future: AppState[]) => void
 
 function fileNameFromPath(path: string): string {
   return path.split(/[\\/]/).at(-1) ?? path
@@ -33,6 +34,7 @@ function normalizePresent(present: AppState): AppState {
 
 export function createIoActions(
   set: SetStore,
+  setTemporalSnapshots: SetTemporalSnapshots,
 ): Pick<AppActions, "initialize" | "importPreviewPhotos" | "setExportField"> {
   return {
     initialize: async () => {
@@ -45,8 +47,8 @@ export function createIoActions(
       set(
         produce((current: StoreShape) => {
           current.present = present
-          current.past = loaded.past
-          current.future = loaded.future
+          setTemporalSnapshots(loaded.past, loaded.future)
+          current.present.historyCursor = loaded.past.length
           current.editPreviewPath = undefined
           current.editPreviewPhotoId = undefined
           current.editPreviewEpoch = 0

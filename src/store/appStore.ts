@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { temporal } from "zundo"
 import type { AppState } from "../types/domain"
 import { defaultUiLayout } from "../types/domain"
 import type { StoreShape } from "./appStore.types"
@@ -26,21 +27,34 @@ const initialState: AppState = {
   layout: { ...defaultUiLayout },
 }
 
-export const useAppStore = create<StoreShape>((set, get) => ({
-  present: initialState,
-  past: [],
-  future: [],
-  editPreviewPath: undefined,
-  editPreviewPhotoId: undefined,
-  editPreviewEpoch: 0,
-  editPreviewPending: 0,
-  actions: {
-    ...createIoActions(set),
-    ...createLibraryActions(set),
-    ...createEffectsActions(set),
-    ...createHistoryActions(set, get),
-    ...createUiActions(set),
-  },
-}))
+const setTemporalSnapshots = (past: AppState[], future: AppState[]) => {
+  useAppStore.temporal.setState({
+    pastStates: past,
+    futureStates: future,
+  })
+}
+
+export const useAppStore = create<StoreShape>()(
+  temporal(
+    (set, get) => ({
+      present: initialState,
+      editPreviewPath: undefined,
+      editPreviewPhotoId: undefined,
+      editPreviewEpoch: 0,
+      editPreviewPending: 0,
+      actions: {
+        ...createIoActions(set, setTemporalSnapshots),
+        ...createLibraryActions(set),
+        ...createEffectsActions(set),
+        ...createHistoryActions(set, get),
+        ...createUiActions(set),
+      },
+    }),
+    {
+      partialize: (state) => state.present,
+      limit: 100,
+    },
+  ),
+)
 
 export type { AppActions, StoreShape } from "./appStore.types"
