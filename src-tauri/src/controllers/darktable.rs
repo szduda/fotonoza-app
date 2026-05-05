@@ -104,16 +104,19 @@ fn histogram_from_image(path: &Path) -> Result<HistogramData, String> {
     })
 }
 
-#[tauri::command]
-pub fn run_darktable_operation(photo_path: String, xmp_path: String) -> Result<(), String> {
+fn run_darktable_operation_inner(
+    photo_path: String,
+    xmp_path: String,
+    output_path: String,
+) -> Result<(), String> {
     if !Path::new(&photo_path).exists() {
         return Err("Photo path does not exist".to_string());
     }
 
     let status = Command::new("darktable-cli")
         .arg(&photo_path)
-        .arg("output.jpg")
         .arg(&xmp_path)
+        .arg(&output_path)
         .status()
         .map_err(|e| format!("Failed to spawn darktable-cli: {e}"))?;
 
@@ -124,6 +127,20 @@ pub fn run_darktable_operation(photo_path: String, xmp_path: String) -> Result<(
         ));
     }
     Ok(())
+}
+
+/// `darktable-cli <input> [<xmp>] <output>` — applies sidecar stack to export.
+#[tauri::command]
+pub async fn run_darktable_operation(
+    photo_path: String,
+    xmp_path: String,
+    output_path: String,
+) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        run_darktable_operation_inner(photo_path, xmp_path, output_path)
+    })
+    .await
+    .map_err(|e| format!("darktable worker join: {e}"))?
 }
 
 #[tauri::command]

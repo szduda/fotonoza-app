@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode, RefObject } from "react";
-import { useAppStore } from "../store/appStore";
-import { chrome } from "./layout/chromeTheme";
+import { useAppStore } from "../../store/appStore";
+import { chrome } from "../layout/chromeTheme";
 
 type ToggledPanelProps = {
   id: string;

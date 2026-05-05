@@ -3,7 +3,7 @@ import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useEffect, useState, type ReactElement } from "react";
 import { useAppStore } from "../store/appStore";
 import { t } from "../lib/i18n";
-import { Button } from "./Button";
+import { Button } from "./generic/Button";
 import { chrome } from "./layout/chromeTheme";
 import { getDefaultExportDirectory } from "../lib/persistence";
 import { useExportMonitor } from "../hooks/useExportMonitor";

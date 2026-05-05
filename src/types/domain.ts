@@ -9,14 +9,27 @@ export interface PhotoAdjustment {
   params: Record<string, number | string | boolean>;
 }
 
+/** Software preview / persisted basic grade (EV, contrast, saturation). */
+export interface BasicEffectsState {
+  exposure: number;
+  contrast: number;
+  saturation: number;
+}
+
+export const defaultBasicEffects = (): BasicEffectsState => ({
+  exposure: 0,
+  contrast: 1,
+  saturation: 1
+});
+
 export interface Photo {
   id: string;
   fileName: string;
   sourcePath: string;
-  workingPath?: string;
   selected: boolean;
   approved: boolean;
   adjustments: PhotoAdjustment[];
+  basicEffects?: BasicEffectsState;
 }
 
 export interface ExportSettings {
@@ -114,6 +127,7 @@ export interface TranslationSchema {
     selectedCount: string;
     histogram: string;
     effects: string;
+    basicEffects: string;
     filmstrip: string;
     history: string;
     noPhotos: string;

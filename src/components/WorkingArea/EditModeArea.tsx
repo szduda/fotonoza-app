@@ -6,9 +6,11 @@ import type { EditModeModel } from "./hooks/useEditMode";
 
 export function EditModeArea(props: EditModeModel): ReactElement {
   const { locale } = useAppStore((s) => s.present);
+  const editPreviewPending = useAppStore((s) => s.editPreviewPending);
   const {
     selectedPhoto,
     editImageSrc,
+    previewEpoch,
     imageFailed,
     setImageNatural,
     setImageFailed,
@@ -51,6 +53,7 @@ export function EditModeArea(props: EditModeModel): ReactElement {
         )}
         {selectedPhoto && editImageSrc && !imageFailed && (
           <img
+            key={`${editImageSrc}-${previewEpoch}`}
             src={editImageSrc}
             alt={selectedPhoto.fileName}
             draggable={false}
@@ -69,6 +72,14 @@ export function EditModeArea(props: EditModeModel): ReactElement {
               transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px))`,
             }}
           />
+        )}
+        {editPreviewPending > 0 && (
+          <div
+            className="pointer-events-none absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-md bg-black/40"
+            aria-hidden
+          >
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
+          </div>
         )}
       </div>
     </section>

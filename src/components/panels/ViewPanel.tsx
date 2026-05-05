@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
-import { Button } from "./Button";
-import { MinusIcon } from "./icons/MinusIcon";
-import { PlusIcon } from "./icons/PlusIcon";
-import { ToggledPanel } from "./ToggledPanel";
+import { Button } from "../generic/Button";
+import { MinusIcon } from "../icons/MinusIcon";
+import { PlusIcon } from "../icons/PlusIcon";
+import { ToggledPanel } from "../generic/ToggledPanel";
 
 export function ViewPanel({
   fitToView,

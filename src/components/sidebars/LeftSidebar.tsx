@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
-import { useAppStore } from "../store/appStore";
-import { ExportProgressPanel } from "./ExportProgressPanel";
-import { HistoryPanel } from "./HistoryPanel";
-import { ViewPanel } from "./ViewPanel";
+import { useAppStore } from "../../store/appStore";
+import { ExportProgressPanel } from "../panels/ExportProgressPanel";
+import { HistoryPanel } from "../panels/HistoryPanel";
+import { ViewPanel } from "../panels/ViewPanel";
 
 export function LeftSidebar({
   fitToView,

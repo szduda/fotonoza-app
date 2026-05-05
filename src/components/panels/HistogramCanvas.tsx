@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactElement } from "react";
 import { Stage, Layer, Line } from "react-konva";
-import { useHistogramForEdit } from "../hooks/useHistogramForEdit";
+import { useHistogramForEdit } from "../../hooks/useHistogramForEdit";
+import type { HistogramData } from "../../types/domain";
 
 interface HistogramCanvasProps {
   width?: number;
@@ -32,6 +33,51 @@ function seriesToArea(
   return [0, height, ...line, width, height];
 }
 
+type KonvaHistGeom = {
+  redPoints: number[];
+  greenPoints: number[];
+  bluePoints: number[];
+  lumaArea: number[];
+  redArea: number[];
+  greenArea: number[];
+  blueArea: number[];
+  overlapArea: number[];
+};
+
+/** One memo for all Konva polylines / filled areas derived from histogram bins. */
+function useHistogramKonvaSeries(
+  data: HistogramData | undefined,
+  stageWidth: number,
+  stageHeight: number,
+): KonvaHistGeom {
+  return useMemo(() => {
+    const rgbMax = Math.max(
+      ...(data?.red ?? []),
+      ...(data?.green ?? []),
+      ...(data?.blue ?? []),
+      1,
+    );
+    const lumaMax = Math.max(...(data?.luma ?? []), 1);
+    const r = data?.red ?? [];
+    const g = data?.green ?? [];
+    const b = data?.blue ?? [];
+    const n = Math.min(r.length, g.length, b.length);
+    const overlap =
+      n === 0 ? [] : Array.from({ length: n }, (_, i) => Math.min(r[i], g[i], b[i]));
+
+    return {
+      redPoints: seriesToPolyline(r, stageWidth, stageHeight, rgbMax),
+      greenPoints: seriesToPolyline(g, stageWidth, stageHeight, rgbMax),
+      bluePoints: seriesToPolyline(b, stageWidth, stageHeight, rgbMax),
+      lumaArea: seriesToArea(data?.luma ?? [], stageWidth, stageHeight, lumaMax),
+      redArea: seriesToArea(r, stageWidth, stageHeight, rgbMax),
+      greenArea: seriesToArea(g, stageWidth, stageHeight, rgbMax),
+      blueArea: seriesToArea(b, stageWidth, stageHeight, rgbMax),
+      overlapArea: seriesToArea(overlap, stageWidth, stageHeight, rgbMax),
+    };
+  }, [data, stageWidth, stageHeight]);
+}
+
 export function HistogramCanvas({
   width = 280,
   height = 160,
@@ -58,59 +104,16 @@ export function HistogramCanvas({
     return () => observer.disconnect();
   }, [width]);
 
-  const rgbMax = useMemo(
-    () =>
-      Math.max(
-        ...(data?.red ?? []),
-        ...(data?.green ?? []),
-        ...(data?.blue ?? []),
-        1,
-      ),
-    [data],
-  );
-  const lumaMax = useMemo(() => Math.max(...(data?.luma ?? []), 1), [data]);
-  const overlapSeries = useMemo(() => {
-    const r = data?.red ?? [];
-    const g = data?.green ?? [];
-    const b = data?.blue ?? [];
-    const n = Math.min(r.length, g.length, b.length);
-    if (n === 0) return [];
-    return Array.from({ length: n }, (_, i) => Math.min(r[i], g[i], b[i]));
-  }, [data]);
-
-  const redPoints = useMemo(
-    () => seriesToPolyline(data?.red ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax],
-  );
-  const greenPoints = useMemo(
-    () => seriesToPolyline(data?.green ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax],
-  );
-  const bluePoints = useMemo(
-    () => seriesToPolyline(data?.blue ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax],
-  );
-
-  const lumaArea = useMemo(
-    () => seriesToArea(data?.luma ?? [], stageWidth, stageHeight, lumaMax),
-    [data, stageWidth, stageHeight, lumaMax],
-  );
-  const redArea = useMemo(
-    () => seriesToArea(data?.red ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax],
-  );
-  const greenArea = useMemo(
-    () => seriesToArea(data?.green ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax],
-  );
-  const blueArea = useMemo(
-    () => seriesToArea(data?.blue ?? [], stageWidth, stageHeight, rgbMax),
-    [data, stageWidth, stageHeight, rgbMax],
-  );
-  const overlapArea = useMemo(
-    () => seriesToArea(overlapSeries, stageWidth, stageHeight, rgbMax),
-    [overlapSeries, stageWidth, stageHeight, rgbMax],
-  );
+  const {
+    redPoints,
+    greenPoints,
+    bluePoints,
+    lumaArea,
+    redArea,
+    greenArea,
+    blueArea,
+    overlapArea,
+  } = useHistogramKonvaSeries(data, stageWidth, stageHeight);
 
   const showSkeleton = loading && !data;
 

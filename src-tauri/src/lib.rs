@@ -1,9 +1,10 @@
 mod controllers;
 mod types;
 
-use controllers::app_state::{load_app_state, save_app_state, save_photo_state};
+use controllers::app_state::{load_app_state, load_photo_state, save_app_state, save_photo_state};
 use controllers::darktable::{get_photo_histogram, run_darktable_operation};
 use controllers::export::{get_default_export_directory, get_export_job_status, start_export_job};
+use controllers::preview::render_basic_effects_preview;
 
 pub fn run() {
     tauri::Builder::default()
@@ -14,8 +15,10 @@ pub fn run() {
             save_app_state,
             load_app_state,
             save_photo_state,
+            load_photo_state,
             run_darktable_operation,
             get_photo_histogram,
+            render_basic_effects_preview,
             get_default_export_directory,
             start_export_job,
             get_export_job_status

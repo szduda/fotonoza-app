@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { forwardRef, type ComponentPropsWithoutRef } from "react";
-import { chrome } from "./layout/chromeTheme";
+import { chrome } from "../layout/chromeTheme";
 
 /** Visual styles; extend with new keys as needed. */
 export const buttonVariants = {

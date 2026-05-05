@@ -1,10 +1,10 @@
 import clsx from "clsx";
 import type { ReactElement } from "react";
-import { Button } from "./Button";
-import { ToggledPanel } from "./ToggledPanel";
-import { chrome } from "./layout/chromeTheme";
-import { useExportMonitor } from "../hooks/useExportMonitor";
-import { DoneIcon } from "./icons/DoneIcon";
+import { Button } from "../generic/Button";
+import { ToggledPanel } from "../generic/ToggledPanel";
+import { chrome } from "../layout/chromeTheme";
+import { useExportMonitor } from "../../hooks/useExportMonitor";
+import { DoneIcon } from "../icons/DoneIcon";
 
 export function ExportProgressPanel(): ReactElement | null {
   const { status, isVisible, isFinished, close } = useExportMonitor();

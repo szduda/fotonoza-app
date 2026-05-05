@@ -1,8 +1,8 @@
 import { useEffect, useRef, type ReactElement } from "react";
-import { useAppStore } from "../store/appStore";
-import { t } from "../lib/i18n";
-import { chrome } from "./layout/chromeTheme";
-import { ToggledPanel } from "./ToggledPanel";
+import { useAppStore } from "../../store/appStore";
+import { t } from "../../lib/i18n";
+import { chrome } from "../layout/chromeTheme";
+import { ToggledPanel } from "../generic/ToggledPanel";
 
 export function HistoryPanel(): ReactElement {
   const { history, locale, historyCursor } = useAppStore((state) => state.present);

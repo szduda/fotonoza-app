@@ -1,3 +1,4 @@
+use crate::controllers::paths::{fotonoza_import_dir, photo_state_path};
 use crate::types::{PhotoState, StoreSnapshot};
 use serde_json::Value;
 use std::fs;
@@ -5,10 +6,6 @@ use std::path::PathBuf;
 
 fn app_state_path() -> PathBuf {
     PathBuf::from(".fotonoza")
-}
-
-fn photo_state_path(file_name: &str) -> PathBuf {
-    PathBuf::from(format!(".{}.fotonoza", file_name))
 }
 
 fn migrate_layout_json(layout: &mut serde_json::Map<String, serde_json::Value>) {
@@ -54,6 +51,20 @@ pub fn load_app_state() -> Result<Option<StoreSnapshot>, String> {
 
 #[tauri::command]
 pub fn save_photo_state(photo: PhotoState) -> Result<(), String> {
+    let import = fotonoza_import_dir()?;
+    fs::create_dir_all(&import).map_err(|e| e.to_string())?;
+    let path = photo_state_path(&import, &photo.file_name);
     let serialized = serde_json::to_string_pretty(&photo).map_err(|e| e.to_string())?;
-    fs::write(photo_state_path(&photo.file_name), serialized).map_err(|e| e.to_string())
+    fs::write(path, serialized).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn load_photo_state(file_name: String) -> Result<Option<String>, String> {
+    let import = fotonoza_import_dir()?;
+    let path = photo_state_path(&import, &file_name);
+    if !path.exists() {
+        return Ok(None);
+    }
+    let content = fs::read_to_string(path).map_err(|e| e.to_string())?;
+    Ok(Some(content))
 }

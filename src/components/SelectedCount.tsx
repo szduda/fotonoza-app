@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import { useMemo } from "react";
 import { useAppStore } from "../store/appStore";
-import { Button } from "./Button";
 import { chrome } from "./layout/chromeTheme";
+import { Button } from "./generic/Button";
 
 export function SelectedCount(): ReactElement {
   const photos = useAppStore((s) => s.present.photos);

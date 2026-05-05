@@ -6,10 +6,11 @@ pub struct PhotoState {
     pub id: String,
     pub file_name: String,
     pub source_path: String,
-    pub working_path: Option<String>,
     pub selected: bool,
     pub approved: bool,
     pub adjustments: serde_json::Value,
+    #[serde(default)]
+    pub basic_effects: Option<serde_json::Value>,
 }
 
 pub fn default_layout_width() -> u32 {

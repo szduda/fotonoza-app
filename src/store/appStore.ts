@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { loadAppState, saveStoreSnapshot, savePhotoState } from "../lib/persistence";
-import type { AppMode, AppState, HistoryEntry, Photo, UiLayoutState } from "../types/domain";
-import { defaultUiLayout } from "../types/domain";
+import type { AppMode, AppState, BasicEffectsState, HistoryEntry, Photo, UiLayoutState } from "../types/domain";
+import { defaultBasicEffects, defaultUiLayout } from "../types/domain";
 
 interface AppActions {
   initialize: () => Promise<void>;
@@ -12,8 +12,10 @@ interface AppActions {
   openInEditor: (photoId: string) => void;
   approvePhoto: (photoId: string) => void;
   declinePhoto: (photoId: string) => void;
-  addAdjustment: (photoId: string, adjustmentName: string) => void;
-  toggleAdjustment: (photoId: string, adjustmentId: string) => void;
+  mergePhotoFromDisk: (photoId: string, partial: Partial<Photo>) => void;
+  patchBasicEffects: (photoId: string, effects: Partial<BasicEffectsState>) => void;
+  setEditPreview: (photoId: string | undefined, path: string | undefined) => void;
+  adjustEditPreviewPending: (delta: number) => void;
   undo: () => void;
   redo: () => void;
   jumpToHistory: (index: number) => void;
@@ -30,6 +32,13 @@ interface StoreShape {
   present: AppState;
   past: AppState[];
   future: AppState[];
+  /** Ephemeral preview path for edit mode (not persisted in undo snapshots). */
+  editPreviewPath?: string;
+  editPreviewPhotoId?: string;
+  /** Bumped when preview path updates so the webview remounts the image. */
+  editPreviewEpoch: number;
+  /** In-flight RGB preview jobs (non-blocking spinner while > 0). */
+  editPreviewPending: number;
   actions: AppActions;
 }
 
@@ -91,6 +100,10 @@ export const useAppStore = create<StoreShape>((set, get) => ({
   present: initialState,
   past: [],
   future: [],
+  editPreviewPath: undefined,
+  editPreviewPhotoId: undefined,
+  editPreviewEpoch: 0,
+  editPreviewPending: 0,
   actions: {
     initialize: async () => {
       const loaded = await loadAppState();
@@ -127,7 +140,11 @@ export const useAppStore = create<StoreShape>((set, get) => ({
         ...current,
         present,
         past: loaded.past,
-        future: loaded.future
+        future: loaded.future,
+        editPreviewPath: undefined,
+        editPreviewPhotoId: undefined,
+        editPreviewEpoch: 0,
+        editPreviewPending: 0
       }));
     },
     setMode: (mode) => {
@@ -159,14 +176,20 @@ export const useAppStore = create<StoreShape>((set, get) => ({
       set((current) => {
         const present = { ...current.present, mode: "edit" as AppMode, currentPhotoId: photoId };
         void saveStoreSnapshot(present, current.past, current.future);
-        return { ...current, present };
+        return {
+          ...current,
+          present,
+          editPreviewPath: undefined,
+          editPreviewPhotoId: undefined,
+          editPreviewPending: 0
+        };
       });
     },
     approvePhoto: (photoId) =>
       withUndo(set, "approve-photo", (s) => ({
         ...s,
         photos: s.photos.map((photo) =>
-          photo.id === photoId ? { ...photo, approved: true, workingPath: `working/${photo.fileName}` } : photo
+          photo.id === photoId ? { ...photo, approved: true } : photo
         )
       })),
     declinePhoto: (photoId) =>
@@ -175,47 +198,42 @@ export const useAppStore = create<StoreShape>((set, get) => ({
         photos: s.photos.filter((photo) => photo.id !== photoId),
         currentPhotoId: s.currentPhotoId === photoId ? undefined : s.currentPhotoId
       })),
-    addAdjustment: (photoId, adjustmentName) =>
-      withUndo(set, `add-adjustment-${adjustmentName}`, (s) => {
-        const next = {
-          ...s,
-          photos: s.photos.map((photo) =>
-            photo.id === photoId
-              ? {
-                  ...photo,
-                  adjustments: [
-                    ...photo.adjustments,
-                    { id: crypto.randomUUID(), name: adjustmentName, enabled: true, params: {} }
-                  ]
-                }
-              : photo
-          )
-        };
-        const updatedPhoto = next.photos.find((photo) => photo.id === photoId);
-        if (updatedPhoto) void savePhotoState(updatedPhoto);
-        return next;
-      }),
-    toggleAdjustment: (photoId, adjustmentId) =>
-      withUndo(set, "toggle-adjustment", (s) => {
-        const next = {
-          ...s,
-          photos: s.photos.map((photo) =>
-            photo.id === photoId
-              ? {
-                  ...photo,
-                  adjustments: photo.adjustments.map((adjustment) =>
-                    adjustment.id === adjustmentId
-                      ? { ...adjustment, enabled: !adjustment.enabled }
-                      : adjustment
-                  )
-                }
-              : photo
-          )
-        };
-        const updatedPhoto = next.photos.find((photo) => photo.id === photoId);
-        if (updatedPhoto) void savePhotoState(updatedPhoto);
-        return next;
-      }),
+    mergePhotoFromDisk: (photoId, partial) => {
+      set((current) => ({
+        ...current,
+        present: {
+          ...current.present,
+          photos: current.present.photos.map((p) => (p.id === photoId ? { ...p, ...partial } : p))
+        }
+      }));
+    },
+    patchBasicEffects: (photoId, effects) => {
+      set((current) => {
+        const photos = current.present.photos.map((p) => {
+          if (p.id !== photoId) return p;
+          const nextFx = { ...defaultBasicEffects(), ...p.basicEffects, ...effects };
+          return { ...p, basicEffects: nextFx };
+        });
+        const present = { ...current.present, photos };
+        const updated = photos.find((p) => p.id === photoId);
+        if (updated) void savePhotoState(updated);
+        return { ...current, present };
+      });
+    },
+    setEditPreview: (photoId, path) => {
+      set((current) => ({
+        ...current,
+        editPreviewPhotoId: photoId,
+        editPreviewPath: path,
+        editPreviewEpoch: current.editPreviewEpoch + 1
+      }));
+    },
+    adjustEditPreviewPending: (delta) => {
+      set((current) => ({
+        ...current,
+        editPreviewPending: Math.max(0, current.editPreviewPending + delta)
+      }));
+    },
     undo: () => {
       const { past, present, future } = get();
       if (past.length === 0) return;
@@ -233,7 +251,10 @@ export const useAppStore = create<StoreShape>((set, get) => ({
         ...current,
         present: previous,
         past: remainingPast,
-        future: [present, ...future].slice(0, 100)
+        future: [present, ...future].slice(0, 100),
+        editPreviewPath: undefined,
+        editPreviewPhotoId: undefined,
+        editPreviewPending: 0
       }));
     },
     redo: () => {
@@ -252,7 +273,10 @@ export const useAppStore = create<StoreShape>((set, get) => ({
         ...current,
         present: next,
         past: [...past, present].slice(-100),
-        future: future.slice(1)
+        future: future.slice(1),
+        editPreviewPath: undefined,
+        editPreviewPhotoId: undefined,
+        editPreviewPending: 0
       }));
     },
     jumpToHistory: (index) => {
@@ -277,7 +301,10 @@ export const useAppStore = create<StoreShape>((set, get) => ({
         ...current,
         present: target,
         past: newPast,
-        future: newFuture
+        future: newFuture,
+        editPreviewPath: undefined,
+        editPreviewPhotoId: undefined,
+        editPreviewPending: 0
       }));
     },
     setLocale: (locale) => withUndo(set, `set-locale-${locale}`, (s) => ({ ...s, locale })),

@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactElement, type ReactNode } from "react";
-import { Button } from "../../Button";
+import { Button } from "../../generic/Button";
 import { chrome } from "../../layout/chromeTheme";
 import { VIEW_GRID_COLS_DEFAULT, VIEW_GRID_COLS_MAX, VIEW_GRID_COLS_MIN } from "../constants";
 import { GridColsContext, useGridCols } from "../hooks/useGridCols";

@@ -18,6 +18,8 @@ import type { Photo } from "../../../types/domain";
 export type EditModeModel = {
   selectedPhoto: Photo | undefined;
   editImageSrc: string;
+  /** Remount preview `<img>` when a new preview file is ready. */
+  previewEpoch: number;
   imageFailed: boolean;
   setImageNatural: Dispatch<SetStateAction<Size>>;
   setImageFailed: Dispatch<SetStateAction<boolean>>;
@@ -55,7 +57,16 @@ export function useEditMode(): EditModeModel {
     () => photos.find((photo) => photo.id === currentPhotoId),
     [photos, currentPhotoId]
   );
-  const editImageSrc = selectedPhoto ? localImageSrc(selectedPhoto.sourcePath) : "";
+  const editPreviewPath = useAppStore((s) => s.editPreviewPath);
+  const editPreviewPhotoId = useAppStore((s) => s.editPreviewPhotoId);
+  const previewEpoch = useAppStore((s) => s.editPreviewEpoch);
+  const editImageSrc = useMemo(() => {
+    if (!selectedPhoto) return "";
+    if (editPreviewPath && editPreviewPhotoId === selectedPhoto.id) {
+      return localImageSrc(editPreviewPath);
+    }
+    return localImageSrc(selectedPhoto.sourcePath);
+  }, [selectedPhoto, editPreviewPath, editPreviewPhotoId]);
   const rendered = useMemo(
     () => fitContainSize(viewport, imageNatural, zoom),
     [viewport, imageNatural, zoom]
@@ -150,6 +161,10 @@ export function useEditMode(): EditModeModel {
   }, [selectedPhoto]);
 
   useEffect(() => {
+    setImageFailed(false);
+  }, [editImageSrc, previewEpoch]);
+
+  useEffect(() => {
     setPan((prev) => clampPan(prev, rendered, viewport));
   }, [rendered, viewport]);
 
@@ -232,6 +247,7 @@ export function useEditMode(): EditModeModel {
   return {
     selectedPhoto,
     editImageSrc,
+    previewEpoch,
     imageFailed,
     setImageNatural,
     setImageFailed,

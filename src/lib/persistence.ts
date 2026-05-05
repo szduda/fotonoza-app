@@ -30,8 +30,37 @@ export async function savePhotoState(photo: Photo): Promise<void> {
   await invoke("save_photo_state", { photo });
 }
 
-export async function runDarktableOperation(photoPath: string, xmpPath: string): Promise<void> {
-  await invoke("run_darktable_operation", { photoPath, xmpPath });
+export async function loadPhotoState(fileName: string): Promise<Record<string, unknown> | null> {
+  const raw = await invoke<string | null>("load_photo_state", { fileName });
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+/** Software RGB preview (fast for sliders). Full raw pipeline via darktable-cli is separate. */
+export async function renderBasicEffectsPreview(
+  sourcePath: string,
+  exposureEv: number,
+  contrast: number,
+  saturation: number
+): Promise<string> {
+  return invoke<string>("render_basic_effects_preview", {
+    sourcePath,
+    exposureEv,
+    contrast,
+    saturation
+  });
+}
+
+export async function runDarktableOperation(
+  photoPath: string,
+  xmpPath: string,
+  outputPath: string
+): Promise<void> {
+  await invoke("run_darktable_operation", { photoPath, xmpPath, outputPath });
 }
 
 export async function getPhotoHistogram(photoPath: string): Promise<HistogramData> {

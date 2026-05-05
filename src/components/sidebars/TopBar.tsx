@@ -1,15 +1,15 @@
 import { Fragment, useMemo, type ReactElement } from "react";
-import { useAppStore } from "../store/appStore";
-import { t } from "../lib/i18n";
-import { Button } from "./Button";
-import { chrome } from "./layout/chromeTheme";
-import { SelectedCount } from "./SelectedCount";
-import logoUrl from "../assets/fotonoza-logo.svg";
-import { AppMode } from "../types/domain";
-import { useImport } from "../hooks/useImport";
-import { UndoIcon } from "./icons/UndoIcon";
-import { RedoIcon } from "./icons/RedoIcon";
-import { ExportIcon } from "./icons/ExportIcon";
+import { useAppStore } from "../../store/appStore";
+import { t } from "../../lib/i18n";
+import { Button } from "../generic/Button";
+import { chrome } from "../layout/chromeTheme";
+import { SelectedCount } from "../SelectedCount";
+import logoUrl from "../../assets/fotonoza-logo.svg";
+import { UndoIcon } from "../icons/UndoIcon";
+import { RedoIcon } from "../icons/RedoIcon";
+import { ExportIcon } from "../icons/ExportIcon";
+import { AppMode } from "../../types/domain";
+import { useImport } from "../../hooks/useImport";
 
 const getModes = (locale: "en" | "pl") => ({
   view: {

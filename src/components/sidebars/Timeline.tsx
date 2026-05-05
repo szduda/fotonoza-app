@@ -1,6 +1,6 @@
-import { useAppStore } from "../store/appStore";
-import { chrome } from "./layout/chromeTheme";
-import { PhotoThumbnail } from "./PhotoThumbnail";
+import { useAppStore } from "../../store/appStore";
+import { chrome } from "../layout/chromeTheme";
+import { PhotoThumbnail } from "../PhotoThumbnail";
 
 export const Timeline = () => {
   const { mode, photos, currentPhotoId } = useAppStore((s) => s.present);
