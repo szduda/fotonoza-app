@@ -3,10 +3,5 @@
   "identifier": "default",
   "description": "Default capability",
   "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "dialog:default",
-    "fs:default",
-    "shell:default"
-  ]
+  "permissions": ["core:default", "dialog:default", "fs:default", "shell:default"]
 }

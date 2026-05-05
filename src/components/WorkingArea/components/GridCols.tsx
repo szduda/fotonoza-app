@@ -1,22 +1,23 @@
-import { useMemo, useState, type ReactElement, type ReactNode } from "react";
-import { Button } from "../../generic/Button";
-import { chrome } from "../../layout/chromeTheme";
-import { VIEW_GRID_COLS_DEFAULT, VIEW_GRID_COLS_MAX, VIEW_GRID_COLS_MIN } from "../constants";
-import { GridColsContext, useGridCols } from "../hooks/useGridCols";
-import { MinusIcon } from "../../icons/MinusIcon";
-import { PlusIcon } from "../../icons/PlusIcon";
+import { useMemo, useState, type ReactElement, type ReactNode } from "react"
+import { Button } from "@/components/generic/Button"
+import { chrome } from "@/components/layout/chromeTheme"
+import {
+  VIEW_GRID_COLS_DEFAULT,
+  VIEW_GRID_COLS_MAX,
+  VIEW_GRID_COLS_MIN,
+} from "@/components/WorkingArea/constants"
+import { GridColsContext, useGridCols } from "@/components/WorkingArea/hooks/useGridCols"
+import { MinusIcon } from "@/components/icons/MinusIcon"
+import { PlusIcon } from "@/components/icons/PlusIcon"
 
-export function GridColsProvider({ children }: { children: ReactNode }): ReactElement {
-  const [viewGridCols, setViewGridCols] = useState(VIEW_GRID_COLS_DEFAULT);
-  const value = useMemo(
-    () => ({ viewGridCols, setViewGridCols }),
-    [viewGridCols]
-  );
-  return <GridColsContext.Provider value={value}>{children}</GridColsContext.Provider>;
+export const GridColsProvider = ({ children }: { children: ReactNode }): ReactElement => {
+  const [viewGridCols, setViewGridCols] = useState(VIEW_GRID_COLS_DEFAULT)
+  const value = useMemo(() => ({ viewGridCols, setViewGridCols }), [viewGridCols])
+  return <GridColsContext.Provider value={value}>{children}</GridColsContext.Provider>
 }
 
-export function GridCols(): ReactElement {
-  const { viewGridCols, setViewGridCols } = useGridCols();
+export const GridCols = (): ReactElement => {
+  const { viewGridCols, setViewGridCols } = useGridCols()
 
   return (
     <footer
@@ -43,5 +44,5 @@ export function GridCols(): ReactElement {
         <MinusIcon />
       </Button>
     </footer>
-  );
+  )
 }

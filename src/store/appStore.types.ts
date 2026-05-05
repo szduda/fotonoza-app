@@ -1,4 +1,4 @@
-import type { AppMode, AppState, BasicEffectsState, Photo, UiLayoutState } from "../types/domain"
+import type { AppMode, AppState, BasicEffectsState, Photo, UiLayoutState } from "@/types/domain"
 
 export interface AppActions {
   initialize: () => Promise<void>

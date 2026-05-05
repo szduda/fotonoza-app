@@ -1,66 +1,68 @@
-import clsx from "clsx";
-import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { useEffect, useState, type ReactElement } from "react";
-import { useAppStore } from "../store/appStore";
-import { t } from "../lib/i18n";
-import { Button } from "./generic/Button";
-import { chrome } from "./layout/chromeTheme";
-import { getDefaultExportDirectory } from "../lib/persistence";
-import { useExportMonitor } from "../hooks/useExportMonitor";
+import clsx from "clsx"
+import { open as openDialog } from "@tauri-apps/plugin-dialog"
+import { useEffect, useState, type ReactElement } from "react"
+import { useAppStore } from "@/store/appStore"
+import { t } from "@/lib/i18n"
+import { Button } from "./generic/Button"
+import { chrome } from "./layout/chromeTheme"
+import { getDefaultExportDirectory } from "@/lib/persistence"
+import { useExportMonitor } from "@/hooks/useExportMonitor"
 
 interface ExportModalProps {
-  open: boolean;
-  onClose: () => void;
+  open: boolean
+  onClose: () => void
 }
 
 const field =
-  "mt-1 w-full rounded border border-neutral-600/45 bg-neutral-500/80 px-2 py-1 text-neutral-800 placeholder:text-neutral-600";
+  "mt-1 w-full rounded border border-neutral-600/45 bg-neutral-500/80 px-2 py-1 text-neutral-800 placeholder:text-neutral-600"
 
-export function ExportModal({ open, onClose }: ExportModalProps): ReactElement | null {
-  const { exportSettings, locale, photos } = useAppStore((state) => state.present);
-  const setExportField = useAppStore((state) => state.actions.setExportField);
-  const { start } = useExportMonitor();
-  const selectedPhotos = photos.filter((photo) => photo.selected);
-  const [collectionName, setCollectionName] = useState(defaultCollectionName);
-  const [editingCollection, setEditingCollection] = useState(false);
-  const [directoryAuto, setDirectoryAuto] = useState(true);
+export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement | null => {
+  const { exportSettings, locale, photos } = useAppStore((state) => state.present)
+  const setExportField = useAppStore((state) => state.actions.setExportField)
+  const { start } = useExportMonitor()
+  const selectedPhotos = photos.filter((photo) => photo.selected)
+  const [collectionName, setCollectionName] = useState(defaultCollectionName)
+  const [editingCollection, setEditingCollection] = useState(false)
+  const [directoryAuto, setDirectoryAuto] = useState(true)
 
   useEffect(() => {
-    if (!open || !directoryAuto) return;
+    if (!open || !directoryAuto) return
     void getDefaultExportDirectory(collectionName).then((defaultDir) => {
-      setExportField("directory", defaultDir);
-    });
-  }, [open, setExportField, collectionName, directoryAuto]);
+      setExportField("directory", defaultDir)
+    })
+  }, [open, setExportField, collectionName, directoryAuto])
 
   const onPickDirectory = async () => {
     const picked = await openDialog({
       directory: true,
       multiple: false,
-      defaultPath: exportSettings.directory || undefined
-    });
+      defaultPath: exportSettings.directory || undefined,
+    })
     if (typeof picked === "string" && picked.length > 0) {
-      setDirectoryAuto(false);
-      setExportField("directory", picked);
+      setDirectoryAuto(false)
+      setExportField("directory", picked)
     }
-  };
+  }
 
   const onStartExport = async () => {
-    if (selectedPhotos.length === 0) return;
+    if (selectedPhotos.length === 0) return
     await start(
       selectedPhotos.map((photo) => ({ sourcePath: photo.sourcePath, fileName: photo.fileName })),
-      exportSettings
-    );
-    onClose();
-  };
+      exportSettings,
+    )
+    onClose()
+  }
 
-  if (!open) return null;
+  if (!open) return null
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
       <div
         className={`w-[560px] rounded-lg border border-neutral-600/50 p-5 shadow-xl ${chrome.panelBg} ${chrome.panelText}`}
       >
-        <h2 className={`mb-4 text-lg font-medium ${chrome.panelText}`}>{t(locale, (m) => m.exportModal.title)}</h2>
+        <h2 className={`mb-4 text-lg font-medium ${chrome.panelText}`}>
+          {t(locale, (m) => m.exportModal.title)}
+        </h2>
         <div className={`grid grid-cols-2 gap-3 text-sm ${chrome.mutedText}`}>
           <label className="col-span-2">
             Collection
@@ -73,8 +75,8 @@ export function ExportModal({ open, onClose }: ExportModalProps): ReactElement |
                   onBlur={() => setEditingCollection(false)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      e.preventDefault();
-                      setEditingCollection(false);
+                      e.preventDefault()
+                      setEditingCollection(false)
                     }
                   }}
                   className={field}
@@ -97,8 +99,8 @@ export function ExportModal({ open, onClose }: ExportModalProps): ReactElement |
               <input
                 value={exportSettings.directory}
                 onChange={(e) => {
-                  setDirectoryAuto(false);
-                  setExportField("directory", e.target.value);
+                  setDirectoryAuto(false)
+                  setExportField("directory", e.target.value)
                 }}
                 className={field}
               />
@@ -107,7 +109,7 @@ export function ExportModal({ open, onClose }: ExportModalProps): ReactElement |
                 size="sm"
                 className={clsx(
                   chrome.mutedText,
-                  "shrink-0 font-normal enabled:hover:bg-neutral-400/40 enabled:hover:text-neutral-800"
+                  "shrink-0 font-normal enabled:hover:bg-neutral-400/40 enabled:hover:text-neutral-800",
                 )}
                 onClick={() => void onPickDirectory()}
               >
@@ -180,7 +182,7 @@ export function ExportModal({ open, onClose }: ExportModalProps): ReactElement |
             size="md"
             className={clsx(
               chrome.mutedText,
-              "px-3 py-1.5 font-normal enabled:hover:bg-neutral-400/40 enabled:hover:text-neutral-800"
+              "px-3 py-1.5 font-normal enabled:hover:bg-neutral-400/40 enabled:hover:text-neutral-800",
             )}
             onClick={onClose}
           >
@@ -189,15 +191,15 @@ export function ExportModal({ open, onClose }: ExportModalProps): ReactElement |
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-function defaultCollectionName(): string {
-  const now = new Date();
-  const year = String(now.getFullYear()).slice(-2);
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const hours = String(now.getHours()).padStart(2, "0");
-  const mins = String(now.getMinutes()).padStart(2, "0");
-  return `${year}${month}${day}-${hours}${mins}`;
+const defaultCollectionName = (): string => {
+  const now = new Date()
+  const year = String(now.getFullYear()).slice(-2)
+  const month = String(now.getMonth() + 1).padStart(2, "0")
+  const day = String(now.getDate()).padStart(2, "0")
+  const hours = String(now.getHours()).padStart(2, "0")
+  const mins = String(now.getMinutes()).padStart(2, "0")
+  return `${year}${month}${day}-${hours}${mins}`
 }

@@ -1,10 +1,10 @@
-import type { ReactElement } from "react";
-import { Button } from "../generic/Button";
-import { MinusIcon } from "../icons/MinusIcon";
-import { PlusIcon } from "../icons/PlusIcon";
-import { ToggledPanel } from "../generic/ToggledPanel";
+import type { ReactElement } from "react"
+import { Button } from "@/components/generic/Button"
+import { MinusIcon } from "@/components/icons/MinusIcon"
+import { PlusIcon } from "@/components/icons/PlusIcon"
+import { ToggledPanel } from "@/components/generic/ToggledPanel"
 
-export function ViewPanel({
+export const ViewPanel = ({
   fitToView,
   centerView,
   zoomIn,
@@ -13,34 +13,22 @@ export function ViewPanel({
   canZoomIn,
   canZoomOut,
 }: {
-  fitToView: () => void;
-  centerView: () => void;
-  zoomIn: () => void;
-  zoomOut: () => void;
-  canUseView: boolean;
-  canZoomIn: boolean;
-  canZoomOut: boolean;
-}): ReactElement {
+  fitToView: () => void
+  centerView: () => void
+  zoomIn: () => void
+  zoomOut: () => void
+  canUseView: boolean
+  canZoomIn: boolean
+  canZoomOut: boolean
+}): ReactElement => {
   return (
-    <ToggledPanel
-      id="edit-fit"
-      label="View"
-      height={68}
-      className="border-b border-neutral-600/50">
+    <ToggledPanel id="edit-fit" label="View" height={68} className="border-b border-neutral-600/50">
       <div className="flex gap-1 px-2 pt-1">
-        <Button
-          variant="outlined"
-          size="sm"
-          disabled={!canUseView}
-          onClick={centerView}>
+        <Button variant="outlined" size="sm" disabled={!canUseView} onClick={centerView}>
           Center
         </Button>
 
-        <Button
-          variant="outlined"
-          size="sm"
-          disabled={!canUseView}
-          onClick={fitToView}>
+        <Button variant="outlined" size="sm" disabled={!canUseView} onClick={fitToView}>
           Fit To View
         </Button>
 
@@ -50,7 +38,8 @@ export function ViewPanel({
           iconOnly
           aria-label="Zoom out 10%"
           disabled={!canUseView || !canZoomOut}
-          onClick={zoomOut}>
+          onClick={zoomOut}
+        >
           <MinusIcon />
         </Button>
 
@@ -60,10 +49,11 @@ export function ViewPanel({
           iconOnly
           aria-label="Zoom in 10%"
           disabled={!canUseView || !canZoomIn}
-          onClick={zoomIn}>
+          onClick={zoomIn}
+        >
           <PlusIcon />
         </Button>
       </div>
     </ToggledPanel>
-  );
+  )
 }

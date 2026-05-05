@@ -1,13 +1,14 @@
-import { useEffect, type ReactElement } from "react";
-import { AppLayout } from "./components/AppLayout";
-import { useAppStore } from "./store/appStore";
+import { useEffect, type ReactElement } from "react"
+import { AppLayout } from "./components/AppLayout"
+import { useAppStore } from "./store/appStore"
 
-export default function App(): ReactElement {
-  const initialize = useAppStore((state) => state.actions.initialize);
+const App = (): ReactElement => {
+  const initialize = useAppStore((state) => state.actions.initialize)
 
   useEffect(() => {
-    void initialize();
-  }, [initialize]);
+    void initialize()
+  }, [initialize])
 
-  return <AppLayout />;
+  return <AppLayout />
 }
+export default App

@@ -1,19 +1,19 @@
-import type { ReactElement } from "react";
+import type { ReactElement } from "react"
 
-export type PanelResizeEdge = "bottom" | "top" | "right" | "left";
+export type PanelResizeEdge = "bottom" | "top" | "right" | "left"
 
 type PointerHandlers = {
-  onPointerDown: (e: React.PointerEvent) => void;
-  onPointerMove: (e: React.PointerEvent) => void;
-  onPointerUp: (e: React.PointerEvent) => void;
-  onPointerCancel: (e: React.PointerEvent) => void;
-};
+  onPointerDown: (e: React.PointerEvent) => void
+  onPointerMove: (e: React.PointerEvent) => void
+  onPointerUp: (e: React.PointerEvent) => void
+  onPointerCancel: (e: React.PointerEvent) => void
+}
 
 type EdgeCfg = {
-  orientation: "horizontal" | "vertical";
-  collapsed: string;
-  expanded: string;
-};
+  orientation: "horizontal" | "vertical"
+  collapsed: string
+  expanded: string
+}
 
 const edges: Record<PanelResizeEdge, EdgeCfg> = {
   bottom: {
@@ -36,39 +36,37 @@ const edges: Record<PanelResizeEdge, EdgeCfg> = {
     collapsed: "left-0 top-10 bottom-10",
     expanded: "left-0 top-0 bottom-0",
   },
-};
-
-const GRIP_BASE = "absolute z-10";
-
-function axisClasses(orientation: "horizontal" | "vertical"): string {
-  return orientation === "horizontal" ? "h-2.5 cursor-row-resize" : "w-3 cursor-col-resize";
 }
 
-function ResizeGrip({
+const GRIP_BASE = "absolute z-10"
+
+const axisClasses = (orientation: "horizontal" | "vertical"): string => {
+  return orientation === "horizontal" ? "h-2.5 cursor-row-resize" : "w-3 cursor-col-resize"
+}
+
+const ResizeGrip = ({
   orientation,
   layoutClass,
   ...ptr
 }: {
-  orientation: "horizontal" | "vertical";
-  layoutClass: string;
-} & PointerHandlers): ReactElement {
-  const classes = [GRIP_BASE, axisClasses(orientation), layoutClass].join(" ");
+  orientation: "horizontal" | "vertical"
+  layoutClass: string
+} & PointerHandlers): ReactElement => {
+  const classes = [GRIP_BASE, axisClasses(orientation), layoutClass].join(" ")
 
-  return (
-    <div role="separator" aria-orientation={orientation} className={classes} {...ptr} />
-  );
+  return <div role="separator" aria-orientation={orientation} className={classes} {...ptr} />
 }
 
-export function PanelResizeHandles({
+export const PanelResizeHandles = ({
   edge,
   collapsed,
   ...ptr
 }: {
-  edge: PanelResizeEdge;
-  collapsed: boolean;
-} & PointerHandlers): ReactElement {
-  const cfg = edges[edge];
-  const layout = collapsed ? cfg.collapsed : cfg.expanded;
-  
-  return <ResizeGrip orientation={cfg.orientation} layoutClass={layout} {...ptr} />;
+  edge: PanelResizeEdge
+  collapsed: boolean
+} & PointerHandlers): ReactElement => {
+  const cfg = edges[edge]
+  const layout = collapsed ? cfg.collapsed : cfg.expanded
+
+  return <ResizeGrip orientation={cfg.orientation} layoutClass={layout} {...ptr} />
 }

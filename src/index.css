@@ -5,7 +5,6 @@
 @source "./**/*.{ts,tsx}";
 
 @layer base {
-
   html,
   body,
   #root {

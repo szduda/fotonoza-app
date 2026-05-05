@@ -1,15 +1,15 @@
-import { useAppStore } from "../../store/appStore";
-import { t } from "../../lib/i18n";
-import { HistogramCanvas } from "../panels/HistogramCanvas";
-import { chrome } from "../layout/chromeTheme";
-import { BasicEffects } from "../BasicEffects";
+import { useAppStore } from "@/store/appStore"
+import { t } from "@/lib/i18n"
+import { HistogramCanvas } from "@/components/panels/HistogramCanvas"
+import { chrome } from "@/components/layout/chromeTheme"
+import { BasicEffects } from "@/components/BasicEffects"
 
 export const RightSidebar = () => {
-  const { mode, photos, currentPhotoId, locale } = useAppStore((s) => s.present);
-  const selectedPhoto = photos.find((p) => p.id === currentPhotoId);
+  const { mode, photos, currentPhotoId, locale } = useAppStore((s) => s.present)
+  const selectedPhoto = photos.find((p) => p.id === currentPhotoId)
 
   if (mode !== "edit") {
-    return null;
+    return null
   }
 
   return (
@@ -24,5 +24,5 @@ export const RightSidebar = () => {
         <p className={`mt-4 text-xs ${chrome.mutedText}`}>{t(locale, (m) => m.labels.noPhotos)}</p>
       )}
     </div>
-  );
-};
+  )
+}

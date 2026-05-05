@@ -1,21 +1,21 @@
-import type { ReactElement, ReactNode } from "react";
-import { chrome } from "./chromeTheme";
-import { ChromeEdgePanel } from "./ChromeEdgePanel";
-import { ChromeLayoutControllerProvider } from "./chromeLayoutController";
+import type { ReactElement, ReactNode } from "react"
+import { chrome } from "./chromeTheme"
+import { ChromeEdgePanel } from "./ChromeEdgePanel"
+import { ChromeLayoutControllerProvider } from "./chromeLayoutController"
 
-export function ChromeLayout({
+export const ChromeLayout = ({
   topBar,
   leftSidebar,
   workingArea,
   rightSidebar,
-  timeline
+  timeline,
 }: {
-  topBar: ReactNode;
-  leftSidebar: ReactNode;
-  workingArea: ReactNode;
-  rightSidebar: ReactNode;
-  timeline: ReactNode;
-}): ReactElement {
+  topBar: ReactNode
+  leftSidebar: ReactNode
+  workingArea: ReactNode
+  rightSidebar: ReactNode
+  timeline: ReactNode
+}): ReactElement => {
   return (
     <ChromeLayoutControllerProvider>
       <div
@@ -35,5 +35,5 @@ export function ChromeLayout({
         <ChromeEdgePanel panel="timeline">{timeline}</ChromeEdgePanel>
       </div>
     </ChromeLayoutControllerProvider>
-  );
+  )
 }

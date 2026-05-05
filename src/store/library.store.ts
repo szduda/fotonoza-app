@@ -1,16 +1,16 @@
-import { saveStoreSnapshot } from "../lib/persistence"
+import { saveStoreSnapshot } from "@/lib/persistence"
 import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
 import { getTemporalSnapshots, withUndo } from "./history.store"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
 
-export function createLibraryActions(
+export const createLibraryActions = (
   set: SetStore,
 ): Pick<
   AppActions,
   "toggleSelectPhoto" | "clearSelectedPhotos" | "openInEditor" | "approvePhoto" | "declinePhoto"
-> {
+> => {
   return {
     toggleSelectPhoto: (photoId) =>
       withUndo(set, "toggle-select-photo", (s) => {
@@ -26,18 +26,18 @@ export function createLibraryActions(
     openInEditor: (photoId) => {
       set(
         produce((current: StoreShape) => {
-        const present = {
-          ...current.present,
-          mode: "edit" as const,
-          currentPhotoId: photoId,
-        }
-        const { past, future } = getTemporalSnapshots()
-        void saveStoreSnapshot(present, past, future)
-        current.present = present
-        current.editPreviewPath = undefined
-        current.editPreviewPhotoId = undefined
-        current.editPreviewPending = 0
-      }),
+          const present = {
+            ...current.present,
+            mode: "edit" as const,
+            currentPhotoId: photoId,
+          }
+          const { past, future } = getTemporalSnapshots()
+          void saveStoreSnapshot(present, past, future)
+          current.present = present
+          current.editPreviewPath = undefined
+          current.editPreviewPhotoId = undefined
+          current.editPreviewPending = 0
+        }),
       )
     },
     approvePhoto: (photoId) =>

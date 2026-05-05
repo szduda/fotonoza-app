@@ -1,76 +1,76 @@
-import type { CSSProperties, ReactElement, ReactNode } from "react";
-import { useAppStore } from "../../store/appStore";
-import { defaultUiLayout } from "../../types/domain";
-import type { CollapseButtonRegion } from "./CollapseButton";
+import type { CSSProperties, ReactElement, ReactNode } from "react"
+import { useAppStore } from "@/store/appStore"
+import { defaultUiLayout } from "@/types/domain"
+import type { CollapseButtonRegion } from "./CollapseButton"
 import {
   CHROME_PANEL_EDGE,
   chromeEdgeLayout,
   chromePanelDimensionStyle,
   readCollapsed,
-  type ChromePanelId
-} from "./chromePanelConfig";
-import { useChromeLayoutControllerContext } from "./chromeLayoutController";
-import { CollapseButton, type ChromeGroup } from "./CollapseButton";
-import { PanelResizeHandles } from "./PanelResizeHandles";
+  type ChromePanelId,
+} from "./chromePanelConfig"
+import { useChromeLayoutControllerContext } from "./chromeLayoutController"
+import { CollapseButton, type ChromeGroup } from "./CollapseButton"
+import { PanelResizeHandles } from "./PanelResizeHandles"
 
 const GROUP_WRAP: Record<ChromeGroup, string> = {
   top: "group/top",
   left: "group/left",
   right: "group/right",
-  timeline: "group/timeline"
-};
+  timeline: "group/timeline",
+}
 
 /**
  * Chrome strip: content, resize seam toward the working area, collapse control.
  * Layout is derived from which screen edge the panel sits on (`CHROME_PANEL_EDGE`).
  */
-export function ChromeEdgePanel({
+export const ChromeEdgePanel = ({
   panel,
   className,
-  children
+  children,
 }: {
-  panel: ChromePanelId;
-  className?: string;
-  children: ReactNode;
-}): ReactElement | null {
-  const mode = useAppStore((s) => s.present.mode);
-  const layout = useAppStore((s) => s.present.layout ?? defaultUiLayout);
-  const patchLayout = useAppStore((s) => s.actions.patchLayout);
-  const ctx = useChromeLayoutControllerContext();
+  panel: ChromePanelId
+  className?: string
+  children: ReactNode
+}): ReactElement | null => {
+  const mode = useAppStore((s) => s.present.mode)
+  const layout = useAppStore((s) => s.present.layout ?? defaultUiLayout)
+  const patchLayout = useAppStore((s) => s.actions.patchLayout)
+  const ctx = useChromeLayoutControllerContext()
 
   if (panel === "timeline" && mode === "view") {
-    return null;
+    return null
   }
 
-  const cfg = chromeEdgeLayout(CHROME_PANEL_EDGE[panel]);
-  const collapsed = readCollapsed(panel, layout);
-  const style: CSSProperties = chromePanelDimensionStyle(panel, layout);
+  const cfg = chromeEdgeLayout(CHROME_PANEL_EDGE[panel])
+  const collapsed = readCollapsed(panel, layout)
+  const style: CSSProperties = chromePanelDimensionStyle(panel, layout)
 
   const onCollapseToggle = () => {
-    ctx.clearTabSnapshot();
+    ctx.clearTabSnapshot()
     switch (panel) {
       case "topBar":
-        patchLayout({ topBarCollapsed: !layout.topBarCollapsed });
-        break;
+        patchLayout({ topBarCollapsed: !layout.topBarCollapsed })
+        break
       case "leftSidebar":
-        patchLayout({ leftSidebarCollapsed: !layout.leftSidebarCollapsed });
-        break;
+        patchLayout({ leftSidebarCollapsed: !layout.leftSidebarCollapsed })
+        break
       case "rightSidebar":
-        patchLayout({ rightSidebarCollapsed: !layout.rightSidebarCollapsed });
-        break;
+        patchLayout({ rightSidebarCollapsed: !layout.rightSidebarCollapsed })
+        break
       case "timeline":
-        patchLayout({ timelineCollapsed: !layout.timelineCollapsed });
-        break;
+        patchLayout({ timelineCollapsed: !layout.timelineCollapsed })
+        break
     }
-  };
+  }
 
   const wrap = `${GROUP_WRAP[cfg.groupPeer]} relative flex min-h-0 shrink-0 flex-col ${cfg.borderClass}${
     className ? ` ${className}` : ""
-  }`;
+  }`
 
   const contentShell = (
     <div className={collapsed ? "hidden" : "min-h-0 flex-1 overflow-hidden"}>{children}</div>
-  );
+  )
 
   const handles = (
     <PanelResizeHandles
@@ -81,7 +81,7 @@ export function ChromeEdgePanel({
       onPointerUp={ctx.onResizePointerUp}
       onPointerCancel={ctx.onResizePointerCancel}
     />
-  );
+  )
 
   const btn = (
     <CollapseButton
@@ -91,7 +91,7 @@ export function ChromeEdgePanel({
       onClick={onCollapseToggle}
       groupPeer={cfg.groupPeer}
     />
-  );
+  )
 
   const body = cfg.controlsFirst ? (
     <>
@@ -105,11 +105,11 @@ export function ChromeEdgePanel({
       {handles}
       {btn}
     </>
-  );
+  )
 
   return (
     <div className={wrap} style={style}>
       {body}
     </div>
-  );
+  )
 }

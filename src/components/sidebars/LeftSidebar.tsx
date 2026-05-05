@@ -1,10 +1,10 @@
-import type { ReactElement } from "react";
-import { useAppStore } from "../../store/appStore";
-import { ExportProgressPanel } from "../panels/ExportProgressPanel";
-import { HistoryPanel } from "../panels/HistoryPanel";
-import { ViewPanel } from "../panels/ViewPanel";
+import type { ReactElement } from "react"
+import { useAppStore } from "@/store/appStore"
+import { ExportProgressPanel } from "@/components/panels/ExportProgressPanel"
+import { HistoryPanel } from "@/components/panels/HistoryPanel"
+import { ViewPanel } from "@/components/panels/ViewPanel"
 
-export function LeftSidebar({
+export const LeftSidebar = ({
   fitToView,
   centerView,
   zoomIn,
@@ -13,15 +13,15 @@ export function LeftSidebar({
   canZoomIn,
   canZoomOut,
 }: {
-  fitToView: () => void;
-  centerView: () => void;
-  zoomIn: () => void;
-  zoomOut: () => void;
-  canUseView: boolean;
-  canZoomIn: boolean;
-  canZoomOut: boolean;
-}): ReactElement {
-  const mode = useAppStore((s) => s.present.mode);
+  fitToView: () => void
+  centerView: () => void
+  zoomIn: () => void
+  zoomOut: () => void
+  canUseView: boolean
+  canZoomIn: boolean
+  canZoomOut: boolean
+}): ReactElement => {
+  const mode = useAppStore((s) => s.present.mode)
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
@@ -43,5 +43,5 @@ export function LeftSidebar({
 
       <ExportProgressPanel />
     </div>
-  );
+  )
 }

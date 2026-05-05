@@ -1,12 +1,13 @@
-import type { ReactElement } from "react";
-import { t } from "../../lib/i18n";
-import { useAppStore } from "../../store/appStore";
-import { chrome } from "../layout/chromeTheme";
-import type { EditModeModel } from "./hooks/useEditMode";
+import type { ReactElement } from "react"
+import { t } from "@/lib/i18n"
+import { useAppStore } from "@/store/appStore"
+import { Spinner } from "@/components/generic/Spinner"
+import { chrome } from "@/components/layout/chromeTheme"
+import type { EditModeModel } from "./hooks/useEditMode"
 
-export function EditModeArea(props: EditModeModel): ReactElement {
-  const { locale } = useAppStore((s) => s.present);
-  const editPreviewPending = useAppStore((s) => s.editPreviewPending);
+export const EditModeArea = (props: EditModeModel): ReactElement => {
+  const { locale } = useAppStore((s) => s.present)
+  const editPreviewPending = useAppStore((s) => s.editPreviewPending)
   const {
     selectedPhoto,
     editImageSrc,
@@ -22,7 +23,7 @@ export function EditModeArea(props: EditModeModel): ReactElement {
     onEditPointerDown,
     onEditPointerMove,
     endDrag,
-  } = props;
+  } = props
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
@@ -38,16 +39,12 @@ export function EditModeArea(props: EditModeModel): ReactElement {
         onPointerCancel={endDrag}
       >
         {!selectedPhoto && (
-          <div
-            className={`grid h-full w-full place-items-center text-sm ${chrome.mutedText}`}
-          >
+          <div className={`grid h-full w-full place-items-center text-sm ${chrome.mutedText}`}>
             {t(locale, (m) => m.labels.noPhotos)}
           </div>
         )}
         {selectedPhoto && (!editImageSrc || imageFailed) && (
-          <div
-            className={`grid h-full w-full place-items-center text-sm ${chrome.mutedText}`}
-          >
+          <div className={`grid h-full w-full place-items-center text-sm ${chrome.mutedText}`}>
             {selectedPhoto.fileName}
           </div>
         )}
@@ -58,11 +55,11 @@ export function EditModeArea(props: EditModeModel): ReactElement {
             alt={selectedPhoto.fileName}
             draggable={false}
             onLoad={(event) => {
-              const img = event.currentTarget;
+              const img = event.currentTarget
               setImageNatural({
                 width: img.naturalWidth,
                 height: img.naturalHeight,
-              });
+              })
             }}
             onError={() => setImageFailed(true)}
             className="pointer-events-none absolute left-1/2 top-1/2 max-h-none max-w-none select-none"
@@ -73,15 +70,8 @@ export function EditModeArea(props: EditModeModel): ReactElement {
             }}
           />
         )}
-        {editPreviewPending > 0 && (
-          <div
-            className="pointer-events-none absolute bottom-3 right-3 flex h-8 w-8 items-center justify-center rounded-md bg-black/40"
-            aria-hidden
-          >
-            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/70 border-t-transparent" />
-          </div>
-        )}
+        {editPreviewPending > 0 && <Spinner />}
       </div>
     </section>
-  );
+  )
 }

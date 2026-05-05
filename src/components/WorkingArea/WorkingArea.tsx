@@ -1,16 +1,16 @@
-import type { ReactElement } from "react";
-import { t } from "../../lib/i18n";
-import { useAppStore } from "../../store/appStore";
-import { chrome } from "../layout/chromeTheme";
-import { GridColsProvider } from "./components/GridCols";
-import { EditModeArea } from "./EditModeArea";
-import type { EditModeModel } from "./hooks/useEditMode";
-import { useViewGridLayout } from "./hooks/useViewGridLayout";
-import { ViewModeArea } from "./ViewModeArea";
+import type { ReactElement } from "react"
+import { t } from "@/lib/i18n"
+import { useAppStore } from "@/store/appStore"
+import { chrome } from "@/components/layout/chromeTheme"
+import { GridColsProvider } from "./components/GridCols"
+import { EditModeArea } from "./EditModeArea"
+import type { EditModeModel } from "./hooks/useEditMode"
+import { useViewGridLayout } from "./hooks/useViewGridLayout"
+import { ViewModeArea } from "./ViewModeArea"
 
-export function WorkingArea({ edit }: { edit: EditModeModel }): ReactElement {
-  const { mode, locale } = useAppStore((s) => s.present);
-  const viewGrid = useViewGridLayout();
+export const WorkingArea = ({ edit }: { edit: EditModeModel }): ReactElement => {
+  const { mode, locale } = useAppStore((s) => s.present)
+  const viewGrid = useViewGridLayout()
 
   return (
     <GridColsProvider>
@@ -26,5 +26,5 @@ export function WorkingArea({ edit }: { edit: EditModeModel }): ReactElement {
         <EditModeArea {...edit} />
       )}
     </GridColsProvider>
-  );
+  )
 }

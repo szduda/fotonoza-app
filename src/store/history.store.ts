@@ -1,7 +1,7 @@
-import { saveStoreSnapshot } from "../lib/persistence"
+import { saveStoreSnapshot } from "@/lib/persistence"
 import { produce } from "immer"
-import type { AppState, HistoryEntry } from "../types/domain"
-import { defaultUiLayout } from "../types/domain"
+import type { AppState, HistoryEntry } from "@/types/domain"
+import { defaultUiLayout } from "@/types/domain"
 import type { AppActions, StoreShape } from "./appStore.types"
 import { useAppStore } from "./appStore"
 
@@ -18,11 +18,11 @@ export const getTemporalSnapshots: GetTemporalSnapshots = () => {
   }
 }
 
-function historyEntry(label: string): HistoryEntry {
+const historyEntry = (label: string): HistoryEntry => {
   return { id: crypto.randomUUID(), label, at: Date.now() }
 }
 
-function pushHistory(state: AppState, label: string): AppState {
+const pushHistory = (state: AppState, label: string): AppState => {
   const maxOps = 100
   const rollbackSafe = state.history.slice(0, Math.max(0, state.historyCursor + 1))
   const updatedHistory = [...rollbackSafe.slice(-(maxOps - 1)), historyEntry(label)]
@@ -33,27 +33,23 @@ function pushHistory(state: AppState, label: string): AppState {
   }
 }
 
-export function withUndo(
-  set: SetStore,
-  label: string,
-  mutator: (s: AppState) => void,
-): void {
+export const withUndo = (set: SetStore, label: string, mutator: (s: AppState) => void): void => {
   set(
     produce((current: StoreShape) => {
-    const layout = current.present.layout ?? defaultUiLayout
-    const nextBase = produce(current.present, mutator)
-    const nextPresent = pushHistory({ ...nextBase, layout }, label)
-    const { past, future } = getTemporalSnapshots()
-    void saveStoreSnapshot(nextPresent, past, future)
-    current.present = nextPresent
-  }),
+      const layout = current.present.layout ?? defaultUiLayout
+      const nextBase = produce(current.present, mutator)
+      const nextPresent = pushHistory({ ...nextBase, layout }, label)
+      const { past, future } = getTemporalSnapshots()
+      void saveStoreSnapshot(nextPresent, past, future)
+      current.present = nextPresent
+    }),
   )
 }
 
-export function createHistoryActions(
+export const createHistoryActions = (
   set: SetStore,
   get: GetStore,
-): Pick<AppActions, "undo" | "redo" | "jumpToHistory"> {
+): Pick<AppActions, "undo" | "redo" | "jumpToHistory"> => {
   return {
     undo: () => {
       const { present } = get()

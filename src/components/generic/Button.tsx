@@ -1,6 +1,6 @@
-import clsx from "clsx";
-import { forwardRef, type ComponentPropsWithoutRef } from "react";
-import { chrome } from "../layout/chromeTheme";
+import clsx from "clsx"
+import { forwardRef, type ComponentPropsWithoutRef } from "react"
+import { chrome } from "@/components/layout/chromeTheme"
 
 /** Visual styles; extend with new keys as needed. */
 export const buttonVariants = {
@@ -29,7 +29,7 @@ export const buttonVariants = {
     "border border-transparent",
     "enabled:hover:text-neutral-500",
   ),
-} as const;
+} as const
 
 /** Text / default padding; pair with `iconOnly` for square icon hits. */
 export const buttonSizes = {
@@ -38,7 +38,7 @@ export const buttonSizes = {
   md: "text-sm px-2 min-h-8 gap-1.5",
   lg: "text-base px-3 py-2 min-h-10 gap-2",
   xl: "text-lg px-4 py-2.5 min-h-11 gap-2",
-} as const;
+} as const
 
 export const buttonIconOnlySizes = {
   xs: "h-6 w-6 min-h-6 min-w-6 shrink-0 p-0",
@@ -46,42 +46,33 @@ export const buttonIconOnlySizes = {
   md: "h-8 w-8 min-h-8 min-w-8 shrink-0 p-0",
   lg: "h-10 w-10 min-h-10 min-w-10 shrink-0 p-0",
   xl: "h-11 w-11 min-h-11 min-w-11 shrink-0 p-0",
-} as const;
+} as const
 
 const base =
-  "inline-flex items-center justify-center rounded font-medium transition-colors cursor-pointer disabled:text-inherit disabled:pointer-events-none";
+  "inline-flex items-center justify-center rounded font-medium transition-colors cursor-pointer disabled:text-inherit disabled:pointer-events-none"
 
 export type ButtonProps = ComponentPropsWithoutRef<"button"> & {
-  variant?: keyof typeof buttonVariants;
-  size?: keyof typeof buttonSizes;
+  variant?: keyof typeof buttonVariants
+  size?: keyof typeof buttonSizes
   /** Square hit target; omits text padding. */
-  iconOnly?: boolean;
-};
+  iconOnly?: boolean
+}
 
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  function Button(
-    {
-      variant = "outlined",
-      size = "md",
-      iconOnly = false,
-      className,
-      type = "button",
-      ...rest
-    },
-    ref,
-  ) {
-    return (
-      <button
-        ref={ref}
-        type={type}
-        className={clsx(
-          base,
-          buttonVariants[variant],
-          iconOnly ? buttonIconOnlySizes[size] : buttonSizes[size],
-          className,
-        )}
-        {...rest}
-      />
-    );
-  },
-);
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+  { variant = "outlined", size = "md", iconOnly = false, className, type = "button", ...rest },
+  ref,
+) {
+  return (
+    <button
+      ref={ref}
+      type={type}
+      className={clsx(
+        base,
+        buttonVariants[variant],
+        iconOnly ? buttonIconOnlySizes[size] : buttonSizes[size],
+        className,
+      )}
+      {...rest}
+    />
+  )
+})

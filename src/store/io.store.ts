@@ -1,17 +1,17 @@
-import { loadAppState } from "../lib/persistence"
+import { loadAppState } from "@/lib/persistence"
 import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
 import { withUndo } from "./history.store"
-import { defaultUiLayout, type AppState, type Photo } from "../types/domain"
+import { defaultUiLayout, type AppState, type Photo } from "@/types/domain"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
 type SetTemporalSnapshots = (past: AppState[], future: AppState[]) => void
 
-function fileNameFromPath(path: string): string {
+const fileNameFromPath = (path: string): string => {
   return path.split(/[\\/]/).at(-1) ?? path
 }
 
-function buildPhoto(path: string): Photo {
+const buildPhoto = (path: string): Photo => {
   return {
     id: crypto.randomUUID(),
     fileName: fileNameFromPath(path),
@@ -22,7 +22,7 @@ function buildPhoto(path: string): Photo {
   }
 }
 
-function normalizePresent(present: AppState): AppState {
+const normalizePresent = (present: AppState): AppState => {
   const panelState = (present as Partial<AppState>).togglePanelExpanded
   return {
     ...present,
@@ -32,10 +32,10 @@ function normalizePresent(present: AppState): AppState {
   }
 }
 
-export function createIoActions(
+export const createIoActions = (
   set: SetStore,
   setTemporalSnapshots: SetTemporalSnapshots,
-): Pick<AppActions, "initialize" | "importPreviewPhotos" | "setExportField"> {
+): Pick<AppActions, "initialize" | "importPreviewPhotos" | "setExportField"> => {
   return {
     initialize: async () => {
       const loaded = await loadAppState()

@@ -1,16 +1,16 @@
-import { savePhotoState } from "../lib/persistence"
+import { savePhotoState } from "@/lib/persistence"
 import { produce } from "immer"
-import { defaultBasicEffects } from "../types/domain"
+import { defaultBasicEffects } from "@/types/domain"
 import type { AppActions, StoreShape } from "./appStore.types"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
 
-export function createEffectsActions(
+export const createEffectsActions = (
   set: SetStore,
 ): Pick<
   AppActions,
   "mergePhotoFromDisk" | "patchBasicEffects" | "setEditPreview" | "adjustEditPreviewPending"
-> {
+> => {
   return {
     mergePhotoFromDisk: (photoId, partial) => {
       set(

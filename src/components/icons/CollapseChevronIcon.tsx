@@ -1,7 +1,7 @@
-import type { ReactElement } from "react";
+import type { ReactElement } from "react"
 
 /** Base chevron points right; parent applies rotation for collapse direction. */
-export function CollapseChevronIcon({ className }: { className: string }): ReactElement {
+export const CollapseChevronIcon = ({ className }: { className: string }): ReactElement => {
   return (
     <svg
       className={`size-3.5 shrink-0 transition-transform duration-150 ${className}`}
@@ -19,5 +19,5 @@ export function CollapseChevronIcon({ className }: { className: string }): React
         strokeLinejoin="round"
       />
     </svg>
-  );
+  )
 }

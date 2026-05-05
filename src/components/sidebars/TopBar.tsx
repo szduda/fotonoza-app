@@ -1,15 +1,15 @@
-import { Fragment, useMemo, type ReactElement } from "react";
-import { useAppStore } from "../../store/appStore";
-import { t } from "../../lib/i18n";
-import { Button } from "../generic/Button";
-import { chrome } from "../layout/chromeTheme";
-import { SelectedCount } from "../SelectedCount";
-import logoUrl from "../../assets/fotonoza-logo.svg";
-import { UndoIcon } from "../icons/UndoIcon";
-import { RedoIcon } from "../icons/RedoIcon";
-import { ExportIcon } from "../icons/ExportIcon";
-import { AppMode } from "../../types/domain";
-import { useImport } from "../../hooks/useImport";
+import { Fragment, useMemo, type ReactElement } from "react"
+import { useAppStore } from "@/store/appStore"
+import { t } from "@/lib/i18n"
+import { Button } from "@/components/generic/Button"
+import { chrome } from "@/components/layout/chromeTheme"
+import { SelectedCount } from "@/components/SelectedCount"
+import logoUrl from "@/assets/fotonoza-logo.svg"
+import { UndoIcon } from "@/components/icons/UndoIcon"
+import { RedoIcon } from "@/components/icons/RedoIcon"
+import { ExportIcon } from "@/components/icons/ExportIcon"
+import { AppMode } from "@/types/domain"
+import { useImport } from "@/hooks/useImport"
 
 const getModes = (locale: "en" | "pl") => ({
   view: {
@@ -18,18 +18,14 @@ const getModes = (locale: "en" | "pl") => ({
   edit: {
     label: t(locale, (m) => m.mode.edit),
   },
-});
+})
 
-export function TopBar({
-  onOpenExport,
-}: {
-  onOpenExport: () => void;
-}): ReactElement {
-  const { locale, mode } = useAppStore((s) => s.present);
-  const actions = useAppStore((s) => s.actions);
-  const { pickImportFiles } = useImport();
+export const TopBar = ({ onOpenExport }: { onOpenExport: () => void }): ReactElement => {
+  const { locale, mode } = useAppStore((s) => s.present)
+  const actions = useAppStore((s) => s.actions)
+  const { pickImportFiles } = useImport()
 
-  const modeEntries = useMemo(() => Object.entries(getModes(locale)), [locale]);
+  const modeEntries = useMemo(() => Object.entries(getModes(locale)), [locale])
 
   return (
     <div className="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-3 pl-1 pr-4 py-2">
@@ -61,9 +57,7 @@ export function TopBar({
 
       <SelectedCount />
 
-      <div
-        className={`flex flex-wrap items-center justify-end gap-2 text-sm ${chrome.mutedText}`}
-      >
+      <div className={`flex flex-wrap items-center justify-end gap-2 text-sm ${chrome.mutedText}`}>
         <Button
           variant="subtle"
           size="md"
@@ -108,5 +102,5 @@ export function TopBar({
         </Button>
       </div>
     </div>
-  );
+  )
 }

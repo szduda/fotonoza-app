@@ -1,21 +1,21 @@
-import { useState, type ReactElement } from "react";
-import { ChromeLayout } from "./layout/ChromeLayout";
-import { TopBarLayout } from "./layout/TopBarLayout";
-import { LeftSidebarLayout } from "./layout/LeftSidebarLayout";
-import { RightSidebarLayout } from "./layout/RightSidebarLayout";
-import { TimelineLayout } from "./layout/TimelineLayout";
-import { WorkingAreaLayout } from "./layout/WorkingAreaLayout";
-import { TopBar } from "./sidebars/TopBar";
-import { LeftSidebar } from "./sidebars/LeftSidebar";
-import { RightSidebar } from "./sidebars/RightSidebar";
-import { Timeline } from "./sidebars/Timeline";
-import { WorkingArea } from "./WorkingArea";
-import { useEditMode } from "./WorkingArea/hooks/useEditMode";
-import { ExportModal } from "./ExportModal";
+import { useState, type ReactElement } from "react"
+import { ChromeLayout } from "./layout/ChromeLayout"
+import { TopBarLayout } from "./layout/TopBarLayout"
+import { LeftSidebarLayout } from "./layout/LeftSidebarLayout"
+import { RightSidebarLayout } from "./layout/RightSidebarLayout"
+import { TimelineLayout } from "./layout/TimelineLayout"
+import { WorkingAreaLayout } from "./layout/WorkingAreaLayout"
+import { TopBar } from "./sidebars/TopBar"
+import { LeftSidebar } from "./sidebars/LeftSidebar"
+import { RightSidebar } from "./sidebars/RightSidebar"
+import { Timeline } from "./sidebars/Timeline"
+import { WorkingArea } from "./WorkingArea"
+import { useEditMode } from "./WorkingArea/hooks/useEditMode"
+import { ExportModal } from "./ExportModal"
 
-export function AppLayout(): ReactElement {
-  const [exportOpen, setExportOpen] = useState(false);
-  const edit = useEditMode();
+export const AppLayout = (): ReactElement => {
+  const [exportOpen, setExportOpen] = useState(false)
+  const edit = useEditMode()
 
   return (
     <>
@@ -56,5 +56,5 @@ export function AppLayout(): ReactElement {
       />
       <ExportModal open={exportOpen} onClose={() => setExportOpen(false)} />
     </>
-  );
+  )
 }
