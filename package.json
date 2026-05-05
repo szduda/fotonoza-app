@@ -9,7 +9,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "format": "prettier --write .",
+    "lint": "eslint . --fix"
   },
   "dependencies": {
     "@tauri-apps/api": "2.10.1",
@@ -17,6 +19,7 @@
     "@tauri-apps/plugin-fs": "2.5.0",
     "@tauri-apps/plugin-shell": "2.3.5",
     "clsx": "2.1.1",
+    "immer": "^11.1.6",
     "react": "19.2.5",
     "react-dom": "19.2.5",
     "react-konva": "19.2.3",
@@ -27,9 +30,13 @@
     "@tauri-apps/cli": "2.10.1",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
+    "@typescript-eslint/eslint-plugin": "^8.59.2",
+    "@typescript-eslint/parser": "^8.59.2",
     "@vitejs/plugin-react": "6.0.1",
     "autoprefixer": "10.5.0",
+    "eslint": "10.3.0",
     "postcss": "8.5.12",
+    "prettier": "3.8.3",
     "tailwindcss": "4.2.4",
     "typescript": "6.0.3",
     "vite": "8.0.10"

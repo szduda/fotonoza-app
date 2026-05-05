@@ -1,4 +1,5 @@
 import { saveStoreSnapshot } from "../lib/persistence"
+import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
 import { withUndo } from "./history.store"
 import { defaultUiLayout, type AppMode } from "../types/domain"
@@ -10,15 +11,21 @@ export function createUiActions(
 ): Pick<AppActions, "setMode" | "setLocale" | "setTogglePanelExpanded" | "patchLayout"> {
   return {
     setMode: (mode: AppMode) => {
-      set((current) => {
+      set(
+        produce((current: StoreShape) => {
         const present = { ...current.present, mode }
         void saveStoreSnapshot(present, current.past, current.future)
-        return { ...current, present }
-      })
+        current.present = present
+      }),
+      )
     },
-    setLocale: (locale) => withUndo(set, `set-locale-${locale}`, (s) => ({ ...s, locale })),
+    setLocale: (locale) =>
+      withUndo(set, `set-locale-${locale}`, (s) => {
+        s.locale = locale
+      }),
     setTogglePanelExpanded: (id, expanded) => {
-      set((current) => {
+      set(
+        produce((current: StoreShape) => {
         const nextExpanded = {
           ...current.present.togglePanelExpanded,
           [id]: expanded,
@@ -28,19 +35,22 @@ export function createUiActions(
           togglePanelExpanded: nextExpanded,
         }
         void saveStoreSnapshot(present, current.past, current.future)
-        return { ...current, present }
-      })
+        current.present = present
+      }),
+      )
     },
     patchLayout: (partial) => {
-      set((current) => {
+      set(
+        produce((current: StoreShape) => {
         const layout = {
           ...(current.present.layout ?? defaultUiLayout),
           ...partial,
         }
         const present = { ...current.present, layout }
         void saveStoreSnapshot(present, current.past, current.future)
-        return { ...current, present }
-      })
+        current.present = present
+      }),
+      )
     },
   }
 }

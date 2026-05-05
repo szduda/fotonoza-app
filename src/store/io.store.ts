@@ -1,4 +1,5 @@
 import { loadAppState } from "../lib/persistence"
+import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
 import { withUndo } from "./history.store"
 import { defaultUiLayout, type AppState, type Photo } from "../types/domain"
@@ -41,30 +42,26 @@ export function createIoActions(
       if (loaded.past.length === 0 && present.history.length > 0) {
         present = { ...present, history: [], historyCursor: 0 }
       }
-      set((current) => ({
-        ...current,
-        present,
-        past: loaded.past,
-        future: loaded.future,
-        editPreviewPath: undefined,
-        editPreviewPhotoId: undefined,
-        editPreviewEpoch: 0,
-        editPreviewPending: 0,
-      }))
+      set(
+        produce((current: StoreShape) => {
+          current.present = present
+          current.past = loaded.past
+          current.future = loaded.future
+          current.editPreviewPath = undefined
+          current.editPreviewPhotoId = undefined
+          current.editPreviewEpoch = 0
+          current.editPreviewPending = 0
+        }),
+      )
     },
     importPreviewPhotos: (paths) =>
-      withUndo(set, "import-preview", (s) => ({
-        ...s,
-        photos: [...s.photos, ...paths.map(buildPhoto)],
-        mode: "view",
-      })),
+      withUndo(set, "import-preview", (s) => {
+        s.photos.push(...paths.map(buildPhoto))
+        s.mode = "view"
+      }),
     setExportField: (key, value) =>
-      withUndo(set, `set-export-${String(key)}`, (s) => ({
-        ...s,
-        exportSettings: {
-          ...s.exportSettings,
-          [key]: value,
-        },
-      })),
+      withUndo(set, `set-export-${String(key)}`, (s) => {
+        s.exportSettings[key] = value
+      }),
   }
 }

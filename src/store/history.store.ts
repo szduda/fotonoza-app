@@ -1,4 +1,5 @@
 import { saveStoreSnapshot } from "../lib/persistence"
+import { produce } from "immer"
 import type { AppState, HistoryEntry } from "../types/domain"
 import { defaultUiLayout } from "../types/domain"
 import type { AppActions, StoreShape } from "./appStore.types"
@@ -21,14 +22,19 @@ function pushHistory(state: AppState, label: string): AppState {
   }
 }
 
-export function withUndo(set: SetStore, label: string, mutator: (s: AppState) => AppState): void {
-  set((current) => {
+export function withUndo(set: SetStore, label: string, mutator: (s: AppState) => void): void {
+  set(
+    produce((current: StoreShape) => {
     const layout = current.present.layout ?? defaultUiLayout
-    const nextPresent = pushHistory({ ...mutator(current.present), layout }, label)
+    const nextBase = produce(current.present, mutator)
+    const nextPresent = pushHistory({ ...nextBase, layout }, label)
     const trimmedPast = [...current.past, current.present].slice(-100)
     void saveStoreSnapshot(nextPresent, trimmedPast, [])
-    return { ...current, present: nextPresent, past: trimmedPast, future: [] }
-  })
+    current.present = nextPresent
+    current.past = trimmedPast
+    current.future = []
+  }),
+  )
 }
 
 export function createHistoryActions(
@@ -49,15 +55,16 @@ export function createHistoryActions(
       }
       const remainingPast = past.slice(0, -1)
       void saveStoreSnapshot(previous, remainingPast, [present, ...future].slice(0, 100))
-      set((current) => ({
-        ...current,
-        present: previous,
-        past: remainingPast,
-        future: [present, ...future].slice(0, 100),
-        editPreviewPath: undefined,
-        editPreviewPhotoId: undefined,
-        editPreviewPending: 0,
-      }))
+      set(
+        produce((current: StoreShape) => {
+          current.present = previous
+          current.past = remainingPast
+          current.future = [present, ...future].slice(0, 100)
+          current.editPreviewPath = undefined
+          current.editPreviewPhotoId = undefined
+          current.editPreviewPending = 0
+        }),
+      )
     },
     redo: () => {
       const { past, present, future } = get()
@@ -71,15 +78,16 @@ export function createHistoryActions(
         togglePanelExpanded: present.togglePanelExpanded,
       }
       void saveStoreSnapshot(next, [...past, present].slice(-100), future.slice(1))
-      set((current) => ({
-        ...current,
-        present: next,
-        past: [...past, present].slice(-100),
-        future: future.slice(1),
-        editPreviewPath: undefined,
-        editPreviewPhotoId: undefined,
-        editPreviewPending: 0,
-      }))
+      set(
+        produce((current: StoreShape) => {
+          current.present = next
+          current.past = [...past, present].slice(-100)
+          current.future = future.slice(1)
+          current.editPreviewPath = undefined
+          current.editPreviewPhotoId = undefined
+          current.editPreviewPending = 0
+        }),
+      )
     },
     jumpToHistory: (index) => {
       const { past, present, future } = get()
@@ -99,15 +107,16 @@ export function createHistoryActions(
       const newPast = timeline.slice(0, targetIdx)
       const newFuture = timeline.slice(targetIdx + 1).slice(0, 100)
       void saveStoreSnapshot(target, newPast, newFuture)
-      set((current) => ({
-        ...current,
-        present: target,
-        past: newPast,
-        future: newFuture,
-        editPreviewPath: undefined,
-        editPreviewPhotoId: undefined,
-        editPreviewPending: 0,
-      }))
+      set(
+        produce((current: StoreShape) => {
+          current.present = target
+          current.past = newPast
+          current.future = newFuture
+          current.editPreviewPath = undefined
+          current.editPreviewPhotoId = undefined
+          current.editPreviewPending = 0
+        }),
+      )
     },
   }
 }

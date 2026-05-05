@@ -1,4 +1,5 @@
 import { savePhotoState } from "../lib/persistence"
+import { produce } from "immer"
 import { defaultBasicEffects } from "../types/domain"
 import type { AppActions, StoreShape } from "./appStore.types"
 
@@ -12,40 +13,43 @@ export function createEffectsActions(
 > {
   return {
     mergePhotoFromDisk: (photoId, partial) => {
-      set((current) => ({
-        ...current,
-        present: {
-          ...current.present,
-          photos: current.present.photos.map((p) => (p.id === photoId ? { ...p, ...partial } : p)),
-        },
-      }))
+      set(
+        produce((current: StoreShape) => {
+          const photo = current.present.photos.find((p) => p.id === photoId)
+          if (!photo) return
+          Object.assign(photo, partial)
+        }),
+      )
     },
     patchBasicEffects: (photoId, effects) => {
-      set((current) => {
-        const photos = current.present.photos.map((p) => {
-          if (p.id !== photoId) return p
-          const nextFx = { ...defaultBasicEffects(), ...p.basicEffects, ...effects }
-          return { ...p, basicEffects: nextFx }
-        })
-        const present = { ...current.present, photos }
-        const updated = photos.find((p) => p.id === photoId)
-        if (updated) void savePhotoState(updated)
-        return { ...current, present }
-      })
+      set(
+        produce((current: StoreShape) => {
+          const photo = current.present.photos.find((p) => p.id === photoId)
+          if (!photo) return
+          photo.basicEffects = {
+            ...defaultBasicEffects(),
+            ...photo.basicEffects,
+            ...effects,
+          }
+          void savePhotoState(photo)
+        }),
+      )
     },
     setEditPreview: (photoId, path) => {
-      set((current) => ({
-        ...current,
-        editPreviewPhotoId: photoId,
-        editPreviewPath: path,
-        editPreviewEpoch: current.editPreviewEpoch + 1,
-      }))
+      set(
+        produce((current: StoreShape) => {
+          current.editPreviewPhotoId = photoId
+          current.editPreviewPath = path
+          current.editPreviewEpoch += 1
+        }),
+      )
     },
     adjustEditPreviewPending: (delta) => {
-      set((current) => ({
-        ...current,
-        editPreviewPending: Math.max(0, current.editPreviewPending + delta),
-      }))
+      set(
+        produce((current: StoreShape) => {
+          current.editPreviewPending = Math.max(0, current.editPreviewPending + delta)
+        }),
+      )
     },
   }
 }
