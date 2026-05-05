@@ -2,7 +2,9 @@ import { readdirSync, rmSync } from "node:fs"
 import { join } from "node:path"
 
 function removeAppConfig() {
-  rmSync(join(process.cwd(), ".fotonoza"), { force: true })
+  const cwd = process.cwd()
+  rmSync(join(cwd, ".fotonoza"), { force: true })
+  rmSync(join(cwd, "src-tauri", ".fotonoza"), { force: true })
 }
 
 function removeWorkingDirConfigs() {

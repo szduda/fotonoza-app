@@ -22,6 +22,7 @@ export const createEffectsActions = (
       )
     },
     patchBasicEffects: (photoId, effects) => {
+      let toPersist: ReturnType<typeof buildPhotoPersistPayload> | null = null
       set(
         produce((current: StoreShape) => {
           const photo = current.present.photos.find((p) => p.id === photoId)
@@ -31,9 +32,14 @@ export const createEffectsActions = (
             ...photo.basicEffects,
             ...effects,
           }
-          void savePhotoState(photo)
+          toPersist = buildPhotoPersistPayload(photo)
         }),
       )
+      if (toPersist) {
+        void savePhotoState(toPersist).catch(() => {
+          // Persistence is best-effort; UI state remains authoritative.
+        })
+      }
     },
     setEditPreview: (photoId, path) => {
       set(
@@ -51,5 +57,15 @@ export const createEffectsActions = (
         }),
       )
     },
+  }
+}
+
+const buildPhotoPersistPayload = (
+  photo: StoreShape["present"]["photos"][number],
+): StoreShape["present"]["photos"][number] => {
+  return {
+    ...photo,
+    adjustments: [...photo.adjustments],
+    basicEffects: photo.basicEffects ? { ...photo.basicEffects } : undefined,
   }
 }

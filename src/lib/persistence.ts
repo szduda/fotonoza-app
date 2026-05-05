@@ -16,13 +16,24 @@ export type LoadedStore = {
 
 type DiskRoot = AppState & { undoPast?: AppState[]; undoFuture?: AppState[] }
 
+const stripPhotoLocalState = (state: AppState): AppState => ({
+  ...state,
+  photos: state.photos.map((photo) => ({
+    ...photo,
+    basicEffects: undefined,
+  })),
+})
+
 export const saveStoreSnapshot = async (
   present: AppState,
   past: AppState[],
   future: AppState[],
 ): Promise<void> => {
+  const presentDisk = stripPhotoLocalState(present)
+  const pastDisk = past.map(stripPhotoLocalState)
+  const futureDisk = future.map(stripPhotoLocalState)
   await invoke("save_app_state", {
-    snapshot: { ...present, undoPast: past, undoFuture: future },
+    snapshot: { ...presentDisk, undoPast: pastDisk, undoFuture: futureDisk },
   })
 }
 
