@@ -1,4 +1,5 @@
 use crate::controllers::darktable::{output_ext, run_darktable_export};
+use crate::controllers::preview::render_basic_effects_image;
 use crate::types::{ExportJobStatus, ExportSettings, ExportTaskPhoto};
 use std::collections::HashMap;
 use std::fs;
@@ -9,6 +10,14 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 static EXPORT_JOBS: LazyLock<Mutex<HashMap<String, ExportJobStatus>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
+
+fn is_rgb_source(path: &str) -> bool {
+    std::path::Path::new(path)
+        .extension()
+        .and_then(|e| e.to_str())
+        .map(|e| matches!(e.to_ascii_lowercase().as_str(), "jpg" | "jpeg" | "png"))
+        .unwrap_or(false)
+}
 
 fn next_available_output_path(dir: &Path, source_name: &str, ext: &str) -> PathBuf {
     let stem = Path::new(source_name)
@@ -81,7 +90,24 @@ pub fn start_export_job(
         let ext = output_ext(&settings.format).to_string();
         for photo in photos {
             let output_path = next_available_output_path(&output_dir, &photo.file_name, &ext);
-            let result = run_darktable_export(&photo.source_path, &output_path, &settings);
+            let result = if let Some(fx) = &photo.basic_effects {
+                if !is_rgb_source(&photo.source_path) {
+                    run_darktable_export(&photo.source_path, &output_path, &settings)
+                } else {
+                    render_basic_effects_image(
+                        &photo.source_path,
+                        fx.exposure,
+                        fx.contrast,
+                        fx.saturation,
+                        settings.max_width,
+                        settings.max_height,
+                        settings.dont_enlarge,
+                    )
+                    .and_then(|img| img.save(&output_path).map_err(|e| e.to_string()))
+                }
+            } else {
+                run_darktable_export(&photo.source_path, &output_path, &settings)
+            };
 
             if let Ok(mut jobs) = EXPORT_JOBS.lock() {
                 if let Some(status) = jobs.get_mut(&worker_job_id) {

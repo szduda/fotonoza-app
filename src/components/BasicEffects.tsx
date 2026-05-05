@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactElement } from "react"
-import { loadPhotoState, renderBasicEffectsPreview } from "@/lib/persistence"
+import { loadPhotoState } from "@/lib/persistence"
 import { useAppStore } from "@/store/appStore"
 import { t } from "@/lib/i18n"
 import type { BasicEffectsState, Photo } from "@/types/domain"
@@ -7,7 +7,6 @@ import { defaultBasicEffects } from "@/types/domain"
 import { chrome } from "./layout/chromeTheme"
 import { ToggledPanel } from "./generic/ToggledPanel"
 
-const PREVIEW_MS = 90
 const PERSIST_MS = 280
 
 const isBasicFx = (v: unknown): v is BasicEffectsState => {
@@ -64,10 +63,6 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
   const localRef = useRef(local)
   localRef.current = local
 
-  const previewTargetRef = useRef({ id: selectedPhoto.id, path: selectedPhoto.sourcePath })
-  previewTargetRef.current = { id: selectedPhoto.id, path: selectedPhoto.sourcePath }
-
-  const previewTimer = useRef(0)
   const persistTimer = useRef(0)
 
   useEffect(() => {
@@ -87,34 +82,6 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
     }
   }, [selectedPhoto.id, selectedPhoto.fileName])
 
-  const runPreview = useCallback(async () => {
-    const target = previewTargetRef.current
-    const L = localRef.current
-    const { adjustEditPreviewPending, setEditPreview } = useAppStore.getState().actions
-    adjustEditPreviewPending(1)
-    try {
-      const path = await renderBasicEffectsPreview(
-        target.path,
-        L.exposure,
-        L.contrast,
-        L.saturation,
-      )
-      if (previewTargetRef.current.id !== target.id) return
-      setEditPreview(target.id, path)
-    } catch {
-      /* optional */
-    } finally {
-      adjustEditPreviewPending(-1)
-    }
-  }, [])
-
-  const schedulePreview = useCallback(() => {
-    window.clearTimeout(previewTimer.current)
-    previewTimer.current = window.setTimeout(() => {
-      void runPreview()
-    }, PREVIEW_MS)
-  }, [runPreview])
-
   const schedulePersist = useCallback(() => {
     window.clearTimeout(persistTimer.current)
     persistTimer.current = window.setTimeout(() => {
@@ -126,19 +93,19 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
     setLocal((prev) => {
       const next = { ...prev, ...patch }
       localRef.current = next
+      useAppStore.getState().actions.mergePhotoFromDisk(selectedPhoto.id, {
+        basicEffects: next,
+      })
       return next
     })
-    schedulePreview()
     schedulePersist()
   }
 
   useEffect(() => {
-    void runPreview()
     return () => {
-      window.clearTimeout(previewTimer.current)
       window.clearTimeout(persistTimer.current)
     }
-  }, [selectedPhoto.id, selectedPhoto.sourcePath, runPreview])
+  }, [selectedPhoto.id])
 
   return (
     <ToggledPanel
@@ -148,10 +115,6 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
       defaultOpen
     >
       <div className="space-y-3 px-1 pb-2 pt-1">
-        {/* Live preview uses a fast RGB path in the app. Sidecar JSON is saved under your home in{" "}
-          <code className="text-neutral-500">{FOTONOZA_IMPORT_DIR_NAME}</code> as a dotfile named
-          after the photo file. Use <code className="text-neutral-500">run_darktable_operation</code>{" "}
-          with an XMP when you wire a full raw pipeline. */}
         <SliderRow
           label="Exposure (EV)"
           min={-3}
@@ -164,15 +127,15 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
           label="Contrast"
           min={0.5}
           max={1.5}
-          step={0.02}
+          step={0.01}
           value={local.contrast}
           onChange={(v) => onSlider({ contrast: v })}
         />
         <SliderRow
           label="Saturation"
           min={0}
-          max={1.5}
-          step={0.02}
+          max={2}
+          step={0.01}
           value={local.saturation}
           onChange={(v) => onSlider({ saturation: v })}
         />

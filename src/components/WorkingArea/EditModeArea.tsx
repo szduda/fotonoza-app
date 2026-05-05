@@ -4,6 +4,8 @@ import { useAppStore } from "@/store/appStore"
 import { Spinner } from "@/components/generic/Spinner"
 import { chrome } from "@/components/layout/chromeTheme"
 import type { EditModeModel } from "./hooks/useEditMode"
+import { GpuPreviewCanvas } from "./components/GpuPreviewCanvas"
+import { defaultBasicEffects } from "@/types/domain"
 
 export const EditModeArea = (props: EditModeModel): ReactElement => {
   const { locale } = useAppStore((s) => s.present)
@@ -49,25 +51,15 @@ export const EditModeArea = (props: EditModeModel): ReactElement => {
           </div>
         )}
         {selectedPhoto && editImageSrc && !imageFailed && (
-          <img
+          <GpuPreviewCanvas
             key={`${editImageSrc}-${previewEpoch}`}
             src={editImageSrc}
             alt={selectedPhoto.fileName}
-            draggable={false}
-            onLoad={(event) => {
-              const img = event.currentTarget
-              setImageNatural({
-                width: img.naturalWidth,
-                height: img.naturalHeight,
-              })
-            }}
-            onError={() => setImageFailed(true)}
-            className="pointer-events-none absolute left-1/2 top-1/2 max-h-none max-w-none select-none"
-            style={{
-              width: rendered.width,
-              height: rendered.height,
-              transform: `translate(calc(-50% + ${pan.x}px), calc(-50% + ${pan.y}px))`,
-            }}
+            rendered={rendered}
+            pan={pan}
+            effects={{ ...defaultBasicEffects(), ...selectedPhoto.basicEffects }}
+            onImageNatural={setImageNatural}
+            onImageError={() => setImageFailed(true)}
           />
         )}
         {editPreviewPending > 0 && <Spinner />}

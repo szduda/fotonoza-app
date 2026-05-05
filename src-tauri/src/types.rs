@@ -116,9 +116,19 @@ pub struct ExportSettings {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct BasicEffects {
+    pub exposure: f32,
+    pub contrast: f32,
+    pub saturation: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ExportTaskPhoto {
     pub source_path: String,
     pub file_name: String,
+    #[serde(default)]
+    pub basic_effects: Option<BasicEffects>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

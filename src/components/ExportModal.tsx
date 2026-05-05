@@ -47,7 +47,11 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
   const onStartExport = async () => {
     if (selectedPhotos.length === 0) return
     await start(
-      selectedPhotos.map((photo) => ({ sourcePath: photo.sourcePath, fileName: photo.fileName })),
+      selectedPhotos.map((photo) => ({
+        sourcePath: photo.sourcePath,
+        fileName: photo.fileName,
+        basicEffects: photo.basicEffects,
+      })),
       exportSettings,
     )
     onClose()

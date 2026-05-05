@@ -44,6 +44,7 @@ export interface ExportSettings {
 export interface ExportTaskPhoto {
   sourcePath: string
   fileName: string
+  basicEffects?: BasicEffectsState
 }
 
 export interface ExportJobStatus {

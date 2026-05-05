@@ -1,5 +1,5 @@
 use crate::controllers::paths::{fotonoza_import_dir, preview_dir};
-use image::RgbImage;
+use image::{DynamicImage, GenericImageView, RgbImage, imageops::FilterType};
 use std::fs;
 use std::hash::{Hash, Hasher};
 use std::path::Path;
@@ -38,6 +38,62 @@ fn apply_basic_effects_rgb(r: f32, g: f32, b: f32, exposure_ev: f32, contrast: f
     (clamp01(r), clamp01(g), clamp01(b))
 }
 
+pub fn render_basic_effects_image(
+    source_path: &str,
+    exposure_ev: f32,
+    contrast: f32,
+    saturation: f32,
+    max_width: u32,
+    max_height: u32,
+    dont_enlarge: bool,
+) -> Result<DynamicImage, String> {
+    if !Path::new(source_path).exists() {
+        return Err("Source image does not exist".to_string());
+    }
+    let img = image::open(source_path).map_err(|e| e.to_string())?;
+    let resized = resize_to_settings(img, max_width, max_height, dont_enlarge);
+    let rgb = resized.to_rgb8();
+    let (w, h) = rgb.dimensions();
+    let mut out = RgbImage::new(w, h);
+
+    for (x, y, px) in rgb.enumerate_pixels() {
+        let r = px[0] as f32 / 255.0;
+        let g = px[1] as f32 / 255.0;
+        let b = px[2] as f32 / 255.0;
+        let (nr, ng, nb) = apply_basic_effects_rgb(r, g, b, exposure_ev, contrast, saturation);
+        out.put_pixel(
+            x,
+            y,
+            image::Rgb([
+                (nr * 255.0).round() as u8,
+                (ng * 255.0).round() as u8,
+                (nb * 255.0).round() as u8,
+            ]),
+        );
+    }
+
+    Ok(DynamicImage::ImageRgb8(out))
+}
+
+fn resize_to_settings(
+    img: DynamicImage,
+    max_width: u32,
+    max_height: u32,
+    dont_enlarge: bool,
+) -> DynamicImage {
+    let (w, h) = img.dimensions();
+    if w == 0 || h == 0 || max_width == 0 || max_height == 0 {
+        return img;
+    }
+    if dont_enlarge && w <= max_width && h <= max_height {
+        return img;
+    }
+    if w <= max_width && h <= max_height {
+        return img;
+    }
+    img.resize(max_width, max_height, FilterType::Lanczos3)
+}
+
 fn preview_output_path(source_path: &str) -> Result<PathBuf, String> {
     let import = fotonoza_import_dir()?;
     let prev = preview_dir(&import);
@@ -59,32 +115,15 @@ fn render_basic_effects_preview_inner(
     if !Path::new(&source_path).exists() {
         return Err("Source image does not exist".to_string());
     }
-    let img = image::open(&source_path).map_err(|e| e.to_string())?;
-    let max_side = 2048u32;
-    let img = if img.width() > max_side || img.height() > max_side {
-        img.thumbnail(max_side, max_side)
-    } else {
-        img
-    };
-    let rgb = img.to_rgb8();
-    let (w, h) = (rgb.width(), rgb.height());
-    let mut out = RgbImage::new(w, h);
-
-    for (x, y, px) in rgb.enumerate_pixels() {
-        let r = px[0] as f32 / 255.0;
-        let g = px[1] as f32 / 255.0;
-        let b = px[2] as f32 / 255.0;
-        let (nr, ng, nb) = apply_basic_effects_rgb(r, g, b, exposure_ev, contrast, saturation);
-        out.put_pixel(
-            x,
-            y,
-            image::Rgb([
-                (nr * 255.0).round() as u8,
-                (ng * 255.0).round() as u8,
-                (nb * 255.0).round() as u8,
-            ]),
-        );
-    }
+    let out = render_basic_effects_image(
+        &source_path,
+        exposure_ev,
+        contrast,
+        saturation,
+        2048,
+        2048,
+        true,
+    )?;
 
     let out_path = preview_output_path(&source_path)?;
     let mut tmp_name = out_path
