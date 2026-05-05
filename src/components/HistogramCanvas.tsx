@@ -34,7 +34,7 @@ function seriesToArea(
 
 export function HistogramCanvas({
   width = 280,
-  height = 120,
+  height = 160,
 }: HistogramCanvasProps): ReactElement {
   const { data, loading } = useHistogramForEdit();
 
@@ -118,7 +118,7 @@ export function HistogramCanvas({
     <div
       className="rounded-md border border-neutral-600/50 bg-neutral-500/20 overflow-hidden"
       style={{ height: `${stageHeight}px` }}>
-      <div ref={hostRef} className="h-[120px] w-full overflow-hidden">
+      <div ref={hostRef} className="w-full overflow-hidden" style={{ height: `${stageHeight}px` }}>
         {showSkeleton ? (
           <div className="h-full w-full animate-pulse rounded bg-neutral-700/30">
             <div className="h-full w-full bg-[linear-gradient(120deg,transparent_25%,rgba(255,255,255,0.08)_50%,transparent_75%)] bg-[length:200%_100%] animate-[pulse_1.3s_ease-in-out_infinite]" />

@@ -1,7 +1,6 @@
 import type { ReactElement } from "react";
 
-/** Which inner seam the resize grips sit on (inside the panel, toward the working area). */
-export type PanelResizeEdge = "innerBottom" | "innerTop" | "innerRight" | "innerLeft";
+export type PanelResizeEdge = "bottom" | "top" | "right" | "left";
 
 type PointerHandlers = {
   onPointerDown: (e: React.PointerEvent) => void;
@@ -9,6 +8,56 @@ type PointerHandlers = {
   onPointerUp: (e: React.PointerEvent) => void;
   onPointerCancel: (e: React.PointerEvent) => void;
 };
+
+type EdgeCfg = {
+  orientation: "horizontal" | "vertical";
+  collapsed: string;
+  expanded: string;
+};
+
+const edges: Record<PanelResizeEdge, EdgeCfg> = {
+  bottom: {
+    orientation: "horizontal",
+    collapsed: "bottom-0 left-10 right-10",
+    expanded: "bottom-0 left-0 right-0",
+  },
+  top: {
+    orientation: "horizontal",
+    collapsed: "left-10 right-10 top-0",
+    expanded: "left-0 right-0 top-0",
+  },
+  right: {
+    orientation: "vertical",
+    collapsed: "right-0 top-10 bottom-10",
+    expanded: "right-0 top-0 bottom-0",
+  },
+  left: {
+    orientation: "vertical",
+    collapsed: "left-0 top-10 bottom-10",
+    expanded: "left-0 top-0 bottom-0",
+  },
+};
+
+const GRIP_BASE = "absolute z-10";
+
+function axisClasses(orientation: "horizontal" | "vertical"): string {
+  return orientation === "horizontal" ? "h-2.5 cursor-row-resize" : "w-3 cursor-col-resize";
+}
+
+function ResizeGrip({
+  orientation,
+  layoutClass,
+  ...ptr
+}: {
+  orientation: "horizontal" | "vertical";
+  layoutClass: string;
+} & PointerHandlers): ReactElement {
+  const classes = [GRIP_BASE, axisClasses(orientation), layoutClass].join(" ");
+
+  return (
+    <div role="separator" aria-orientation={orientation} className={classes} {...ptr} />
+  );
+}
 
 export function PanelResizeHandles({
   edge,
@@ -18,106 +67,8 @@ export function PanelResizeHandles({
   edge: PanelResizeEdge;
   collapsed: boolean;
 } & PointerHandlers): ReactElement {
-  if (edge === "innerBottom") {
-    return collapsed ? (
-      <div
-        role="separator"
-        aria-orientation="horizontal"
-        className="absolute bottom-0 left-10 right-10 z-20 h-2.5 cursor-row-resize"
-        {...ptr}
-      />
-    ) : (
-      <>
-        <div
-          role="separator"
-          aria-orientation="horizontal"
-          className="absolute bottom-0 left-0 z-20 h-2.5 w-[calc(50%-40px)] cursor-row-resize"
-          {...ptr}
-        />
-        <div
-          role="separator"
-          aria-orientation="horizontal"
-          className="absolute bottom-0 right-0 z-20 h-2.5 w-[calc(50%-40px)] cursor-row-resize"
-          {...ptr}
-        />
-      </>
-    );
-  }
-
-  if (edge === "innerTop") {
-    return collapsed ? (
-      <div
-        role="separator"
-        aria-orientation="horizontal"
-        className="absolute left-10 right-10 top-0 z-20 h-2.5 cursor-row-resize"
-        {...ptr}
-      />
-    ) : (
-      <>
-        <div
-          role="separator"
-          aria-orientation="horizontal"
-          className="absolute left-0 top-0 z-20 h-2.5 w-[calc(50%-40px)] cursor-row-resize"
-          {...ptr}
-        />
-        <div
-          role="separator"
-          aria-orientation="horizontal"
-          className="absolute right-0 top-0 z-20 h-2.5 w-[calc(50%-40px)] cursor-row-resize"
-          {...ptr}
-        />
-      </>
-    );
-  }
-
-  if (edge === "innerRight") {
-    return collapsed ? (
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        className="absolute right-0 top-10 bottom-10 z-20 w-3 cursor-col-resize"
-        {...ptr}
-      />
-    ) : (
-      <>
-        <div
-          role="separator"
-          aria-orientation="vertical"
-          className="absolute right-0 top-2 z-20 h-[calc(50%-2.25rem)] w-3 cursor-col-resize"
-          {...ptr}
-        />
-        <div
-          role="separator"
-          aria-orientation="vertical"
-          className="absolute bottom-2 right-0 z-20 h-[calc(50%-2.25rem)] w-3 cursor-col-resize"
-          {...ptr}
-        />
-      </>
-    );
-  }
-
-  /* innerLeft */
-  return collapsed ? (
-    <div
-      role="separator"
-      aria-orientation="vertical"
-      className="absolute left-0 top-10 bottom-10 z-20 w-3 cursor-col-resize"
-      {...ptr}
-    />
-  ) : (
-    <>
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        className="absolute left-0 top-2 z-20 h-[calc(50%-2.25rem)] w-3 cursor-col-resize"
-        {...ptr}
-      />
-      <div
-        role="separator"
-        aria-orientation="vertical"
-        className="absolute bottom-2 left-0 z-20 h-[calc(50%-2.25rem)] w-3 cursor-col-resize"
-        {...ptr}
-      />
-    </>
-  );
+  const cfg = edges[edge];
+  const layout = collapsed ? cfg.collapsed : cfg.expanded;
+  
+  return <ResizeGrip orientation={cfg.orientation} layoutClass={layout} {...ptr} />;
 }

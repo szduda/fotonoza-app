@@ -35,10 +35,10 @@ const EDGE_BORDER: Record<ChromeEdgePosition, string> = {
 
 /** Resize seam on the side of the strip that faces the working area. */
 const EDGE_RESIZE: Record<ChromeEdgePosition, PanelResizeEdge> = {
-  top: "innerBottom",
-  bottom: "innerTop",
-  left: "innerRight",
-  right: "innerLeft"
+  top: "bottom",
+  bottom: "top",
+  left: "right",
+  right: "left"
 };
 
 /** Collapse control sits on the opposite edge from the strip’s dock side. */

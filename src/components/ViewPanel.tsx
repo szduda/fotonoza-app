@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { Button } from "./Button";
-import { MinusIcon } from "./WorkingArea/components/MinusIcon";
-import { PlusIcon } from "./WorkingArea/components/PlusIcon";
+import { MinusIcon } from "./icons/MinusIcon";
+import { PlusIcon } from "./icons/PlusIcon";
 import { ToggledPanel } from "./ToggledPanel";
 
 export function ViewPanel({

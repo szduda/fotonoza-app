@@ -1,4 +1,5 @@
-import type { ReactElement } from "react";
+import type { PointerEvent as ReactPointerEvent, ReactElement } from "react";
+import { CollapseChevronIcon } from "../icons/CollapseChevronIcon";
 import { chrome } from "./chromeTheme";
 
 export type CollapseButtonPosition = "top" | "bottom" | "left" | "right";
@@ -14,11 +15,12 @@ const POSITION_CLASS: Record<CollapseButtonPosition, string> = {
   right: "-right-3 top-1/2 -translate-y-1/2"
 };
 
-const REVEAL_ON_EXPAND: Record<ChromeGroup, string> = {
-  top: "opacity-0 group-hover/top:opacity-100",
-  left: "opacity-0 group-hover/left:opacity-100",
-  right: "opacity-0 group-hover/right:opacity-100",
-  timeline: "opacity-0 group-hover/timeline:opacity-100"
+/** Group-hover tail only (shared expand prefix is inlined on `reveal`). */
+const GROUP_HOVER_REVEAL: Record<ChromeGroup, string> = {
+  top: "group-hover/top:opacity-100 group-hover/top:pointer-events-auto",
+  left: "group-hover/left:opacity-100 group-hover/left:pointer-events-auto",
+  right: "group-hover/right:opacity-100 group-hover/right:pointer-events-auto",
+  timeline: "group-hover/timeline:opacity-100 group-hover/timeline:pointer-events-auto"
 };
 
 const REGION_LABEL: Record<CollapseButtonRegion, string> = {
@@ -56,27 +58,6 @@ function title(region: CollapseButtonRegion, collapsed: boolean): string {
   return collapsed ? `Expand ${name}` : `Collapse ${name}`;
 }
 
-function ChevronIcon({ className }: { className: string }): ReactElement {
-  return (
-    <svg
-      className={`size-3.5 shrink-0 transition-transform duration-150 ${className}`}
-      viewBox="0 0 20 20"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <polyline
-        points="7 5 13 10 7 15"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function CollapseButton({
   position,
   region,
@@ -90,18 +71,26 @@ export function CollapseButton({
   onClick: () => void;
   groupPeer: ChromeGroup;
 }): ReactElement {
-  const reveal = collapsed ? "opacity-100" : REVEAL_ON_EXPAND[groupPeer];
+  const reveal = collapsed
+    ? "opacity-100"
+    : `opacity-0 pointer-events-none ${GROUP_HOVER_REVEAL[groupPeer]}`;
   const rotate = chevronRotateClass(region, position, collapsed);
+
+  const stopPtr = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+  };
 
   return (
     <button
       type="button"
       title={title(region, collapsed)}
       onClick={onClick}
-      className={`pointer-events-auto z-50 transition-opacity ${chrome.collapseBtn} absolute ${POSITION_CLASS[position]} ${reveal}`}
+      onPointerDown={stopPtr}
+      onPointerDownCapture={stopPtr}
+      className={`absolute z-30 transition-opacity ${chrome.collapseBtn} pointer-events-auto ${POSITION_CLASS[position]} ${reveal}`}
     >
       <span className={`inline-flex text-current ${chrome.mutedText}`}>
-        <ChevronIcon className={rotate} />
+        <CollapseChevronIcon className={rotate} />
       </span>
     </button>
   );

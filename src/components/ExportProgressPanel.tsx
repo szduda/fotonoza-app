@@ -4,6 +4,7 @@ import { Button } from "./Button";
 import { ToggledPanel } from "./ToggledPanel";
 import { chrome } from "./layout/chromeTheme";
 import { useExportMonitor } from "../hooks/useExportMonitor";
+import { DoneIcon } from "./icons/DoneIcon";
 
 export function ExportProgressPanel(): ReactElement | null {
   const { status, isVisible, isFinished, close } = useExportMonitor();
@@ -44,13 +45,5 @@ export function ExportProgressPanel(): ReactElement | null {
         </div>
       </ToggledPanel>
     </div>
-  );
-}
-
-function DoneIcon(): ReactElement {
-  return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="m5 13 4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
   );
 }

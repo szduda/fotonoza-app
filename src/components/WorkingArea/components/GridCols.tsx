@@ -3,8 +3,8 @@ import { Button } from "../../Button";
 import { chrome } from "../../layout/chromeTheme";
 import { VIEW_GRID_COLS_DEFAULT, VIEW_GRID_COLS_MAX, VIEW_GRID_COLS_MIN } from "../constants";
 import { GridColsContext, useGridCols } from "../hooks/useGridCols";
-import { MinusIcon } from "./MinusIcon";
-import { PlusIcon } from "./PlusIcon";
+import { MinusIcon } from "../../icons/MinusIcon";
+import { PlusIcon } from "../../icons/PlusIcon";
 
 export function GridColsProvider({ children }: { children: ReactNode }): ReactElement {
   const [viewGridCols, setViewGridCols] = useState(VIEW_GRID_COLS_DEFAULT);
