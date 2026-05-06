@@ -90,15 +90,28 @@ pub fn start_export_job(
         let ext = output_ext(&settings.format).to_string();
         for photo in photos {
             let output_path = next_available_output_path(&output_dir, &photo.file_name, &ext);
-            let result = if let Some(fx) = &photo.basic_effects {
+            let has_live_fx = photo.basic_effects.is_some() || photo.shadows_highlights.is_some();
+            let result = if has_live_fx {
                 if !is_rgb_source(&photo.source_path) {
                     run_darktable_export(&photo.source_path, &output_path, &settings)
                 } else {
+                    let fx = photo.basic_effects.as_ref();
                     render_basic_effects_image(
                         &photo.source_path,
-                        fx.exposure,
-                        fx.contrast,
-                        fx.saturation,
+                        fx.map(|v| v.exposure).unwrap_or(0.0),
+                        fx.map(|v| v.contrast).unwrap_or(1.0),
+                        fx.map(|v| v.contrast_balance).unwrap_or(0.0),
+                        fx.map(|v| v.clarity).unwrap_or(0.0),
+                        fx.map(|v| v.vibrance).unwrap_or(0.0),
+                        fx.map(|v| v.saturation).unwrap_or(1.0),
+                        photo.shadows_highlights.as_ref().map(|v| v.shadows).unwrap_or(0.0),
+                        photo.shadows_highlights.as_ref().map(|v| v.darks).unwrap_or(0.0),
+                        photo.shadows_highlights.as_ref().map(|v| v.lights).unwrap_or(0.0),
+                        photo
+                            .shadows_highlights
+                            .as_ref()
+                            .map(|v| v.highlights)
+                            .unwrap_or(0.0),
                         settings.max_width,
                         settings.max_height,
                         settings.dont_enlarge,

@@ -1,4 +1,12 @@
-import type { AppMode, AppState, BasicEffectsState, Photo, UiLayoutState } from "@/types/domain"
+import type {
+  AppMode,
+  AppState,
+  BasicEffectsState,
+  DarktableFxState,
+  Photo,
+  ShadowsHighlightsState,
+  UiLayoutState,
+} from "@/types/domain"
 
 export interface AppActions {
   initialize: () => Promise<void>
@@ -11,6 +19,8 @@ export interface AppActions {
   declinePhoto: (photoId: string) => void
   mergePhotoFromDisk: (photoId: string, partial: Partial<Photo>) => void
   patchBasicEffects: (photoId: string, effects: Partial<BasicEffectsState>) => void
+  patchShadowsHighlights: (photoId: string, fx: Partial<ShadowsHighlightsState>) => void
+  patchDarktableFx: (photoId: string, fx: Partial<DarktableFxState>) => void
   setEditPreview: (photoId: string | undefined, path: string | undefined) => void
   adjustEditPreviewPending: (delta: number) => void
   undo: () => void

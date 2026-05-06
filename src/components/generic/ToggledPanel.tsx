@@ -6,7 +6,7 @@ type ToggledPanelProps = {
   id: string
   label: ReactNode
   children: ReactNode
-  height: number | string
+  height?: number | string
   defaultOpen?: boolean
   contentRef?: RefObject<HTMLDivElement | null>
   className?: string
@@ -16,7 +16,7 @@ export const ToggledPanel = ({
   id,
   label,
   children,
-  height,
+  height = "auto",
   defaultOpen = false,
   contentRef,
   className,

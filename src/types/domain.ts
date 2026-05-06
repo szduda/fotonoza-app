@@ -13,13 +13,43 @@ export interface PhotoAdjustment {
 export interface BasicEffectsState {
   exposure: number
   contrast: number
+  contrastBalance: number
+  clarity: number
+  vibrance: number
   saturation: number
 }
 
 export const defaultBasicEffects = (): BasicEffectsState => ({
   exposure: 0,
   contrast: 1,
+  contrastBalance: 0,
+  clarity: 0,
+  vibrance: 0,
   saturation: 1,
+})
+
+export interface ShadowsHighlightsState {
+  shadows: number
+  darks: number
+  lights: number
+  highlights: number
+}
+
+export const defaultShadowsHighlights = (): ShadowsHighlightsState => ({
+  shadows: 0,
+  darks: 0,
+  lights: 0,
+  highlights: 0,
+})
+
+export interface DarktableFxState {
+  filmicRgb: boolean
+  profiledDenoise: boolean
+}
+
+export const defaultDarktableFx = (): DarktableFxState => ({
+  filmicRgb: false,
+  profiledDenoise: false,
 })
 
 export interface Photo {
@@ -30,6 +60,8 @@ export interface Photo {
   approved: boolean
   adjustments: PhotoAdjustment[]
   basicEffects?: BasicEffectsState
+  shadowsHighlights?: ShadowsHighlightsState
+  darktableFx?: DarktableFxState
 }
 
 export interface ExportSettings {
@@ -45,6 +77,7 @@ export interface ExportTaskPhoto {
   sourcePath: string
   fileName: string
   basicEffects?: BasicEffectsState
+  shadowsHighlights?: ShadowsHighlightsState
 }
 
 export interface ExportJobStatus {
@@ -129,6 +162,9 @@ export interface TranslationSchema {
     histogram: string
     effects: string
     basicEffects: string
+    shadowsHighlights: string
+    filmicRgb: string
+    denoiseProfiled: string
     filmstrip: string
     history: string
     noPhotos: string

@@ -1,7 +1,13 @@
-import { useEffect, useState } from "react"
+import { useEffect, useSyncExternalStore, useState } from "react"
 import { loadCachedHistogram, peekHistogramCache } from "@/lib/histogramCache"
+import {
+  clearLiveHistogram,
+  getLiveHistogramSnapshot,
+  subscribeLiveHistogram,
+} from "@/lib/liveHistogram"
 import { useAppStore } from "@/store/appStore"
 import type { HistogramData } from "@/types/domain"
+import { defaultBasicEffects, defaultDarktableFx, defaultShadowsHighlights } from "@/types/domain"
 
 export const useHistogramForEdit = (): {
   data: HistogramData | undefined
@@ -9,6 +15,7 @@ export const useHistogramForEdit = (): {
 } => {
   const { mode, photos, currentPhotoId } = useAppStore((s) => s.present)
   const selectedPhoto = photos.find((p) => p.id === currentPhotoId)
+  const live = useSyncExternalStore(subscribeLiveHistogram, getLiveHistogramSnapshot, () => undefined)
   const [histogram, setHistogram] = useState<HistogramData | undefined>(undefined)
   const [histLoading, setHistLoading] = useState(false)
 
@@ -18,8 +25,30 @@ export const useHistogramForEdit = (): {
       setHistLoading(false)
       return
     }
-    const path = selectedPhoto.sourcePath
-    const cached = peekHistogramCache(path)
+    if (live?.photoId === selectedPhoto.id) {
+      setHistogram(live.data)
+      setHistLoading(false)
+      return
+    }
+    const basic = { ...defaultBasicEffects(), ...selectedPhoto.basicEffects }
+    const sh = { ...defaultShadowsHighlights(), ...selectedPhoto.shadowsHighlights }
+    const dt = { ...defaultDarktableFx(), ...selectedPhoto.darktableFx }
+    const key = {
+      path: selectedPhoto.sourcePath,
+      exposureEv: basic.exposure,
+      contrast: basic.contrast,
+      contrastBalance: basic.contrastBalance,
+      clarity: basic.clarity,
+      vibrance: basic.vibrance,
+      saturation: basic.saturation,
+      shadows: sh.shadows,
+      darks: sh.darks,
+      lights: sh.lights,
+      highlights: sh.highlights,
+      filmicRgb: dt.filmicRgb,
+      profiledDenoise: dt.profiledDenoise,
+    }
+    const cached = peekHistogramCache(key)
     if (cached) {
       setHistogram(cached)
       setHistLoading(false)
@@ -28,7 +57,7 @@ export const useHistogramForEdit = (): {
     let active = true
     setHistogram(undefined)
     setHistLoading(true)
-    void loadCachedHistogram(path)
+    void loadCachedHistogram(key)
       .then((data) => {
         if (!active) return
         setHistogram(data)
@@ -43,7 +72,25 @@ export const useHistogramForEdit = (): {
     return () => {
       active = false
     }
-  }, [mode, selectedPhoto?.id, selectedPhoto?.sourcePath])
+  }, [
+    mode,
+    live,
+    selectedPhoto?.id,
+    selectedPhoto?.sourcePath,
+    selectedPhoto?.basicEffects,
+    selectedPhoto?.shadowsHighlights,
+    selectedPhoto?.darktableFx,
+  ])
+
+  useEffect(() => {
+    if (!selectedPhoto?.id) {
+      clearLiveHistogram()
+      return
+    }
+    return () => {
+      clearLiveHistogram(selectedPhoto.id)
+    }
+  }, [selectedPhoto?.id])
 
   return { data: histogram, loading: histLoading }
 }

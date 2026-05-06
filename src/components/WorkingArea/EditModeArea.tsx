@@ -5,7 +5,7 @@ import { Spinner } from "@/components/generic/Spinner"
 import { chrome } from "@/components/layout/chromeTheme"
 import type { EditModeModel } from "./hooks/useEditMode"
 import { GpuPreviewCanvas } from "./components/GpuPreviewCanvas"
-import { defaultBasicEffects } from "@/types/domain"
+import { defaultBasicEffects, defaultShadowsHighlights } from "@/types/domain"
 
 export const EditModeArea = (props: EditModeModel): ReactElement => {
   const { locale } = useAppStore((s) => s.present)
@@ -53,11 +53,13 @@ export const EditModeArea = (props: EditModeModel): ReactElement => {
         {selectedPhoto && editImageSrc && !imageFailed && (
           <GpuPreviewCanvas
             key={`${editImageSrc}-${previewEpoch}`}
+            photoId={selectedPhoto.id}
             src={editImageSrc}
             alt={selectedPhoto.fileName}
             rendered={rendered}
             pan={pan}
             effects={{ ...defaultBasicEffects(), ...selectedPhoto.basicEffects }}
+            sh={{ ...defaultShadowsHighlights(), ...selectedPhoto.shadowsHighlights }}
             onImageNatural={setImageNatural}
             onImageError={() => setImageFailed(true)}
           />

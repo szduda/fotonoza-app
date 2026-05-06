@@ -51,6 +51,7 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
         sourcePath: photo.sourcePath,
         fileName: photo.fileName,
         basicEffects: photo.basicEffects,
+        shadowsHighlights: photo.shadowsHighlights,
       })),
       exportSettings,
     )

@@ -19,6 +19,9 @@
     "histogram": "Histogram",
     "effects": "Efekty",
     "basicEffects": "Podstawowe Efekty",
+    "shadowsHighlights": "Cienie i światła",
+    "filmicRgb": "Filmic RGB",
+    "denoiseProfiled": "Odszumianie profilowane",
     "filmstrip": "Bieżąca kolekcja",
     "history": "Historia",
     "noPhotos": "Brak zdjęć"

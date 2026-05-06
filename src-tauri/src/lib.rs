@@ -2,7 +2,7 @@ mod controllers;
 mod types;
 
 use controllers::app_state::{load_app_state, load_photo_state, save_app_state, save_photo_state};
-use controllers::darktable::{get_photo_histogram, run_darktable_operation};
+use controllers::darktable::{get_photo_histogram, render_darktable_fx_preview, run_darktable_operation};
 use controllers::export::{get_default_export_directory, get_export_job_status, start_export_job};
 use controllers::preview::render_basic_effects_preview;
 
@@ -17,6 +17,7 @@ pub fn run() {
             save_photo_state,
             load_photo_state,
             run_darktable_operation,
+            render_darktable_fx_preview,
             get_photo_histogram,
             render_basic_effects_preview,
             get_default_export_directory,

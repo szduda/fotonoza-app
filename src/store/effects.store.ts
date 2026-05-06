@@ -1,6 +1,6 @@
 import { savePhotoState } from "@/lib/persistence"
 import { produce } from "immer"
-import { defaultBasicEffects } from "@/types/domain"
+import { defaultBasicEffects, defaultDarktableFx, defaultShadowsHighlights } from "@/types/domain"
 import type { AppActions, StoreShape } from "./appStore.types"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
@@ -9,7 +9,12 @@ export const createEffectsActions = (
   set: SetStore,
 ): Pick<
   AppActions,
-  "mergePhotoFromDisk" | "patchBasicEffects" | "setEditPreview" | "adjustEditPreviewPending"
+  | "mergePhotoFromDisk"
+  | "patchBasicEffects"
+  | "patchShadowsHighlights"
+  | "patchDarktableFx"
+  | "setEditPreview"
+  | "adjustEditPreviewPending"
 > => {
   return {
     mergePhotoFromDisk: (photoId, partial) => {
@@ -31,6 +36,46 @@ export const createEffectsActions = (
             ...defaultBasicEffects(),
             ...photo.basicEffects,
             ...effects,
+          }
+          toPersist = buildPhotoPersistPayload(photo)
+        }),
+      )
+      if (toPersist) {
+        void savePhotoState(toPersist).catch(() => {
+          // Persistence is best-effort; UI state remains authoritative.
+        })
+      }
+    },
+    patchShadowsHighlights: (photoId, fx) => {
+      let toPersist: ReturnType<typeof buildPhotoPersistPayload> | null = null
+      set(
+        produce((current: StoreShape) => {
+          const photo = current.present.photos.find((p) => p.id === photoId)
+          if (!photo) return
+          photo.shadowsHighlights = {
+            ...defaultShadowsHighlights(),
+            ...photo.shadowsHighlights,
+            ...fx,
+          }
+          toPersist = buildPhotoPersistPayload(photo)
+        }),
+      )
+      if (toPersist) {
+        void savePhotoState(toPersist).catch(() => {
+          // Persistence is best-effort; UI state remains authoritative.
+        })
+      }
+    },
+    patchDarktableFx: (photoId, fx) => {
+      let toPersist: ReturnType<typeof buildPhotoPersistPayload> | null = null
+      set(
+        produce((current: StoreShape) => {
+          const photo = current.present.photos.find((p) => p.id === photoId)
+          if (!photo) return
+          photo.darktableFx = {
+            ...defaultDarktableFx(),
+            ...photo.darktableFx,
+            ...fx,
           }
           toPersist = buildPhotoPersistPayload(photo)
         }),
@@ -67,5 +112,7 @@ const buildPhotoPersistPayload = (
     ...photo,
     adjustments: [...photo.adjustments],
     basicEffects: photo.basicEffects ? { ...photo.basicEffects } : undefined,
+    shadowsHighlights: photo.shadowsHighlights ? { ...photo.shadowsHighlights } : undefined,
+    darktableFx: photo.darktableFx ? { ...photo.darktableFx } : undefined,
   }
 }

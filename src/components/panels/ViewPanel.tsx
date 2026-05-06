@@ -22,7 +22,7 @@ export const ViewPanel = ({
   canZoomOut: boolean
 }): ReactElement => {
   return (
-    <ToggledPanel id="edit-fit" label="View" height={68} className="border-b border-neutral-600/50">
+    <ToggledPanel id="edit-fit" label="View" className="border-b border-neutral-600/50 pb-2">
       <div className="flex gap-1 px-2 pt-1">
         <Button variant="outlined" size="sm" disabled={!canUseView} onClick={centerView}>
           Center

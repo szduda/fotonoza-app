@@ -11,6 +11,10 @@ pub struct PhotoState {
     pub adjustments: serde_json::Value,
     #[serde(default)]
     pub basic_effects: Option<serde_json::Value>,
+    #[serde(default)]
+    pub shadows_highlights: Option<serde_json::Value>,
+    #[serde(default)]
+    pub darktable_fx: Option<serde_json::Value>,
 }
 
 pub fn default_layout_width() -> u32 {
@@ -119,7 +123,19 @@ pub struct ExportSettings {
 pub struct BasicEffects {
     pub exposure: f32,
     pub contrast: f32,
+    pub contrast_balance: f32,
+    pub clarity: f32,
+    pub vibrance: f32,
     pub saturation: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ShadowsHighlights {
+    pub shadows: f32,
+    pub darks: f32,
+    pub lights: f32,
+    pub highlights: f32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -129,6 +145,8 @@ pub struct ExportTaskPhoto {
     pub file_name: String,
     #[serde(default)]
     pub basic_effects: Option<BasicEffects>,
+    #[serde(default)]
+    pub shadows_highlights: Option<ShadowsHighlights>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

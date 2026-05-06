@@ -4,8 +4,8 @@ import { useAppStore } from "@/store/appStore"
 import { t } from "@/lib/i18n"
 import type { BasicEffectsState, Photo } from "@/types/domain"
 import { defaultBasicEffects } from "@/types/domain"
-import { chrome } from "./layout/chromeTheme"
 import { ToggledPanel } from "./generic/ToggledPanel"
+import { SliderRow } from "./generic/SliderRow"
 
 const PERSIST_MS = 280
 
@@ -19,45 +19,11 @@ const isBasicFx = (v: unknown): v is BasicEffectsState => {
   )
 }
 
-const SliderRow = ({
-  label,
-  min,
-  max,
-  step,
-  value,
-  onChange,
-}: {
-  label: string
-  min: number
-  max: number
-  step: number
-  value: number
-  onChange: (v: number) => void
-}): ReactElement => {
-  const decimals = step < 0.1 ? 2 : 1
-  return (
-    <label className={`flex flex-col gap-1 text-xs ${chrome.mutedText}`}>
-      <span className="flex justify-between font-medium text-[11px] uppercase tracking-wide">
-        <span>{label}</span>
-        <span className="tabular-nums text-neutral-400">{value.toFixed(decimals)}</span>
-      </span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="h-1.5 w-full cursor-pointer accent-neutral-400"
-      />
-    </label>
-  )
-}
-
 export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): ReactElement => {
   const { locale } = useAppStore((s) => s.present)
+  const defaults = defaultBasicEffects()
   const [local, setLocal] = useState<BasicEffectsState>(() => ({
-    ...defaultBasicEffects(),
+    ...defaults,
     ...selectedPhoto.basicEffects,
   }))
   const localRef = useRef(local)
@@ -111,7 +77,6 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
     <ToggledPanel
       id="basic-effects"
       label={t(locale, (m) => m.labels.basicEffects)}
-      height={220}
       defaultOpen
     >
       <div className="space-y-3 px-1 pb-2 pt-1">
@@ -121,6 +86,7 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
           max={3}
           step={0.05}
           value={local.exposure}
+          defaultValue={defaults.exposure}
           onChange={(v) => onSlider({ exposure: v })}
         />
         <SliderRow
@@ -129,7 +95,35 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
           max={1.5}
           step={0.01}
           value={local.contrast}
+          defaultValue={defaults.contrast}
           onChange={(v) => onSlider({ contrast: v })}
+        />
+        <SliderRow
+          label="Contrast Balance"
+          min={-1}
+          max={1}
+          step={0.01}
+          value={local.contrastBalance}
+          defaultValue={defaults.contrastBalance}
+          onChange={(v) => onSlider({ contrastBalance: v })}
+        />
+        <SliderRow
+          label="Clarity"
+          min={-1}
+          max={1}
+          step={0.01}
+          value={local.clarity}
+          defaultValue={defaults.clarity}
+          onChange={(v) => onSlider({ clarity: v })}
+        />
+        <SliderRow
+          label="Vibrance"
+          min={-1}
+          max={1}
+          step={0.01}
+          value={local.vibrance}
+          defaultValue={defaults.vibrance}
+          onChange={(v) => onSlider({ vibrance: v })}
         />
         <SliderRow
           label="Saturation"
@@ -137,6 +131,7 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
           max={2}
           step={0.01}
           value={local.saturation}
+          defaultValue={defaults.saturation}
           onChange={(v) => onSlider({ saturation: v })}
         />
       </div>

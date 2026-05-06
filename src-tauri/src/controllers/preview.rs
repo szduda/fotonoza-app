@@ -19,21 +19,61 @@ fn mix(a: f32, b: f32, t: f32) -> f32 {
     a + (b - a) * t
 }
 
-/// sRGB-ish preview (not full darktable raw pipeline). Fast for slider drags.
-fn apply_basic_effects_rgb(r: f32, g: f32, b: f32, exposure_ev: f32, contrast: f32, sat: f32) -> (f32, f32, f32) {
+fn smoothstep(edge0: f32, edge1: f32, x: f32) -> f32 {
+    let t = ((x - edge0) / (edge1 - edge0)).clamp(0.0, 1.0);
+    t * t * (3.0 - 2.0 * t)
+}
+
+/// Fast shared live look for JPG/PNG preview and export.
+#[allow(clippy::too_many_arguments)]
+fn apply_live_effects_rgb(
+    r: f32,
+    g: f32,
+    b: f32,
+    exposure_ev: f32,
+    contrast: f32,
+    contrast_balance: f32,
+    clarity: f32,
+    vibrance: f32,
+    saturation: f32,
+    shadows: f32,
+    darks: f32,
+    lights: f32,
+    highlights: f32,
+) -> (f32, f32, f32) {
     let lin = 2_f32.powf(exposure_ev);
     let mut r = r * lin;
     let mut g = g * lin;
     let mut b = b * lin;
 
-    r = (r - 0.5) * contrast + 0.5;
-    g = (g - 0.5) * contrast + 0.5;
-    b = (b - 0.5) * contrast + 0.5;
+    let lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    let pivot = (0.5 + contrast_balance * 0.25).clamp(0.2, 0.8);
+    r = (r - pivot) * contrast + pivot;
+    g = (g - pivot) * contrast + pivot;
+    b = (b - pivot) * contrast + pivot;
+
+    let sh = smoothstep(0.0, 0.45, 1.0 - lum);
+    let dk = smoothstep(0.15, 0.6, 1.0 - lum);
+    let lt = smoothstep(0.4, 0.85, lum);
+    let hi = smoothstep(0.65, 1.0, lum);
+    r += shadows * 0.25 * sh + darks * 0.2 * dk + lights * 0.2 * lt + highlights * 0.25 * hi;
+    g += shadows * 0.25 * sh + darks * 0.2 * dk + lights * 0.2 * lt + highlights * 0.25 * hi;
+    b += shadows * 0.25 * sh + darks * 0.2 * dk + lights * 0.2 * lt + highlights * 0.25 * hi;
 
     let lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    r = mix(lum, r, sat);
-    g = mix(lum, g, sat);
-    b = mix(lum, b, sat);
+    let micro = (r + g + b - 3.0 * lum) / 3.0;
+    r += micro * clarity * 0.7;
+    g += micro * clarity * 0.7;
+    b += micro * clarity * 0.7;
+
+    let mx = r.max(g).max(b);
+    let mn = r.min(g).min(b);
+    let ch = (mx - mn).clamp(0.0, 1.0);
+    let vib_t = (1.0 - ch).powf(1.35).clamp(0.0, 1.0);
+    let sat_gain = saturation + vibrance * vib_t;
+    r = mix(lum, r, sat_gain);
+    g = mix(lum, g, sat_gain);
+    b = mix(lum, b, sat_gain);
 
     (clamp01(r), clamp01(g), clamp01(b))
 }
@@ -42,7 +82,14 @@ pub fn render_basic_effects_image(
     source_path: &str,
     exposure_ev: f32,
     contrast: f32,
+    contrast_balance: f32,
+    clarity: f32,
+    vibrance: f32,
     saturation: f32,
+    shadows: f32,
+    darks: f32,
+    lights: f32,
+    highlights: f32,
     max_width: u32,
     max_height: u32,
     dont_enlarge: bool,
@@ -60,7 +107,21 @@ pub fn render_basic_effects_image(
         let r = px[0] as f32 / 255.0;
         let g = px[1] as f32 / 255.0;
         let b = px[2] as f32 / 255.0;
-        let (nr, ng, nb) = apply_basic_effects_rgb(r, g, b, exposure_ev, contrast, saturation);
+        let (nr, ng, nb) = apply_live_effects_rgb(
+            r,
+            g,
+            b,
+            exposure_ev,
+            contrast,
+            contrast_balance,
+            clarity,
+            vibrance,
+            saturation,
+            shadows,
+            darks,
+            lights,
+            highlights,
+        );
         out.put_pixel(
             x,
             y,
@@ -119,7 +180,14 @@ fn render_basic_effects_preview_inner(
         &source_path,
         exposure_ev,
         contrast,
+        0.0,
+        0.0,
+        0.0,
         saturation,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
         2048,
         2048,
         true,

@@ -1,11 +1,14 @@
 import { invoke } from "@tauri-apps/api/core"
 import type {
   AppState,
+  BasicEffectsState,
+  DarktableFxState,
   ExportJobStatus,
   ExportSettings,
   ExportTaskPhoto,
   HistogramData,
   Photo,
+  ShadowsHighlightsState,
 } from "@/types/domain"
 
 export type LoadedStore = {
@@ -21,6 +24,8 @@ const stripPhotoLocalState = (state: AppState): AppState => ({
   photos: state.photos.map((photo) => ({
     ...photo,
     basicEffects: undefined,
+    shadowsHighlights: undefined,
+    darktableFx: undefined,
   })),
 })
 
@@ -81,8 +86,39 @@ export const runDarktableOperation = async (
   await invoke("run_darktable_operation", { photoPath, xmpPath, outputPath })
 }
 
-export const getPhotoHistogram = async (photoPath: string): Promise<HistogramData> => {
-  return invoke<HistogramData>("get_photo_histogram", { photoPath })
+export const renderDarktableFxPreview = async (
+  sourcePath: string,
+  filmicRgb: boolean,
+  profiledDenoise: boolean,
+): Promise<string> => {
+  return invoke<string>("render_darktable_fx_preview", {
+    sourcePath,
+    filmicRgb,
+    profiledDenoise,
+  })
+}
+
+export const getPhotoHistogram = async (
+  photoPath: string,
+  basicEffects: BasicEffectsState,
+  shadowsHighlights: ShadowsHighlightsState,
+  darktableFx: DarktableFxState,
+): Promise<HistogramData> => {
+  return invoke<HistogramData>("get_photo_histogram", {
+    photoPath,
+    exposureEv: basicEffects.exposure,
+    contrast: basicEffects.contrast,
+    contrastBalance: basicEffects.contrastBalance,
+    clarity: basicEffects.clarity,
+    vibrance: basicEffects.vibrance,
+    saturation: basicEffects.saturation,
+    shadows: shadowsHighlights.shadows,
+    darks: shadowsHighlights.darks,
+    lights: shadowsHighlights.lights,
+    highlights: shadowsHighlights.highlights,
+    filmicRgb: darktableFx.filmicRgb,
+    profiledDenoise: darktableFx.profiledDenoise,
+  })
 }
 
 export const getDefaultExportDirectory = async (collectionName: string): Promise<string> => {
