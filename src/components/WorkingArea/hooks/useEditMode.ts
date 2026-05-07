@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -48,8 +49,14 @@ export type EditModeModel = {
 }
 
 export const useEditMode = (): EditModeModel => {
-  const { mode, photos, currentPhotoId } = useAppStore((s) => s.present)
+  const mode = useAppStore((s) => s.present.mode)
+  const photos = useAppStore((s) => s.present.photos)
+  const currentPhotoId = useAppStore((s) => s.present.currentPhotoId)
   const actions = useAppStore((s) => s.actions)
+  const editPreviewPath = useAppStore((s) => s.editPreviewPath)
+  const editPreviewPhotoId = useAppStore((s) => s.editPreviewPhotoId)
+  const previewEpoch = useAppStore((s) => s.editPreviewEpoch)
+
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState<Pan>({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
@@ -60,13 +67,20 @@ export const useEditMode = (): EditModeModel => {
   const dragRef = useRef<{ pointerId: number; lastX: number; lastY: number } | null>(null)
   const previousWorkedPhotoRef = useRef<{ id: string; sourcePath: string } | undefined>(undefined)
 
+  const zoomRef = useRef(zoom)
+  const panRef = useRef(pan)
+  const viewportRefSize = useRef(viewport)
+  const imageNaturalRef = useRef(imageNatural)
+  const renderedRef = useRef<Size>({ width: 0, height: 0 })
+  zoomRef.current = zoom
+  panRef.current = pan
+  viewportRefSize.current = viewport
+  imageNaturalRef.current = imageNatural
+
   const selectedPhoto = useMemo(
     () => photos.find((photo) => photo.id === currentPhotoId),
     [photos, currentPhotoId],
   )
-  const editPreviewPath = useAppStore((s) => s.editPreviewPath)
-  const editPreviewPhotoId = useAppStore((s) => s.editPreviewPhotoId)
-  const previewEpoch = useAppStore((s) => s.editPreviewEpoch)
   const editImageSrc = useMemo(() => {
     if (!selectedPhoto) return ""
     if (editPreviewPath && editPreviewPhotoId === selectedPhoto.id) {
@@ -74,10 +88,19 @@ export const useEditMode = (): EditModeModel => {
     }
     return localImageSrc(selectedPhoto.sourcePath)
   }, [selectedPhoto, editPreviewPath, editPreviewPhotoId])
+
+  const selectedPhotoRef = useRef(selectedPhoto)
+  const editImageSrcRef = useRef(editImageSrc)
+  const imageFailedRef = useRef(imageFailed)
+  selectedPhotoRef.current = selectedPhoto
+  editImageSrcRef.current = editImageSrc
+  imageFailedRef.current = imageFailed
+
   const rendered = useMemo(
     () => fitContainSize(viewport, imageNatural, zoom),
     [viewport, imageNatural, zoom],
   )
+  renderedRef.current = rendered
 
   const canZoomIn = useMemo(() => {
     if (!selectedPhoto || !editImageSrc || imageFailed) return false
@@ -92,11 +115,21 @@ export const useEditMode = (): EditModeModel => {
   }, [zoom, selectedPhoto, editImageSrc, imageFailed])
 
   useEffect(() => {
+    actions.syncEditChrome({
+      canZoomIn,
+      canZoomOut,
+      hasWorkPhoto: !!(selectedPhoto && editImageSrc && !imageFailed),
+    })
+  }, [actions, canZoomIn, canZoomOut, selectedPhoto, editImageSrc, imageFailed])
+
+  useEffect(() => {
     const node = viewportRef.current
     if (!node || mode !== "edit") return
     const measure = () => {
       const rect = node.getBoundingClientRect()
-      setViewport({ width: rect.width, height: rect.height })
+      const w = Math.round(rect.width)
+      const h = Math.round(rect.height)
+      setViewport((prev) => (prev.width === w && prev.height === h ? prev : { width: w, height: h }))
     }
     measure()
     const obs = new ResizeObserver(measure)
@@ -104,22 +137,28 @@ export const useEditMode = (): EditModeModel => {
     return () => obs.disconnect()
   }, [mode])
 
-  const fitToView = () => {
+  const fitToView = useCallback(() => {
     setZoom(1)
     setPan({ x: 0, y: 0 })
-  }
+  }, [])
 
-  const centerView = () => {
+  const centerView = useCallback(() => {
     setPan({ x: 0, y: 0 })
-  }
+  }, [])
 
-  const applyZoomAtCenter = (nextZoom: number) => {
-    if (!selectedPhoto || !editImageSrc || imageFailed) return
-    const currentZoom = zoom
+  const applyZoomAtCenter = useCallback((nextZoom: number) => {
+    const sel = selectedPhotoRef.current
+    const src = editImageSrcRef.current
+    if (!sel || !src || imageFailedRef.current) return
+
+    const currentZoom = zoomRef.current
+    const pan = panRef.current
+    const vp = viewportRefSize.current
+    const nat = imageNaturalRef.current
     if (nextZoom === currentZoom) return
 
-    const currentRendered = fitContainSize(viewport, imageNatural, currentZoom)
-    const nextRendered = fitContainSize(viewport, imageNatural, nextZoom)
+    const currentRendered = fitContainSize(vp, nat, currentZoom)
+    const nextRendered = fitContainSize(vp, nat, nextZoom)
     if (
       currentRendered.width <= 0 ||
       currentRendered.height <= 0 ||
@@ -142,18 +181,28 @@ export const useEditMode = (): EditModeModel => {
     }
 
     setZoom(nextZoom)
-    setPan(clampPan(nextPan, nextRendered, viewport))
-  }
+    setPan(clampPan(nextPan, nextRendered, vp))
+  }, [])
 
-  const zoomIn = () => {
-    if (!canZoomIn) return
-    applyZoomAtCenter(clamp(zoom * EDIT_ZOOM_STEP, EDIT_ZOOM_MIN, EDIT_ZOOM_MAX))
-  }
+  const zoomIn = useCallback(() => {
+    const z = zoomRef.current
+    const sel = selectedPhotoRef.current
+    const src = editImageSrcRef.current
+    if (!sel || !src || imageFailedRef.current) return
+    const next = clamp(z * EDIT_ZOOM_STEP, EDIT_ZOOM_MIN, EDIT_ZOOM_MAX)
+    if (next <= z + 1e-9) return
+    applyZoomAtCenter(next)
+  }, [applyZoomAtCenter])
 
-  const zoomOut = () => {
-    if (!canZoomOut) return
-    applyZoomAtCenter(clamp(zoom / EDIT_ZOOM_STEP, EDIT_ZOOM_MIN, EDIT_ZOOM_MAX))
-  }
+  const zoomOut = useCallback(() => {
+    const z = zoomRef.current
+    const sel = selectedPhotoRef.current
+    const src = editImageSrcRef.current
+    if (!sel || !src || imageFailedRef.current) return
+    const next = clamp(z / EDIT_ZOOM_STEP, EDIT_ZOOM_MIN, EDIT_ZOOM_MAX)
+    if (next >= z - 1e-9) return
+    applyZoomAtCenter(next)
+  }, [applyZoomAtCenter])
 
   useEffect(() => {
     const currentWorked = selectedPhoto
@@ -165,14 +214,18 @@ export const useEditMode = (): EditModeModel => {
       setImageFailed(false)
       previousWorkedPhotoRef.current = currentWorked
     }
-  }, [selectedPhoto])
+  }, [selectedPhoto, fitToView])
 
   useEffect(() => {
     setImageFailed(false)
   }, [editImageSrc, previewEpoch])
 
   useEffect(() => {
-    setPan((prev) => clampPan(prev, rendered, viewport))
+    setPan((prev) => {
+      const next = clampPan(prev, rendered, viewport)
+      if (next.x === prev.x && next.y === prev.y) return prev
+      return next
+    })
   }, [rendered, viewport])
 
   useEffect(() => {
@@ -182,10 +235,17 @@ export const useEditMode = (): EditModeModel => {
     actions.openInEditor(photos[0].id)
   }, [mode, currentPhotoId, photos, actions])
 
-  const onEditWheel = (e: ReactWheelEvent<HTMLDivElement>) => {
-    if (!selectedPhoto || !editImageSrc || imageFailed) return
+  const onEditWheel = useCallback((e: ReactWheelEvent<HTMLDivElement>) => {
+    const sel = selectedPhotoRef.current
+    const src = editImageSrcRef.current
+    if (!sel || !src || imageFailedRef.current) return
     e.preventDefault()
-    const currentZoom = zoom
+
+    const currentZoom = zoomRef.current
+    const pan = panRef.current
+    const vp = viewportRefSize.current
+    const nat = imageNaturalRef.current
+
     const nextZoom =
       e.deltaY > 0
         ? clamp(currentZoom / EDIT_ZOOM_STEP, EDIT_ZOOM_MIN, EDIT_ZOOM_MAX)
@@ -193,8 +253,8 @@ export const useEditMode = (): EditModeModel => {
 
     if (nextZoom === currentZoom) return
 
-    const currentRendered = fitContainSize(viewport, imageNatural, currentZoom)
-    const nextRendered = fitContainSize(viewport, imageNatural, nextZoom)
+    const currentRendered = fitContainSize(vp, nat, currentZoom)
+    const nextRendered = fitContainSize(vp, nat, nextZoom)
     if (
       currentRendered.width <= 0 ||
       currentRendered.height <= 0 ||
@@ -219,26 +279,30 @@ export const useEditMode = (): EditModeModel => {
     }
 
     setZoom(nextZoom)
-    setPan(clampPan(nextPan, nextRendered, viewport))
-  }
+    setPan(clampPan(nextPan, nextRendered, vp))
+  }, [])
 
-  const onEditPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0 || !selectedPhoto || rendered.width <= 0 || rendered.height <= 0) return
+  const onEditPointerDown = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+    const sel = selectedPhotoRef.current
+    const r = renderedRef.current
+    if (e.button !== 0 || !sel || r.width <= 0 || r.height <= 0) return
     dragRef.current = { pointerId: e.pointerId, lastX: e.clientX, lastY: e.clientY }
     setIsDragging(true)
     e.currentTarget.setPointerCapture(e.pointerId)
-  }
+  }, [])
 
-  const onEditPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+  const onEditPointerMove = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current
     if (!drag || drag.pointerId !== e.pointerId) return
     const dx = e.clientX - drag.lastX
     const dy = e.clientY - drag.lastY
     dragRef.current = { ...drag, lastX: e.clientX, lastY: e.clientY }
-    setPan((prev) => clampPan({ x: prev.x + dx, y: prev.y + dy }, rendered, viewport))
-  }
+    const r = renderedRef.current
+    const vp = viewportRefSize.current
+    setPan((prev) => clampPan({ x: prev.x + dx, y: prev.y + dy }, r, vp))
+  }, [])
 
-  const endDrag = (e: ReactPointerEvent<HTMLDivElement>) => {
+  const endDrag = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current
     if (drag && drag.pointerId === e.pointerId) {
       try {
@@ -249,7 +313,7 @@ export const useEditMode = (): EditModeModel => {
       dragRef.current = null
       setIsDragging(false)
     }
-  }
+  }, [])
 
   return {
     selectedPhoto,

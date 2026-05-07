@@ -9,10 +9,10 @@ export type CollapseButtonRegion = "topBar" | "timeline" | "leftSidebar" | "righ
 export type ChromeGroup = "top" | "left" | "right" | "timeline"
 
 const POSITION_CLASS: Record<CollapseButtonPosition, string> = {
-  top: "-top-3 left-1/2 -translate-x-1/2",
-  bottom: "-bottom-3 left-1/2 -translate-x-1/2",
-  left: "-left-3 top-1/2 -translate-y-1/2",
-  right: "-right-3 top-1/2 -translate-y-1/2",
+  top: "-top-2 left-1/2 -translate-x-1/2 h-4 w-6",
+  bottom: "-bottom-2 left-1/2 -translate-x-1/2 h-4 w-6",
+  left: "-left-2 top-1/2 -translate-y-1/2 h-6 w-4",
+  right: "-right-2 top-1/2 -translate-y-1/2 h-6 w-4",
 }
 
 /** Group-hover tail only (shared expand prefix is inlined on `reveal`). */
@@ -58,6 +58,9 @@ const title = (region: CollapseButtonRegion, collapsed: boolean): string => {
   return collapsed ? `Expand ${name}` : `Collapse ${name}`
 }
 
+const BASE_CLASS =
+  "pointer-events-auto z-50 transition-opacity absolute flex shrink-0 cursor-pointer items-center justify-center rounded-md text-neutral-400 border border-neutral-600/30 hover:bg-neutral-800"
+
 export const CollapseButton = ({
   position,
   region,
@@ -72,8 +75,8 @@ export const CollapseButton = ({
   groupPeer: ChromeGroup
 }): ReactElement => {
   const reveal = collapsed
-    ? "opacity-100"
-    : `opacity-0 pointer-events-none ${GROUP_HOVER_REVEAL[groupPeer]}`
+    ? "opacity-0 group-hover/top:opacity-100 group-hover/left:opacity-100 group-hover/right:opacity-100 group-hover/timeline:opacity-100 bg-neutral-950/80"
+    : `opacity-0 pointer-events-none bg-neutral-900/95 ${GROUP_HOVER_REVEAL[groupPeer]}`
   const rotate = chevronRotateClass(region, position, collapsed)
 
   const stopPtr = (e: ReactPointerEvent<HTMLButtonElement>) => {
@@ -87,10 +90,10 @@ export const CollapseButton = ({
       onClick={onClick}
       onPointerDown={stopPtr}
       onPointerDownCapture={stopPtr}
-      className={`absolute z-30 transition-opacity ${chrome.collapseBtn} pointer-events-auto ${POSITION_CLASS[position]} ${reveal}`}
+      className={`${BASE_CLASS} ${POSITION_CLASS[position]} ${reveal}`}
     >
       <span className={`inline-flex text-current ${chrome.mutedText}`}>
-        <CollapseChevronIcon className={rotate} />
+        <CollapseChevronIcon className={rotate} sizeClass="size-3" />
       </span>
     </button>
   )

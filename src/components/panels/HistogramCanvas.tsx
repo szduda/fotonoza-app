@@ -113,7 +113,7 @@ export const HistogramCanvas = ({
 
   return (
     <div
-      className="rounded-md border border-neutral-600/50 bg-neutral-500/20 overflow-hidden"
+      className="rounded-md border border-neutral-600/30 bg-neutral-500/20 overflow-hidden mb-2"
       style={{ height: `${stageHeight}px` }}
     >
       <div ref={hostRef} className="w-full overflow-hidden" style={{ height: `${stageHeight}px` }}>

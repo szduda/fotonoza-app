@@ -68,7 +68,7 @@ export const ShadowsHighlightsPanel = ({ selectedPhoto }: { selectedPhoto: Photo
 
   return (
     <ToggledPanel id="shadows-highlights" label={t(locale, (m) => m.labels.shadowsHighlights)}>
-      <div className="space-y-3 px-1 pb-2 pt-1">
+      <div className="space-y-1 px-1 pb-2 pt-3">
         <SliderRow
           label="Shadows"
           min={-1}

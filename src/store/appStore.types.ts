@@ -33,10 +33,19 @@ export interface AppActions {
   ) => void
   setTogglePanelExpanded: (id: string, expanded: boolean) => void
   patchLayout: (partial: Partial<UiLayoutState>) => void
+  syncEditChrome: (next: EditChromeState) => void
+}
+
+/** Edit chrome (sidebar buttons): zoom bounds & photo presence — not undo history. */
+export interface EditChromeState {
+  canZoomIn: boolean
+  canZoomOut: boolean
+  hasWorkPhoto: boolean
 }
 
 export interface StoreShape {
   present: AppState
+  editChrome: EditChromeState
   editPreviewPath?: string
   editPreviewPhotoId?: string
   editPreviewEpoch: number

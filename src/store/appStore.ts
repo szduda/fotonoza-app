@@ -38,6 +38,11 @@ export const useAppStore = create<StoreShape>()(
   temporal(
     (set, get) => ({
       present: initialState,
+      editChrome: {
+        canZoomIn: false,
+        canZoomOut: false,
+        hasWorkPhoto: false,
+      },
       editPreviewPath: undefined,
       editPreviewPhotoId: undefined,
       editPreviewEpoch: 0,

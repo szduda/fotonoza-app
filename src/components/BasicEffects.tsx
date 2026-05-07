@@ -74,14 +74,10 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
   }, [selectedPhoto.id])
 
   return (
-    <ToggledPanel
-      id="basic-effects"
-      label={t(locale, (m) => m.labels.basicEffects)}
-      defaultOpen
-    >
-      <div className="space-y-3 px-1 pb-2 pt-1">
+    <ToggledPanel id="basic-effects" label={t(locale, (m) => m.labels.basicEffects)} defaultOpen>
+      <div className="space-y-1 px-1 pb-2 pt-3">
         <SliderRow
-          label="Exposure (EV)"
+          label="Exposure"
           min={-3}
           max={3}
           step={0.05}

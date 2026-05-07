@@ -1,9 +1,12 @@
+import { useTimelinePhotosStable } from "@/hooks/useTimelinePhotosStable"
 import { useAppStore } from "@/store/appStore"
 import { chrome } from "@/components/layout/chromeTheme"
 import { PhotoThumbnail } from "@/components/PhotoThumbnail"
 
 export const Timeline = () => {
-  const { mode, photos, currentPhotoId } = useAppStore((s) => s.present)
+  const mode = useAppStore((s) => s.present.mode)
+  const currentPhotoId = useAppStore((s) => s.present.currentPhotoId)
+  const photos = useTimelinePhotosStable()
   const actions = useAppStore((s) => s.actions)
 
   const photoStyle =

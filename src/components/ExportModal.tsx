@@ -141,7 +141,7 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
               max={100}
               value={exportSettings.quality}
               onChange={(e) => setExportField("quality", Number(e.target.value))}
-              className="mt-1 w-full accent-neutral-600"
+              className="slider-dark"
             />
           </label>
           <label>

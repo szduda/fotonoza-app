@@ -1,6 +1,6 @@
 import { saveStoreSnapshot } from "@/lib/persistence"
 import { produce } from "immer"
-import type { AppActions, StoreShape } from "./appStore.types"
+import type { AppActions, EditChromeState, StoreShape } from "./appStore.types"
 import { getTemporalSnapshots, withUndo } from "./history.store"
 import { defaultUiLayout, type AppMode } from "@/types/domain"
 
@@ -8,7 +8,7 @@ type SetStore = (fn: (current: StoreShape) => StoreShape) => void
 
 export const createUiActions = (
   set: SetStore,
-): Pick<AppActions, "setMode" | "setLocale" | "setTogglePanelExpanded" | "patchLayout"> => {
+): Pick<AppActions, "setMode" | "setLocale" | "setTogglePanelExpanded" | "patchLayout" | "syncEditChrome"> => {
   return {
     setMode: (mode: AppMode) => {
       set(
@@ -52,6 +52,21 @@ export const createUiActions = (
           const { past, future } = getTemporalSnapshots()
           void saveStoreSnapshot(present, past, future)
           current.present = present
+        }),
+      )
+    },
+    syncEditChrome: (next: EditChromeState) => {
+      set(
+        produce((current: StoreShape) => {
+          const cur = current.editChrome
+          if (
+            cur.canZoomIn === next.canZoomIn &&
+            cur.canZoomOut === next.canZoomOut &&
+            cur.hasWorkPhoto === next.hasWorkPhoto
+          ) {
+            return
+          }
+          current.editChrome = next
         }),
       )
     },
