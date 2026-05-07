@@ -97,7 +97,8 @@ export const GpuPreviewCanvas = ({
   const uBasic0Ref = useRef<WebGLUniformLocation | null>(null)
   const uBasic1Ref = useRef<WebGLUniformLocation | null>(null)
   const uShRef = useRef<WebGLUniformLocation | null>(null)
-  const imageRef = useRef<HTMLImageElement | null>(null)
+  /** Decoded via fetch+blob so WebGL texImage2D is allowed (asset URLs taint HTMLImageElement on WebKit). */
+  const bitmapRef = useRef<ImageBitmap | null>(null)
   const onImageNaturalRef = useRef(onImageNatural)
   const onImageErrorRef = useRef(onImageError)
   const needsTexUploadRef = useRef(true)
@@ -161,6 +162,8 @@ export const GpuPreviewCanvas = ({
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
+    queueMicrotask(() => draw())
+
     return () => {
       if (progRef.current) gl.deleteProgram(progRef.current)
       if (texRef.current) gl.deleteTexture(texRef.current)
@@ -171,24 +174,40 @@ export const GpuPreviewCanvas = ({
   }, [])
 
   useEffect(() => {
-    const img = new Image()
-    imageRef.current = img
+    if (!src) {
+      bitmapRef.current?.close()
+      bitmapRef.current = null
+      return
+    }
+    let cancelled = false
     needsTexUploadRef.current = true
     histDirtyRef.current = true
-    img.decoding = "async"
-    img.crossOrigin = "anonymous"
-    img.onload = () => {
-      if (imageRef.current !== img) return
-      onImageNaturalRef.current({ width: img.naturalWidth, height: img.naturalHeight })
-      draw()
-    }
-    img.onerror = () => {
-      if (imageRef.current !== img) return
-      onImageErrorRef.current()
-    }
-    img.src = src
+
+    void (async () => {
+      try {
+        const res = await fetch(src)
+        if (!res.ok) throw new Error(`fetch ${res.status}`)
+        const blob = await res.blob()
+        const bmp = await createImageBitmap(blob)
+        if (cancelled) {
+          bmp.close()
+          return
+        }
+        bitmapRef.current?.close()
+        bitmapRef.current = bmp
+        needsTexUploadRef.current = true
+        histDirtyRef.current = true
+        onImageNaturalRef.current({ width: bmp.width, height: bmp.height })
+        draw()
+      } catch {
+        if (!cancelled) onImageErrorRef.current()
+      }
+    })()
+
     return () => {
-      if (imageRef.current === img) imageRef.current = null
+      cancelled = true
+      bitmapRef.current?.close()
+      bitmapRef.current = null
     }
   }, [src])
 
@@ -233,9 +252,10 @@ export const GpuPreviewCanvas = ({
     const gl = glRef.current
     const prog = progRef.current
     const tex = texRef.current
-    const img = imageRef.current
+    const bmp = bitmapRef.current
     const canvas = canvasRef.current
-    if (!gl || !prog || !tex || !img || !canvas) return
+    if (!gl || !prog || !tex || !bmp || !canvas) return
+
     const w = Math.max(1, Math.round(rendered.width))
     const h = Math.max(1, Math.round(rendered.height))
     if (canvas.width !== w || canvas.height !== h) {
@@ -248,7 +268,7 @@ export const GpuPreviewCanvas = ({
     gl.bindTexture(gl.TEXTURE_2D, tex)
     if (needsTexUploadRef.current) {
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0)
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bmp)
       needsTexUploadRef.current = false
     }
     if (uBasic0Ref.current) gl.uniform4fv(uBasic0Ref.current, uniforms.basic0)

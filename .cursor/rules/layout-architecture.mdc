@@ -21,3 +21,4 @@ alwaysApply: true
 - If it repeats within a single file the new component should be placed in the same file, below the main export. If it needs exporting it should be placed in a separate file in the same directory. If the directory is generic, create a new directory and move both related files into it.
 - Most files should not exceed 200 lines of code. No file should exceed 400 lines of code. If the file is over 150 consider refactoring
 - Avoid file, component and exported item names longer than 20 characters. For local variables avoid names longer than 15 chars.
+- Don't do any backward compatibility or legacy syncing when persistence model changes. Simply run `npm run reset-config` when compatibility breaks due to changes.

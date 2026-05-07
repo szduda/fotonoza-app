@@ -73,7 +73,7 @@ export const PhotoThumbnail = ({
 
   return (
     <div
-      className={`h-full shrink-0 min-h-0 min-w-28 overflow-hidden rounded shrink-0 ${className}`}
+      className={`h-full shrink-0 min-h-0 aspect-3/2 overflow-hidden rounded ${className}`}
       style={style}
     >
       <img

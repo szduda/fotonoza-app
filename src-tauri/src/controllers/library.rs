@@ -10,15 +10,16 @@ pub struct LibraryPathEntry {
     library_path: String,
 }
 
-fn ensure_library_file(source_path: &str, library_path: &Path) -> Result<(), String> {
+/// Ensures `library_path` exists; returns `false` if there is nothing usable on disk (no remap).
+fn ensure_library_file(source_path: &str, library_path: &Path) -> Result<bool, String> {
     if library_path.exists() {
-        return Ok(());
+        return Ok(true);
     }
     if !Path::new(source_path).exists() {
-        return Ok(());
+        return Ok(false);
     }
     fs::copy(source_path, library_path).map_err(|e| format!("library copy: {e}"))?;
-    Ok(())
+    Ok(true)
 }
 
 #[tauri::command]
@@ -30,7 +31,9 @@ pub fn ensure_library_sources(source_paths: Vec<String>) -> Result<Vec<LibraryPa
     let mut out = Vec::with_capacity(source_paths.len());
     for source_path in source_paths {
         let library_path = library_path_for_source(&import_dir, &source_path)?;
-        ensure_library_file(&source_path, &library_path)?;
+        if !ensure_library_file(&source_path, &library_path)? {
+            continue;
+        }
         out.push(LibraryPathEntry {
             source_path,
             library_path: library_path.to_string_lossy().to_string(),

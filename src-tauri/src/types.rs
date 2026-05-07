@@ -25,10 +25,6 @@ pub fn default_timeline_height() -> u32 {
     200
 }
 
-pub fn default_top_bar_height() -> u32 {
-    100
-}
-
 pub fn default_false() -> bool {
     false
 }
@@ -42,8 +38,6 @@ pub struct LayoutState {
     pub right_sidebar_width_px: u32,
     #[serde(default = "default_timeline_height")]
     pub timeline_height_px: u32,
-    #[serde(default = "default_top_bar_height")]
-    pub top_bar_height_px: u32,
     #[serde(default = "default_false")]
     pub left_sidebar_collapsed: bool,
     #[serde(default = "default_false")]
@@ -60,7 +54,6 @@ impl Default for LayoutState {
             left_sidebar_width_px: default_layout_width(),
             right_sidebar_width_px: default_layout_width(),
             timeline_height_px: default_timeline_height(),
-            top_bar_height_px: default_top_bar_height(),
             left_sidebar_collapsed: false,
             right_sidebar_collapsed: false,
             timeline_collapsed: false,
@@ -74,7 +67,6 @@ impl Default for LayoutState {
 pub struct AppState {
     pub mode: String,
     pub photos: Vec<PhotoState>,
-    #[serde(alias = "selectedPhotoId")]
     pub current_photo_id: Option<String>,
     pub history: serde_json::Value,
     pub history_cursor: usize,

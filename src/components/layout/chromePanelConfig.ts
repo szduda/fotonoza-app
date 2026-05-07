@@ -10,7 +10,7 @@ export type ChromePanelId = (typeof CHROME_PANEL_IDS)[number]
 /** Which screen edge the chrome strip sits on (timeline = bottom strip). */
 export type ChromeEdgePosition = "top" | "bottom" | "left" | "right"
 
-export type ChromeDragKind = "left" | "right" | "timeline" | "top"
+export type ChromeDragKind = "left" | "right" | "timeline"
 
 export const CHROME_PANEL_EDGE: Record<ChromePanelId, ChromeEdgePosition> = {
   topBar: "top",
@@ -49,8 +49,9 @@ const EDGE_COLLAPSE: Record<ChromeEdgePosition, CollapseButtonPosition> = {
   right: "left",
 }
 
-const EDGE_DRAG: Record<ChromeEdgePosition, ChromeDragKind> = {
-  top: "top",
+/** Top strip is fixed height (not user-resizable); others expose a resize seam. */
+const EDGE_DRAG: Record<ChromeEdgePosition, ChromeDragKind | null> = {
+  top: null,
   bottom: "timeline",
   left: "left",
   right: "right",
@@ -61,18 +62,21 @@ export type ChromeEdgeLayout = {
   borderClass: string
   resizeEdge: PanelResizeEdge
   collapsePosition: CollapseButtonPosition
-  dragKind: ChromeDragKind
+  dragKind: ChromeDragKind | null
+  resizable: boolean
   /** Bottom strip (timeline): resize + collapse above content. Other edges: content first. */
   controlsFirst: boolean
 }
 
 export const chromeEdgeLayout = (edge: ChromeEdgePosition): ChromeEdgeLayout => {
+  const dragKind = EDGE_DRAG[edge]
   return {
     groupPeer: EDGE_GROUP[edge],
     borderClass: EDGE_BORDER[edge],
     resizeEdge: EDGE_RESIZE[edge],
     collapsePosition: EDGE_COLLAPSE[edge],
-    dragKind: EDGE_DRAG[edge],
+    dragKind,
+    resizable: dragKind != null,
     controlsFirst: edge === "bottom",
   }
 }
@@ -84,11 +88,10 @@ export const chromePanelDimensionStyle = (
   const lw = Math.round(layout.leftSidebarWidthPx)
   const rw = Math.round(layout.rightSidebarWidthPx)
   const th = Math.round(layout.timelineHeightPx)
-  const tbh = Math.round(layout.topBarHeightPx)
 
   switch (panel) {
     case "topBar":
-      return { height: layout.topBarCollapsed ? CHROME_STRIP_PX : tbh }
+      return layout.topBarCollapsed ? { height: CHROME_STRIP_PX } : {}
     case "leftSidebar":
       return { width: layout.leftSidebarCollapsed ? CHROME_STRIP_PX : lw }
     case "rightSidebar":

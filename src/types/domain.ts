@@ -112,7 +112,6 @@ export interface UiLayoutState {
   leftSidebarWidthPx: number
   rightSidebarWidthPx: number
   timelineHeightPx: number
-  topBarHeightPx: number
   leftSidebarCollapsed: boolean
   rightSidebarCollapsed: boolean
   timelineCollapsed: boolean
@@ -123,7 +122,6 @@ export const defaultUiLayout: UiLayoutState = {
   leftSidebarWidthPx: 300,
   rightSidebarWidthPx: 300,
   timelineHeightPx: 200,
-  topBarHeightPx: 100,
   leftSidebarCollapsed: false,
   rightSidebarCollapsed: false,
   timelineCollapsed: false,

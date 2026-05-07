@@ -68,20 +68,22 @@ export const ChromeEdgePanel = ({
     className ? ` ${className}` : ""
   }`
 
+  const contentGrow = panel === "topBar" ? "shrink-0" : "min-h-0 flex-1"
   const contentShell = (
-    <div className={collapsed ? "hidden" : "min-h-0 flex-1 overflow-hidden"}>{children}</div>
+    <div className={collapsed ? "hidden" : `${contentGrow} overflow-hidden`}>{children}</div>
   )
 
-  const handles = (
-    <PanelResizeHandles
-      edge={cfg.resizeEdge}
-      collapsed={collapsed}
-      onPointerDown={ctx.startResizeDrag(cfg.dragKind)}
-      onPointerMove={ctx.onResizePointerMove}
-      onPointerUp={ctx.onResizePointerUp}
-      onPointerCancel={ctx.onResizePointerCancel}
-    />
-  )
+  const handles =
+    cfg.resizable && cfg.dragKind ? (
+      <PanelResizeHandles
+        edge={cfg.resizeEdge}
+        collapsed={collapsed}
+        onPointerDown={ctx.startResizeDrag(cfg.dragKind)}
+        onPointerMove={ctx.onResizePointerMove}
+        onPointerUp={ctx.onResizePointerUp}
+        onPointerCancel={ctx.onResizePointerCancel}
+      />
+    ) : null
 
   const btn = (
     <CollapseButton

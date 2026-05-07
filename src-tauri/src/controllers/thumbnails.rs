@@ -1,9 +1,12 @@
 use crate::controllers::paths::{fotonoza_import_dir, thumb_path_for_source, thumbs_dir};
-use image::imageops::FilterType;
 use image::ImageFormat;
+use rayon::prelude::*;
 use serde::Serialize;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+/// Max edge length; `thumbnail` keeps aspect ratio (no stretch / faux “rotation”).
+const THUMB_MAX: u32 = 512;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -21,7 +24,7 @@ fn create_thumb_if_missing(source_path: &str, thumb_path: &Path) -> Result<(), S
     }
 
     let img = image::open(source_path).map_err(|e| format!("thumbnail decode: {e}"))?;
-    let resized = img.resize(512, 512, FilterType::Triangle);
+    let resized = img.thumbnail(THUMB_MAX, THUMB_MAX);
 
     let mut tmp_name = PathBuf::from(thumb_path)
         .file_name()
@@ -33,7 +36,7 @@ fn create_thumb_if_missing(source_path: &str, thumb_path: &Path) -> Result<(), S
     resized
         .save_with_format(&tmp_path, ImageFormat::Jpeg)
         .map_err(|e| format!("thumbnail save: {e}"))?;
-    fs::rename(&tmp_path, &thumb_path).map_err(|e| format!("thumbnail rename: {e}"))?;
+    fs::rename(&tmp_path, thumb_path).map_err(|e| format!("thumbnail rename: {e}"))?;
     Ok(())
 }
 
@@ -45,11 +48,11 @@ fn ensure_thumbnails_inner(source_paths: Vec<String>) {
     if fs::create_dir_all(&thumbs).is_err() {
         return;
     }
-    for source_path in source_paths {
-        if let Ok(thumb_path) = thumb_path_for_source(&import_dir, &source_path) {
-            let _ = create_thumb_if_missing(&source_path, &thumb_path);
+    source_paths.par_iter().for_each(|source_path| {
+        if let Ok(thumb_path) = thumb_path_for_source(&import_dir, source_path) {
+            let _ = create_thumb_if_missing(source_path, &thumb_path);
         }
-    }
+    });
 }
 
 #[tauri::command]

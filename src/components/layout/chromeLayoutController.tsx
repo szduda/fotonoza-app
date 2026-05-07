@@ -16,9 +16,6 @@ const MIN_SIDEBAR = 120
 const MAX_SIDEBAR = 720
 const MIN_TIMELINE = 72
 const MAX_TIMELINE = 520
-const MIN_TOP = 44
-const MAX_TOP = 220
-
 type CollapseSnap = {
   leftSidebarCollapsed: boolean
   rightSidebarCollapsed: boolean
@@ -150,8 +147,6 @@ const useChromeLayoutController = (): ChromeLayoutControllerValue => {
         if (L.rightSidebarCollapsed) patchLayout({ rightSidebarCollapsed: false })
       } else if (kind === "timeline") {
         if (L.timelineCollapsed) patchLayout({ timelineCollapsed: false })
-      } else {
-        if (L.topBarCollapsed) patchLayout({ topBarCollapsed: false })
       }
 
       const next = useAppStore.getState().present.layout ?? defaultUiLayout
@@ -160,10 +155,8 @@ const useChromeLayoutController = (): ChromeLayoutControllerValue => {
         dragStartRef.current = { coord: e.clientX, size: next.leftSidebarWidthPx }
       } else if (kind === "right") {
         dragStartRef.current = { coord: e.clientX, size: next.rightSidebarWidthPx }
-      } else if (kind === "timeline") {
-        dragStartRef.current = { coord: e.clientY, size: next.timelineHeightPx }
       } else {
-        dragStartRef.current = { coord: e.clientY, size: next.topBarHeightPx }
+        dragStartRef.current = { coord: e.clientY, size: next.timelineHeightPx }
       }
       ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
     },
@@ -189,20 +182,13 @@ const useChromeLayoutController = (): ChromeLayoutControllerValue => {
           Math.min(MAX_SIDEBAR, Math.max(MIN_SIDEBAR, dragStartRef.current.size + delta)),
         )
         patchLayout({ rightSidebarWidthPx: next })
-      } else if (kind === "timeline") {
+      } else {
         if (L.timelineCollapsed) return
         const delta = dragStartRef.current.coord - e.clientY
         const next = Math.round(
           Math.min(MAX_TIMELINE, Math.max(MIN_TIMELINE, dragStartRef.current.size + delta)),
         )
         patchLayout({ timelineHeightPx: next })
-      } else {
-        if (L.topBarCollapsed) return
-        const delta = e.clientY - dragStartRef.current.coord
-        const next = Math.round(
-          Math.min(MAX_TOP, Math.max(MIN_TOP, dragStartRef.current.size + delta)),
-        )
-        patchLayout({ topBarHeightPx: next })
       }
     },
     [readLayout, patchLayout],
