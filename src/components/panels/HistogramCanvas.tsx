@@ -74,7 +74,7 @@ const useHistogramKonvaSeries = (
 
 export const HistogramCanvas = ({
   width = 280,
-  height = 160,
+  height = 120,
 }: HistogramCanvasProps): ReactElement => {
   const { data, loading } = useHistogramForEdit()
 
@@ -98,23 +98,15 @@ export const HistogramCanvas = ({
     return () => observer.disconnect()
   }, [width])
 
-  const {
-    redPoints,
-    greenPoints,
-    bluePoints,
-    lumaArea,
-    redArea,
-    greenArea,
-    blueArea,
-    overlapArea,
-  } = useHistogramKonvaSeries(data, stageWidth, stageHeight)
+  const { redPoints, greenPoints, bluePoints, lumaArea, redArea, greenArea, blueArea } =
+    useHistogramKonvaSeries(data, stageWidth, stageHeight)
 
   const showSkeleton = loading && !data
 
   return (
     <div
       className="rounded-md border border-neutral-600/30 bg-neutral-500/20 overflow-hidden mb-2"
-      style={{ height: `${stageHeight}px` }}
+      style={{ height: `${stageHeight}px`, minHeight: `${stageHeight}px` }}
     >
       <div ref={hostRef} className="w-full overflow-hidden" style={{ height: `${stageHeight}px` }}>
         {showSkeleton ? (
@@ -124,14 +116,13 @@ export const HistogramCanvas = ({
         ) : (
           <Stage width={stageWidth} height={stageHeight}>
             <Layer>
-              <Line points={redArea} closed fill="#ef4444" opacity={0.6} />
-              <Line points={greenArea} closed fill="#22c55e" opacity={0.75} />
-              <Line points={blueArea} closed fill="#3b82f6" opacity={0.7} />
-              <Line points={overlapArea} closed fill="#afafaf" opacity={0.9} />
-              <Line points={lumaArea} closed fill="#ccc" opacity={0.4} />
-              <Line points={redPoints} stroke="#ef4444" strokeWidth={1} tension={0.2} />
-              <Line points={greenPoints} stroke="#22c55e" strokeWidth={1} tension={0.2} />
-              <Line points={bluePoints} stroke="#3b82f6" strokeWidth={1} tension={0.2} />
+              <Line points={redArea} closed fill="#ef4444" opacity={0.5} />
+              <Line points={greenArea} closed fill="#22c55e" opacity={0.4} />
+              <Line points={blueArea} closed fill="#3b82f6" opacity={0.5} />
+              <Line points={lumaArea} closed fill="#eee" opacity={0.6} />
+              <Line points={redPoints} stroke="#ef444499" strokeWidth={1} tension={0.2} />
+              <Line points={greenPoints} stroke="#22c55e99" strokeWidth={1} tension={0.2} />
+              <Line points={bluePoints} stroke="#3b82f699" strokeWidth={1} tension={0.2} />
             </Layer>
           </Stage>
         )}

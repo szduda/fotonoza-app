@@ -1,4 +1,4 @@
-import type { ReactElement } from "react"
+import { useEffect, useMemo, useState, type ReactElement } from "react"
 import { t } from "@/lib/i18n"
 import { useAppStore } from "@/store/appStore"
 import { chrome } from "@/components/layout/chromeTheme"
@@ -11,8 +11,51 @@ export const ViewModeArea = ({ viewGridHeight, viewGridRef }: ViewGridMeasure): 
   const { photos, locale } = useAppStore((s) => s.present)
   const actions = useAppStore((s) => s.actions)
   const { viewGridCols } = useGridCols()
+  const [scrollTop, setScrollTop] = useState(0)
+  const [gridWidth, setGridWidth] = useState(0)
 
-  const maxThumbSidePx = Math.max(96, Math.floor(viewGridHeight - 76))
+  useEffect(() => {
+    const node = viewGridRef.current
+    if (!node) return
+    const onScroll = () => setScrollTop(node.scrollTop)
+    const onResize = () => setGridWidth(node.clientWidth)
+    onResize()
+    onScroll()
+    node.addEventListener("scroll", onScroll, { passive: true })
+    const obs = new ResizeObserver(onResize)
+    obs.observe(node)
+    return () => {
+      node.removeEventListener("scroll", onScroll)
+      obs.disconnect()
+    }
+  }, [viewGridRef])
+
+  const virtual = useMemo(() => {
+    const total = photos.length
+    if (total === 0) {
+      return { from: 0, to: 0, topPx: 0, bottomPx: 0 }
+    }
+    const cols = Math.max(1, viewGridCols)
+    const gap = 12
+    const pad = 32
+    const safeWidth = Math.max(0, gridWidth - pad)
+    const cellW = Math.max(1, (safeWidth - (cols - 1) * gap) / cols)
+    const rowH = cellW + 34
+    const totalRows = Math.ceil(total / cols)
+    const marginRows = 2
+    const startRow = Math.max(0, Math.floor(scrollTop / rowH) - marginRows)
+    const endRow = Math.min(totalRows, Math.ceil((scrollTop + viewGridHeight) / rowH) + marginRows)
+    const from = startRow * cols
+    const to = Math.min(total, endRow * cols)
+    return {
+      from,
+      to,
+      topPx: startRow * rowH,
+      bottomPx: Math.max(0, (totalRows - endRow) * rowH),
+    }
+  }, [gridWidth, photos.length, scrollTop, viewGridCols, viewGridHeight])
+
+  const visiblePhotos = photos.slice(virtual.from, virtual.to)
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
@@ -26,7 +69,10 @@ export const ViewModeArea = ({ viewGridHeight, viewGridRef }: ViewGridMeasure): 
         {photos.length === 0 && (
           <p className={chrome.mutedText}>{t(locale, (m) => m.labels.noPhotos)}</p>
         )}
-        {photos.map((photo) => (
+        {photos.length > 0 && virtual.topPx > 0 && (
+          <div style={{ height: `${virtual.topPx}px`, gridColumn: "1 / -1" }} />
+        )}
+        {visiblePhotos.map((photo) => (
           <button
             key={photo.id}
             type="button"
@@ -38,31 +84,19 @@ export const ViewModeArea = ({ viewGridHeight, viewGridRef }: ViewGridMeasure): 
             onClick={() => actions.toggleSelectPhoto(photo.id)}
             onDoubleClick={() => actions.openInEditor(photo.id)}
           >
-            <div
-              className={`mx-auto min-h-0 min-w-0 overflow-hidden rounded ${chrome.panelBg}`}
-              style={{
-                width: `min(100%, ${maxThumbSidePx}px)`,
-                aspectRatio: "3/2",
-              }}
-            >
-              <PhotoThumbnail sourcePath={photo.sourcePath} alt={photo.fileName} fit="contain" />
-            </div>
-
-            <div className={`mt-2 truncate ${chrome.panelText}`}>{photo.fileName}</div>
-
-            <div className="mt-1 flex gap-1">
-              <span
-                className={`rounded px-1.5 py-0.5 text-[10px] uppercase tracking-wide ${
-                  photo.approved
-                    ? `${chrome.panelBg} ${chrome.mutedText}`
-                    : "bg-neutral-500/20 text-neutral-400"
-                }`}
-              >
-                {photo.approved ? "approved" : "pending"}
-              </span>
-            </div>
+            <PhotoThumbnail
+              sourcePath={photo.thumbnailPath || photo.sourcePath}
+              alt={photo.fileName}
+              fit="contain"
+              className={chrome.panelBg}
+              style={{ aspectRatio: "1 / 1" }}
+            />
+            <p className={`mt-2 truncate ${chrome.panelText}`}>{photo.fileName}</p>
           </button>
         ))}
+        {photos.length > 0 && virtual.bottomPx > 0 && (
+          <div style={{ height: `${virtual.bottomPx}px`, gridColumn: "1 / -1" }} />
+        )}
       </div>
 
       <GridCols />
