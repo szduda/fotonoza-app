@@ -18,6 +18,8 @@ export type LoadedStore = {
 }
 
 type DiskRoot = AppState & { undoPast?: AppState[]; undoFuture?: AppState[] }
+export type ThumbPathEntry = { sourcePath: string; thumbnailPath: string }
+export type LibraryPathEntry = { sourcePath: string; libraryPath: string }
 
 const stripPhotoLocalState = (state: AppState): AppState => ({
   ...state,
@@ -123,6 +125,21 @@ export const getPhotoHistogram = async (
 
 export const getDefaultExportDirectory = async (collectionName: string): Promise<string> => {
   return invoke<string>("get_default_export_directory", { collectionName })
+}
+
+export const ensureThumbnails = async (sourcePaths: string[]): Promise<void> => {
+  if (sourcePaths.length === 0) return
+  await invoke("ensure_thumbnails", { sourcePaths })
+}
+
+export const ensureLibrarySources = async (sourcePaths: string[]): Promise<LibraryPathEntry[]> => {
+  if (sourcePaths.length === 0) return []
+  return invoke<LibraryPathEntry[]>("ensure_library_sources", { sourcePaths })
+}
+
+export const resolveThumbnailPaths = async (sourcePaths: string[]): Promise<ThumbPathEntry[]> => {
+  if (sourcePaths.length === 0) return []
+  return invoke<ThumbPathEntry[]>("resolve_thumbnail_paths", { sourcePaths })
 }
 
 export const startExportJob = async (

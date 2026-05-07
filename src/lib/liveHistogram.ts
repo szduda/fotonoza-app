@@ -31,3 +31,7 @@ export const subscribeLiveHistogram = (listener: () => void): (() => void) => {
 export const getLiveHistogramSnapshot = (): Snapshot | undefined => {
   return liveSnapshot
 }
+
+export const hasLiveHistogramSubscribers = (): boolean => {
+  return listeners.size > 0
+}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, type ReactElement } from "react"
-import { publishLiveHistogram } from "@/lib/liveHistogram"
+import { hasLiveHistogramSubscribers, publishLiveHistogram } from "@/lib/liveHistogram"
 import type { BasicEffectsState, ShadowsHighlightsState } from "@/types/domain"
 
 type Size = { width: number; height: number }
@@ -98,7 +98,19 @@ export const GpuPreviewCanvas = ({
   const uBasic1Ref = useRef<WebGLUniformLocation | null>(null)
   const uShRef = useRef<WebGLUniformLocation | null>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
-  const lastHistMsRef = useRef(0)
+  const onImageNaturalRef = useRef(onImageNatural)
+  const onImageErrorRef = useRef(onImageError)
+  const needsTexUploadRef = useRef(true)
+  const histDirtyRef = useRef(true)
+  const histBufferRef = useRef<Uint8Array | null>(null)
+
+  useEffect(() => {
+    onImageNaturalRef.current = onImageNatural
+  }, [onImageNatural])
+
+  useEffect(() => {
+    onImageErrorRef.current = onImageError
+  }, [onImageError])
 
   const uniforms = useMemo(
     () => ({
@@ -161,26 +173,46 @@ export const GpuPreviewCanvas = ({
   useEffect(() => {
     const img = new Image()
     imageRef.current = img
+    needsTexUploadRef.current = true
+    histDirtyRef.current = true
     img.decoding = "async"
     img.crossOrigin = "anonymous"
     img.onload = () => {
       if (imageRef.current !== img) return
-      onImageNatural({ width: img.naturalWidth, height: img.naturalHeight })
+      onImageNaturalRef.current({ width: img.naturalWidth, height: img.naturalHeight })
       draw()
     }
     img.onerror = () => {
       if (imageRef.current !== img) return
-      onImageError()
+      onImageErrorRef.current()
     }
     img.src = src
     return () => {
       if (imageRef.current === img) imageRef.current = null
     }
-  }, [src, onImageError, onImageNatural])
+  }, [src])
 
   useEffect(() => {
     draw()
   }, [uniforms, rendered.width, rendered.height, src, photoId])
+
+  useEffect(() => {
+    histDirtyRef.current = true
+    draw()
+  }, [
+    src,
+    effects.exposure,
+    effects.contrast,
+    effects.contrastBalance,
+    effects.clarity,
+    effects.vibrance,
+    effects.saturation,
+    sh.shadows,
+    sh.darks,
+    sh.lights,
+    sh.highlights,
+    photoId,
+  ])
 
   const style = {
     width: rendered.width,
@@ -214,17 +246,22 @@ export const GpuPreviewCanvas = ({
     gl.viewport(0, 0, canvas.width, canvas.height)
     gl.useProgram(prog)
     gl.bindTexture(gl.TEXTURE_2D, tex)
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0)
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+    if (needsTexUploadRef.current) {
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 0)
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
+      needsTexUploadRef.current = false
+    }
     if (uBasic0Ref.current) gl.uniform4fv(uBasic0Ref.current, uniforms.basic0)
     if (uBasic1Ref.current) gl.uniform4fv(uBasic1Ref.current, uniforms.basic1)
     if (uShRef.current) gl.uniform4fv(uShRef.current, uniforms.sh)
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
-    publishHistogramFromFrame(gl, canvas.width, canvas.height, photoId, lastHistMsRef)
+    if (histDirtyRef.current && hasLiveHistogramSubscribers()) {
+      publishHistogramFromFrame(gl, canvas.width, canvas.height, photoId, histBufferRef)
+      histDirtyRef.current = false
+    }
   }
 }
 
-const HIST_MIN_INTERVAL_MS = 200
 // const HIST_TARGET_SAMPLES = 65_536
 const HIST_TARGET_SAMPLES = 4096
 const HIST_SMOOTH_BLEND = 0.7
@@ -234,15 +271,16 @@ const publishHistogramFromFrame = (
   width: number,
   height: number,
   photoId: string,
-  lastHistMsRef: { current: number },
+  histBufferRef: { current: Uint8Array | null },
 ): void => {
-  const now = performance.now()
-  if (now - lastHistMsRef.current < HIST_MIN_INTERVAL_MS) return
-  lastHistMsRef.current = now
-
   const pixelCount = Math.max(1, width * height)
   const stride = Math.max(1, Math.floor(Math.sqrt(pixelCount / HIST_TARGET_SAMPLES)))
-  const packed = new Uint8Array(width * height * 4)
+  const neededSize = width * height * 4
+  const packed =
+    histBufferRef.current && histBufferRef.current.length === neededSize
+      ? histBufferRef.current
+      : new Uint8Array(neededSize)
+  histBufferRef.current = packed
   gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, packed)
 
   const red = new Array<number>(256).fill(0)

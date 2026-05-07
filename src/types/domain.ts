@@ -56,6 +56,7 @@ export interface Photo {
   id: string
   fileName: string
   sourcePath: string
+  thumbnailPath?: string
   selected: boolean
   approved: boolean
   adjustments: PhotoAdjustment[]

@@ -13,14 +13,19 @@ export const useHistogramForEdit = (): {
   data: HistogramData | undefined
   loading: boolean
 } => {
-  const { mode, photos, currentPhotoId } = useAppStore((s) => s.present)
+  const { mode, photos, currentPhotoId, layout } = useAppStore((s) => s.present)
+  const isRightSidebarVisible = !layout.rightSidebarCollapsed
   const selectedPhoto = photos.find((p) => p.id === currentPhotoId)
-  const live = useSyncExternalStore(subscribeLiveHistogram, getLiveHistogramSnapshot, () => undefined)
+  const live = useSyncExternalStore(
+    subscribeLiveHistogram,
+    () => (isRightSidebarVisible ? getLiveHistogramSnapshot() : undefined),
+    () => undefined,
+  )
   const [histogram, setHistogram] = useState<HistogramData | undefined>(undefined)
   const [histLoading, setHistLoading] = useState(false)
 
   useEffect(() => {
-    if (mode !== "edit" || !selectedPhoto?.sourcePath) {
+    if (mode !== "edit" || !isRightSidebarVisible || !selectedPhoto?.sourcePath) {
       setHistogram(undefined)
       setHistLoading(false)
       return
@@ -74,6 +79,7 @@ export const useHistogramForEdit = (): {
     }
   }, [
     mode,
+    isRightSidebarVisible,
     live,
     selectedPhoto?.id,
     selectedPhoto?.sourcePath,

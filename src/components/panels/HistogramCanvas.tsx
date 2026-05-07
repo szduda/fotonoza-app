@@ -74,7 +74,7 @@ const useHistogramKonvaSeries = (
 
 export const HistogramCanvas = ({
   width = 280,
-  height = 160,
+  height = 120,
 }: HistogramCanvasProps): ReactElement => {
   const { data, loading } = useHistogramForEdit()
 
@@ -106,7 +106,7 @@ export const HistogramCanvas = ({
   return (
     <div
       className="rounded-md border border-neutral-600/50 bg-neutral-500/20 overflow-hidden"
-      style={{ height: `${stageHeight}px` }}
+      style={{ height: `${stageHeight}px`, minHeight: `${stageHeight}px` }}
     >
       <div ref={hostRef} className="w-full overflow-hidden" style={{ height: `${stageHeight}px` }}>
         {showSkeleton ? (
