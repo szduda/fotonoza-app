@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type ReactElement } from "react"
 import { t } from "@/lib/i18n"
 import { useAppStore } from "@/store/appStore"
 import { chrome } from "@/components/layout/chromeTheme"
+import { useFilteredPhotos } from "@/hooks/useFilteredPhotos"
 import { useViewModeRating } from "@/hooks/useViewModeRating"
 import { GridCols } from "./components/GridCols"
 import { ViewModeGridThumb } from "./components/ViewModeGridThumb"
@@ -13,7 +14,9 @@ type ThumbExtras = { cols: number; cellW: number; photos: Photo[] }
 
 /** Simple virtual photo grid — sizing from {@link Grid} `onResize`. */
 export const ViewModeArea = (): ReactElement => {
-  const { photos, locale } = useAppStore((s) => s.present)
+  const { locale } = useAppStore((s) => s.present)
+  const allPhotos = useAppStore((s) => s.present.photos)
+  const photos = useFilteredPhotos()
   useViewModeRating()
   const { viewGridCols } = useGridCols()
   const viewGridRef = useRef<HTMLDivElement | null>(null)
@@ -21,8 +24,8 @@ export const ViewModeArea = (): ReactElement => {
   const [vw, setVw] = useState(0)
 
   useEffect(() => {
-    if (photos.length === 0) viewGridRef.current = null
-  }, [photos.length, viewGridRef])
+    if (allPhotos.length === 0) viewGridRef.current = null
+  }, [allPhotos.length, viewGridRef])
 
   const grid = useMemo(() => {
     const cellW = vw / viewGridCols
@@ -37,8 +40,10 @@ export const ViewModeArea = (): ReactElement => {
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      {photos.length === 0 ? (
+      {allPhotos.length === 0 ? (
         <p className={`p-4 ${chrome.mutedText}`}>{t(locale, (m) => m.labels.noPhotos)}</p>
+      ) : photos.length === 0 ? (
+        <p className={`p-4 ${chrome.mutedText}`}>{t(locale, (m) => m.labels.noPhotosMatchFilters)}</p>
       ) : (
         <Grid<ThumbExtras>
           gridRef={(api) => {

@@ -1,13 +1,14 @@
 import { create } from "zustand"
 import { temporal } from "zundo"
 import type { AppState } from "@/types/domain"
-import { defaultUiLayout } from "@/types/domain"
+import { defaultPhotoFilters, defaultUiLayout } from "@/types/domain"
 import type { StoreShape } from "./appStore.types"
 import { createHistoryActions } from "./history.store"
 import { createUiActions } from "./ui.store"
 import { createIoActions } from "./io.store"
 import { createLibraryActions } from "./library.store"
 import { createEffectsActions } from "./effects.store"
+import { createFilterActions } from "./filter.store"
 
 const initialState: AppState = {
   mode: "import",
@@ -25,6 +26,7 @@ const initialState: AppState = {
   },
   locale: "en",
   layout: { ...defaultUiLayout },
+  photoFilters: defaultPhotoFilters(),
 }
 
 /** zundo merges partialized snapshots onto the root store; nest `present` so undo restores photos/history. */
@@ -53,6 +55,7 @@ export const useAppStore = create<StoreShape>()(
         canZoomOut: false,
         hasWorkPhoto: false,
       },
+      exifCache: {},
       viewHoveredPhotoId: undefined,
       editPreviewPath: undefined,
       editPreviewPhotoId: undefined,
@@ -64,6 +67,7 @@ export const useAppStore = create<StoreShape>()(
         ...createEffectsActions(set),
         ...createHistoryActions(set, get),
         ...createUiActions(set),
+        ...createFilterActions(set),
       },
     }),
     {

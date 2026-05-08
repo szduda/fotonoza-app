@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { Photo } from "@/types/domain"
-import { useAppStore } from "@/store/appStore"
+import { useFilteredPhotos } from "@/hooks/useFilteredPhotos"
 
 /** Ignores basicEffects / shadows / darktable changes — timeline strip metadata only. */
 const timelineStripEq = (a: Photo[], b: Photo[]): boolean => {
@@ -24,14 +24,12 @@ const timelineStripEq = (a: Photo[], b: Photo[]): boolean => {
 }
 
 export const useTimelinePhotosStable = (): Photo[] => {
-  const [photos, setPhotos] = useState<Photo[]>(() => useAppStore.getState().present.photos)
+  const filtered = useFilteredPhotos()
+  const [photos, setPhotos] = useState<Photo[]>(filtered)
 
   useEffect(() => {
-    return useAppStore.subscribe((state) => {
-      const next = state.present.photos
-      setPhotos((prev) => (timelineStripEq(prev, next) ? prev : next))
-    })
-  }, [])
+    setPhotos((prev) => (timelineStripEq(prev, filtered) ? prev : filtered))
+  }, [filtered])
 
   return photos
 }

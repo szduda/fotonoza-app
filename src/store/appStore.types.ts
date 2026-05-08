@@ -5,6 +5,8 @@ import type {
   ColorEffectsState,
   DarktableFxState,
   Photo,
+  PhotoExifSummary,
+  PhotoFiltersState,
   ShadowsHighlightsState,
   UiLayoutState,
 } from "@/types/domain"
@@ -59,6 +61,9 @@ export interface AppActions {
   syncEditChrome: (next: EditChromeState) => void
   /** View grid hover target for metadata + keyboard ratings (not undo). */
   setViewHoveredPhoto: (photoId: string | undefined) => void
+  setPhotoFilter: (partial: Partial<PhotoFiltersState>) => void
+  /** In-memory EXIF rows for filter matching (not persisted). */
+  mergeExifCache: (partial: Record<string, PhotoExifSummary>) => void
 }
 
 /** Edit chrome (sidebar buttons): zoom bounds & photo presence — not undo history. */
@@ -71,6 +76,8 @@ export interface EditChromeState {
 export interface StoreShape {
   present: AppState
   editChrome: EditChromeState
+  /** Populated for filter matching only. */
+  exifCache: Record<string, PhotoExifSummary>
   viewHoveredPhotoId?: string
   editPreviewPath?: string
   editPreviewPhotoId?: string

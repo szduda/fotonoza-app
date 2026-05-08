@@ -8,7 +8,7 @@ import {
 import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
 import { getTemporalSnapshots, withUndo, withoutTemporalRecord } from "./history.store"
-import { defaultUiLayout, type AppState, type Photo } from "@/types/domain"
+import { defaultPhotoFilters, defaultUiLayout, type AppState, type Photo } from "@/types/domain"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
 type SetTemporalSnapshots = (past: AppState[], future: AppState[]) => void
@@ -60,6 +60,7 @@ const normalizePresent = (present: AppState): AppState => {
       thumbnailPath: photo.thumbnailPath?.endsWith(".thumb") ? undefined : photo.thumbnailPath,
     })),
     layout: { ...defaultUiLayout, ...(present.layout ?? {}) },
+    photoFilters: { ...defaultPhotoFilters(), ...(present.photoFilters ?? {}) },
     togglePanelExpanded:
       panelState && typeof panelState === "object" && !Array.isArray(panelState) ? panelState : {},
   }
@@ -102,8 +103,8 @@ export const createIoActions = (
       ]
       const library = await ensureLibrarySources(allSourcePaths)
       present = mapStateToLibrary(present, library)
-      const past = loaded.past.map((state) => mapStateToLibrary(state, library))
-      const future = loaded.future.map((state) => mapStateToLibrary(state, library))
+      const past = loaded.past.map((state) => mapStateToLibrary(normalizePresent(state), library))
+      const future = loaded.future.map((state) => mapStateToLibrary(normalizePresent(state), library))
       if (loaded.past.length === 0 && present.history.length > 0) {
         present = { ...present, history: [], historyCursor: 0 }
       }

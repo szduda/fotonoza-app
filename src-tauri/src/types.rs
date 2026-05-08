@@ -98,6 +98,19 @@ pub struct AppState {
     pub locale: String,
     #[serde(default)]
     pub layout: LayoutState,
+    #[serde(default = "default_photo_filters")]
+    pub photo_filters: serde_json::Value,
+}
+
+fn default_photo_filters() -> serde_json::Value {
+    serde_json::json!({
+        "fileName": "",
+        "dateTaken": "",
+        "exposure": "",
+        "camera": "",
+        "lens": "",
+        "ratingAtLeast": 0
+    })
 }
 
 /// Full disk root: app fields at top level plus optional undo stacks (camelCase from TS).

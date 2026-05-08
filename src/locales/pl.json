@@ -58,6 +58,15 @@
     "lens": "Obiektyw",
     "rating": "Ocena",
     "metadataPickPhoto": "Najedź na zdjęcie lub zaznacz je, aby zobaczyć szczegóły.",
+    "filter": "Filtr",
+    "filterFileName": "Nazwa pliku",
+    "filterDateTaken": "Data zdjęcia",
+    "filterExposure": "Ekspozycja",
+    "filterCamera": "Aparat",
+    "filterLens": "Obiektyw",
+    "filterRatingMin": "Min. ocena",
+    "filterRatingAny": "Dowolna",
+    "noPhotosMatchFilters": "Żadne zdjęcie nie pasuje do filtrów.",
     "noPhotos": "Brak zdjęć"
   },
   "exportModal": {

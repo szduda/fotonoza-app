@@ -58,6 +58,15 @@
     "lens": "Lens",
     "rating": "Rating",
     "metadataPickPhoto": "Hover a photo or select one to see details.",
+    "filter": "Filter",
+    "filterFileName": "Filename",
+    "filterDateTaken": "Date taken",
+    "filterExposure": "Exposure",
+    "filterCamera": "Camera",
+    "filterLens": "Lens",
+    "filterRatingMin": "Min. rating",
+    "filterRatingAny": "Any",
+    "noPhotosMatchFilters": "No photos match the current filters.",
     "noPhotos": "No photos yet"
   },
   "exportModal": {

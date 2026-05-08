@@ -127,6 +127,25 @@ export interface PhotoExifSummary {
   lensModel?: string
 }
 
+/** Live filter criteria; substring fields are case-insensitive contains; rating is minimum stars (0 = any). */
+export interface PhotoFiltersState {
+  fileName: string
+  dateTaken: string
+  exposure: string
+  camera: string
+  lens: string
+  ratingAtLeast: number
+}
+
+export const defaultPhotoFilters = (): PhotoFiltersState => ({
+  fileName: "",
+  dateTaken: "",
+  exposure: "",
+  camera: "",
+  lens: "",
+  ratingAtLeast: 0,
+})
+
 export interface HistoryEntry {
   id: string
   at: number
@@ -168,6 +187,7 @@ export interface AppState {
   exportSettings: ExportSettings
   locale: "en" | "pl"
   layout: UiLayoutState
+  photoFilters: PhotoFiltersState
 }
 
 /** Stored `HistoryEntry.label` values — keep in sync with `withUndo` / effect commits. */
@@ -233,6 +253,15 @@ export interface TranslationSchema {
     lens: string
     rating: string
     metadataPickPhoto: string
+    filter: string
+    filterFileName: string
+    filterDateTaken: string
+    filterExposure: string
+    filterCamera: string
+    filterLens: string
+    filterRatingMin: string
+    filterRatingAny: string
+    noPhotosMatchFilters: string
     noPhotos: string
   }
   exportModal: {

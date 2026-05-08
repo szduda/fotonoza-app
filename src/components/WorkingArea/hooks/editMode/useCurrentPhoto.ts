@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react"
+import { useFilteredPhotos } from "@/hooks/useFilteredPhotos"
 import { localImageSrc } from "@/lib/localImageSrc"
 import { armTimelineKeyboardStepScroll } from "@/lib/timelineKeyboardStepScroll"
 import { useAppStore } from "@/store/appStore"
@@ -15,6 +16,7 @@ export type CurrentPhotoModel = {
 export const useCurrentPhoto = (): CurrentPhotoModel => {
   const mode = useAppStore((s) => s.present.mode)
   const photos = useAppStore((s) => s.present.photos)
+  const visiblePhotos = useFilteredPhotos()
   const currentPhotoId = useAppStore((s) => s.present.currentPhotoId)
   const actions = useAppStore((s) => s.actions)
   const editPreviewPath = useAppStore((s) => s.editPreviewPath)
@@ -42,10 +44,11 @@ export const useCurrentPhoto = (): CurrentPhotoModel => {
 
   useEffect(() => {
     if (mode !== "edit") return
-    if (currentPhotoId) return
-    if (photos.length === 0) return
-    actions.ensureEditPhoto(photos[0].id)
-  }, [mode, currentPhotoId, photos, actions])
+    if (visiblePhotos.length === 0) return
+    if (!currentPhotoId || !visiblePhotos.some((p) => p.id === currentPhotoId)) {
+      actions.ensureEditPhoto(visiblePhotos[0].id)
+    }
+  }, [mode, currentPhotoId, visiblePhotos, actions])
 
   useEffect(() => {
     const onCtrlArrow = (e: KeyboardEvent) => {
@@ -57,11 +60,11 @@ export const useCurrentPhoto = (): CurrentPhotoModel => {
       e.stopPropagation()
       e.stopImmediatePropagation()
 
-      if (photos.length === 0) return
-      const idx = Math.max(0, photos.findIndex((photo) => photo.id === currentPhotoId))
+      if (visiblePhotos.length === 0) return
+      const idx = Math.max(0, visiblePhotos.findIndex((photo) => photo.id === currentPhotoId))
 
       if (e.key === "ArrowLeft") {
-        const next = photos[idx - 1]
+        const next = visiblePhotos[idx - 1]
         if (next && next.id !== currentPhotoId) {
           armTimelineKeyboardStepScroll()
           actions.openInEditor(next.id)
@@ -69,7 +72,7 @@ export const useCurrentPhoto = (): CurrentPhotoModel => {
         return
       }
 
-      const next = photos[idx + 1]
+      const next = visiblePhotos[idx + 1]
       if (next && next.id !== currentPhotoId) {
         armTimelineKeyboardStepScroll()
         actions.openInEditor(next.id)
@@ -78,7 +81,7 @@ export const useCurrentPhoto = (): CurrentPhotoModel => {
 
     window.addEventListener("keydown", onCtrlArrow, { capture: true })
     return () => window.removeEventListener("keydown", onCtrlArrow, { capture: true })
-  }, [mode, photos, currentPhotoId, actions])
+  }, [mode, visiblePhotos, currentPhotoId, actions])
 
   return { mode, selectedPhoto, editImageSrc, diskSourcePath, previewEpoch }
 }

@@ -2,6 +2,7 @@ import type { ReactElement } from "react"
 import { useAppStore } from "@/store/appStore"
 import { ExportProgressPanel } from "@/components/panels/ExportProgressPanel"
 import { HistoryPanel } from "@/components/panels/HistoryPanel"
+import { FilterPanel } from "@/components/panels/FilterPanel"
 import { MetadataPanel } from "@/components/panels/MetadataPanel"
 import { ViewPanel } from "@/components/panels/ViewPanel"
 
@@ -13,6 +14,7 @@ export const LeftSidebar = (): ReactElement => {
       <div className="flex min-h-0 flex-1 flex-col">
         <HistoryPanel />
         <MetadataPanel />
+        <FilterPanel />
 
         {mode === "edit" && <ViewPanel />}
       </div>
