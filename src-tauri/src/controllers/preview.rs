@@ -34,6 +34,8 @@ fn apply_live_effects_rgb(
     contrast: f32,
     contrast_balance: f32,
     clarity: f32,
+    temperature: f32,
+    tint: f32,
     vibrance: f32,
     saturation: f32,
     shadows: f32,
@@ -66,6 +68,13 @@ fn apply_live_effects_rgb(
     g += micro * clarity * 0.7;
     b += micro * clarity * 0.7;
 
+    let tr = 1.0 + temperature * 0.15 + tint * 0.05;
+    let tg = 1.0 - tint * 0.12;
+    let tb = 1.0 - temperature * 0.15 + tint * 0.05;
+    r *= tr;
+    g *= tg;
+    b *= tb;
+
     let mx = r.max(g).max(b);
     let mn = r.min(g).min(b);
     let ch = (mx - mn).clamp(0.0, 1.0);
@@ -84,6 +93,8 @@ pub fn render_basic_effects_image(
     contrast: f32,
     contrast_balance: f32,
     clarity: f32,
+    temperature: f32,
+    tint: f32,
     vibrance: f32,
     saturation: f32,
     shadows: f32,
@@ -115,6 +126,8 @@ pub fn render_basic_effects_image(
             contrast,
             contrast_balance,
             clarity,
+            temperature,
+            tint,
             vibrance,
             saturation,
             shadows,
@@ -180,6 +193,8 @@ fn render_basic_effects_preview_inner(
         &source_path,
         exposure_ev,
         contrast,
+        0.0,
+        0.0,
         0.0,
         0.0,
         0.0,

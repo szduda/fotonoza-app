@@ -9,14 +9,12 @@ export interface PhotoAdjustment {
   params: Record<string, number | string | boolean>
 }
 
-/** Software preview / persisted basic grade (EV, contrast, saturation). */
+/** Software preview / persisted basic tonal grade (EV, contrast, clarity). */
 export interface BasicEffectsState {
   exposure: number
   contrast: number
   contrastBalance: number
   clarity: number
-  vibrance: number
-  saturation: number
 }
 
 export const defaultBasicEffects = (): BasicEffectsState => ({
@@ -24,8 +22,23 @@ export const defaultBasicEffects = (): BasicEffectsState => ({
   contrast: 1,
   contrastBalance: 0,
   clarity: 0,
+})
+
+/** Color grading: saturation family + white balance style axes (−1…1). */
+export interface ColorEffectsState {
+  vibrance: number
+  saturation: number
+  /** Cool (−1) → warm (+1). */
+  temperature: number
+  /** Green (−1) → magenta (+1). */
+  tint: number
+}
+
+export const defaultColorEffects = (): ColorEffectsState => ({
   vibrance: 0,
   saturation: 1,
+  temperature: 0,
+  tint: 0,
 })
 
 export interface ShadowsHighlightsState {
@@ -63,6 +76,7 @@ export interface Photo {
   approved: boolean
   adjustments: PhotoAdjustment[]
   basicEffects?: BasicEffectsState
+  colorEffects?: ColorEffectsState
   shadowsHighlights?: ShadowsHighlightsState
   darktableFx?: DarktableFxState
 }
@@ -80,6 +94,7 @@ export interface ExportTaskPhoto {
   sourcePath: string
   fileName: string
   basicEffects?: BasicEffectsState
+  colorEffects?: ColorEffectsState
   shadowsHighlights?: ShadowsHighlightsState
 }
 
@@ -105,6 +120,8 @@ export interface HistoryEntry {
   id: string
   at: number
   label: string
+  /** Slider / numeric ops: change from state-before-gesture to committed state. */
+  delta?: number
 }
 
 /** Width/height of each chrome section when collapsed (strip stays visible). */
@@ -142,6 +159,31 @@ export interface AppState {
   layout: UiLayoutState
 }
 
+/** Stored `HistoryEntry.label` values — keep in sync with `withUndo` / effect commits. */
+export type HistoryStoredLabel =
+  | "toggle-select-photo"
+  | "clear-selected-photos"
+  | "open-in-editor"
+  | "approve-photo"
+  | "decline-photo"
+  | "import-preview"
+  | "set-locale-en"
+  | "set-locale-pl"
+  | "basic-effects-exposure"
+  | "basic-effects-contrast"
+  | "basic-effects-contrast-balance"
+  | "basic-effects-clarity"
+  | "basic-effects-vibrance"
+  | "basic-effects-saturation"
+  | "color-effects-vibrance"
+  | "color-effects-saturation"
+  | "color-effects-temperature"
+  | "color-effects-tint"
+  | "shadows-highlights-shadows"
+  | "shadows-highlights-darks"
+  | "shadows-highlights-lights"
+  | "shadows-highlights-highlights"
+
 export interface TranslationSchema {
   appTitle: string
   mode: {
@@ -158,11 +200,14 @@ export interface TranslationSchema {
     redo: string
     close: string
   }
+  /** Display strings for timeline entries (`HistoryEntry.label`). */
+  historyOps: { [K in HistoryStoredLabel]: string }
   labels: {
     selectedCount: string
     histogram: string
     effects: string
     basicEffects: string
+    colorEffects: string
     shadowsHighlights: string
     filmicRgb: string
     denoiseProfiled: string

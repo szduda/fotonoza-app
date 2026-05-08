@@ -2,6 +2,24 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct BasicEffects {
+    pub exposure: f32,
+    pub contrast: f32,
+    pub contrast_balance: f32,
+    pub clarity: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ColorEffects {
+    pub vibrance: f32,
+    pub saturation: f32,
+    pub temperature: f32,
+    pub tint: f32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PhotoState {
     pub id: String,
     pub file_name: String,
@@ -15,6 +33,8 @@ pub struct PhotoState {
     pub shadows_highlights: Option<serde_json::Value>,
     #[serde(default)]
     pub darktable_fx: Option<serde_json::Value>,
+    #[serde(default)]
+    pub color_effects: Option<ColorEffects>,
 }
 
 pub fn default_layout_width() -> u32 {
@@ -112,17 +132,6 @@ pub struct ExportSettings {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BasicEffects {
-    pub exposure: f32,
-    pub contrast: f32,
-    pub contrast_balance: f32,
-    pub clarity: f32,
-    pub vibrance: f32,
-    pub saturation: f32,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct ShadowsHighlights {
     pub shadows: f32,
     pub darks: f32,
@@ -137,6 +146,8 @@ pub struct ExportTaskPhoto {
     pub file_name: String,
     #[serde(default)]
     pub basic_effects: Option<BasicEffects>,
+    #[serde(default)]
+    pub color_effects: Option<ColorEffects>,
     #[serde(default)]
     pub shadows_highlights: Option<ShadowsHighlights>,
 }

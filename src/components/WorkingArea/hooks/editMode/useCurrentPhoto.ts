@@ -44,7 +44,7 @@ export const useCurrentPhoto = (): CurrentPhotoModel => {
     if (mode !== "edit") return
     if (currentPhotoId) return
     if (photos.length === 0) return
-    actions.openInEditor(photos[0].id)
+    actions.ensureEditPhoto(photos[0].id)
   }, [mode, currentPhotoId, photos, actions])
 
   useEffect(() => {

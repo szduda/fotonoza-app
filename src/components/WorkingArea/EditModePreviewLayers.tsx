@@ -1,7 +1,11 @@
 import { useCallback, useLayoutEffect, useState, type ReactElement } from "react"
 import { localImageSrc } from "@/lib/localImageSrc"
 import type { Photo } from "@/types/domain"
-import { defaultBasicEffects, defaultShadowsHighlights } from "@/types/domain"
+import {
+  defaultBasicEffects,
+  defaultColorEffects,
+  defaultShadowsHighlights,
+} from "@/types/domain"
 import { GpuPreviewCanvas } from "@/components/WorkingArea/components/GpuPreviewCanvas"
 import type { EditModeModel } from "@/components/WorkingArea/hooks/useEditMode"
 import type { Size } from "@/components/WorkingArea/geometry"
@@ -69,7 +73,8 @@ export const EditModePreviewLayers = ({ edit, selectedPhoto }: Props): ReactElem
         alt={selectedPhoto.fileName}
         rendered={edit.rendered}
         pan={edit.pan}
-        effects={{ ...defaultBasicEffects(), ...selectedPhoto.basicEffects }}
+        basicEffects={{ ...defaultBasicEffects(), ...selectedPhoto.basicEffects }}
+        colorEffects={{ ...defaultColorEffects(), ...selectedPhoto.colorEffects }}
         sh={{ ...defaultShadowsHighlights(), ...selectedPhoto.shadowsHighlights }}
         onImageNatural={onImageNatural}
         onImageError={() => edit.setImageFailed(true)}

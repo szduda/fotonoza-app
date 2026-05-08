@@ -3,6 +3,7 @@ import { t } from "@/lib/i18n"
 import { HistogramCanvas } from "@/components/panels/HistogramCanvas"
 import { chrome } from "@/components/layout/chromeTheme"
 import { BasicEffects } from "@/components/BasicEffects"
+import { ColorEffects } from "@/components/ColorEffects"
 import { ShadowsHighlightsPanel } from "@/components/ShadowsHighlightsPanel"
 import { DarktableFxPanel } from "@/components/DarktableFxPanel"
 
@@ -20,6 +21,7 @@ export const RightSidebar = () => {
       {selectedPhoto ? (
         <>
           <BasicEffects selectedPhoto={selectedPhoto} />
+          <ColorEffects selectedPhoto={selectedPhoto} />
           <ShadowsHighlightsPanel selectedPhoto={selectedPhoto} />
           <DarktableFxPanel selectedPhoto={selectedPhoto} />
         </>

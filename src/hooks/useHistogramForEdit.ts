@@ -7,7 +7,12 @@ import {
 } from "@/lib/liveHistogram"
 import { useAppStore } from "@/store/appStore"
 import type { HistogramData } from "@/types/domain"
-import { defaultBasicEffects, defaultDarktableFx, defaultShadowsHighlights } from "@/types/domain"
+import {
+  defaultBasicEffects,
+  defaultColorEffects,
+  defaultDarktableFx,
+  defaultShadowsHighlights,
+} from "@/types/domain"
 
 export const useHistogramForEdit = (): {
   data: HistogramData | undefined
@@ -36,6 +41,7 @@ export const useHistogramForEdit = (): {
       return
     }
     const basic = { ...defaultBasicEffects(), ...selectedPhoto.basicEffects }
+    const color = { ...defaultColorEffects(), ...selectedPhoto.colorEffects }
     const sh = { ...defaultShadowsHighlights(), ...selectedPhoto.shadowsHighlights }
     const dt = { ...defaultDarktableFx(), ...selectedPhoto.darktableFx }
     const key = {
@@ -44,8 +50,10 @@ export const useHistogramForEdit = (): {
       contrast: basic.contrast,
       contrastBalance: basic.contrastBalance,
       clarity: basic.clarity,
-      vibrance: basic.vibrance,
-      saturation: basic.saturation,
+      vibrance: color.vibrance,
+      saturation: color.saturation,
+      temperature: color.temperature,
+      tint: color.tint,
       shadows: sh.shadows,
       darks: sh.darks,
       lights: sh.lights,
@@ -84,6 +92,7 @@ export const useHistogramForEdit = (): {
     selectedPhoto?.id,
     selectedPhoto?.sourcePath,
     selectedPhoto?.basicEffects,
+    selectedPhoto?.colorEffects,
     selectedPhoto?.shadowsHighlights,
     selectedPhoto?.darktableFx,
   ])

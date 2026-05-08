@@ -27,10 +27,20 @@ const initialState: AppState = {
   layout: { ...defaultUiLayout },
 }
 
+/** zundo merges partialized snapshots onto the root store; nest `present` so undo restores photos/history. */
+type TemporalPresentSlice = Pick<StoreShape, "present">
+
+const clonePresentForStack = (slice: TemporalPresentSlice): TemporalPresentSlice => ({
+  present: structuredClone(slice.present),
+})
+
+const wrapTemporalSnapshots = (states: AppState[]): TemporalPresentSlice[] =>
+  states.map((p) => ({ present: structuredClone(p) }))
+
 const setTemporalSnapshots = (past: AppState[], future: AppState[]) => {
   useAppStore.temporal.setState({
-    pastStates: past,
-    futureStates: future,
+    pastStates: wrapTemporalSnapshots(past),
+    futureStates: wrapTemporalSnapshots(future),
   })
 }
 
@@ -56,8 +66,29 @@ export const useAppStore = create<StoreShape>()(
       },
     }),
     {
-      partialize: (state) => state.present,
-      limit: 100,
+      partialize: (state): TemporalPresentSlice => ({ present: state.present }),
+      limit: 30,
+      handleSet: (impl) => {
+        type StackPush = (
+          pastState: unknown,
+          replace: unknown,
+          currentState: unknown,
+          deltaState: unknown,
+        ) => void
+        const push = impl as unknown as StackPush
+        return (pastState, replace, currentState, deltaState) => {
+          const slice = (deltaState ?? pastState) as TemporalPresentSlice | undefined
+          const frozen =
+            slice &&
+            typeof slice === "object" &&
+            "present" in slice &&
+            slice.present &&
+            typeof slice.present === "object"
+              ? clonePresentForStack(slice as TemporalPresentSlice)
+              : slice
+          push(pastState, replace, currentState, frozen)
+        }
+      },
     },
   ),
 )

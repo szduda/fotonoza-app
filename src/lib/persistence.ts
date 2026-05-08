@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core"
 import type {
   AppState,
   BasicEffectsState,
+  ColorEffectsState,
   DarktableFxState,
   ExportJobStatus,
   ExportSettings,
@@ -28,6 +29,7 @@ const stripPhotoLocalState = (state: AppState): AppState => ({
     return {
       ...rest,
       basicEffects: undefined,
+      colorEffects: undefined,
       shadowsHighlights: undefined,
       darktableFx: undefined,
     }
@@ -106,6 +108,7 @@ export const renderDarktableFxPreview = async (
 export const getPhotoHistogram = async (
   photoPath: string,
   basicEffects: BasicEffectsState,
+  colorEffects: ColorEffectsState,
   shadowsHighlights: ShadowsHighlightsState,
   darktableFx: DarktableFxState,
 ): Promise<HistogramData> => {
@@ -115,8 +118,10 @@ export const getPhotoHistogram = async (
     contrast: basicEffects.contrast,
     contrastBalance: basicEffects.contrastBalance,
     clarity: basicEffects.clarity,
-    vibrance: basicEffects.vibrance,
-    saturation: basicEffects.saturation,
+    vibrance: colorEffects.vibrance,
+    saturation: colorEffects.saturation,
+    temperature: colorEffects.temperature,
+    tint: colorEffects.tint,
     shadows: shadowsHighlights.shadows,
     darks: shadowsHighlights.darks,
     lights: shadowsHighlights.lights,

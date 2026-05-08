@@ -1,15 +1,26 @@
 import { saveStoreSnapshot } from "@/lib/persistence"
 import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
-import { getTemporalSnapshots, withUndo } from "./history.store"
+import { getTemporalSnapshots, withUndo, withoutTemporalRecord } from "./history.store"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
+
+const clearEditPreview = (current: StoreShape): void => {
+  current.editPreviewPath = undefined
+  current.editPreviewPhotoId = undefined
+  current.editPreviewPending = 0
+}
 
 export const createLibraryActions = (
   set: SetStore,
 ): Pick<
   AppActions,
-  "toggleSelectPhoto" | "clearSelectedPhotos" | "openInEditor" | "approvePhoto" | "declinePhoto"
+  | "toggleSelectPhoto"
+  | "clearSelectedPhotos"
+  | "openInEditor"
+  | "ensureEditPhoto"
+  | "approvePhoto"
+  | "declinePhoto"
 > => {
   return {
     toggleSelectPhoto: (photoId) =>
@@ -23,21 +34,26 @@ export const createLibraryActions = (
           if (photo.selected) photo.selected = false
         }
       }),
-    openInEditor: (photoId) => {
-      set(
-        produce((current: StoreShape) => {
-          const present = {
-            ...current.present,
-            mode: "edit" as const,
-            currentPhotoId: photoId,
-          }
-          const { past, future } = getTemporalSnapshots()
-          void saveStoreSnapshot(present, past, future)
-          current.present = present
-          current.editPreviewPath = undefined
-          current.editPreviewPhotoId = undefined
-          current.editPreviewPending = 0
-        }),
+    openInEditor: (photoId) =>
+      withUndo(set, "open-in-editor", (s) => {
+        s.mode = "edit"
+        s.currentPhotoId = photoId
+      }, clearEditPreview),
+    ensureEditPhoto: (photoId) => {
+      withoutTemporalRecord(() =>
+        set(
+          produce((current: StoreShape) => {
+            const present = {
+              ...current.present,
+              mode: "edit" as const,
+              currentPhotoId: photoId,
+            }
+            const { past, future } = getTemporalSnapshots()
+            void saveStoreSnapshot(present, past, future)
+            current.present = present
+            clearEditPreview(current)
+          }),
+        ),
       )
     },
     approvePhoto: (photoId) =>

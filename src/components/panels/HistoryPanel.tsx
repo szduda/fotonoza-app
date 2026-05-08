@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactElement } from "react"
 import { useAppStore } from "@/store/appStore"
-import { t } from "@/lib/i18n"
+import { historyEntryDisplay, t } from "@/lib/i18n"
 import { chrome } from "@/components/layout/chromeTheme"
 import { ToggledPanel } from "@/components/generic/ToggledPanel"
 
@@ -40,7 +40,7 @@ export const HistoryPanel = (): ReactElement => {
                 : `${chrome.panelText} hover:bg-neutral-800/90 cursor-pointer`
           }`}
         >
-          {entry.label}
+          {historyEntryDisplay(locale, entry)}
         </button>
       ))}
     </ToggledPanel>

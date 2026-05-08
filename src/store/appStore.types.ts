@@ -2,6 +2,7 @@ import type {
   AppMode,
   AppState,
   BasicEffectsState,
+  ColorEffectsState,
   DarktableFxState,
   Photo,
   ShadowsHighlightsState,
@@ -17,11 +18,29 @@ export interface AppActions {
   toggleSelectPhoto: (photoId: string) => void
   clearSelectedPhotos: () => void
   openInEditor: (photoId: string) => void
+  /** Edit shell bootstrap only (no history); avoids undo loops when `currentPhotoId` is empty. */
+  ensureEditPhoto: (photoId: string) => void
   approvePhoto: (photoId: string) => void
   declinePhoto: (photoId: string) => void
   mergePhotoFromDisk: (photoId: string, partial: Partial<Photo>) => void
-  patchBasicEffects: (photoId: string, effects: Partial<BasicEffectsState>) => void
-  patchShadowsHighlights: (photoId: string, fx: Partial<ShadowsHighlightsState>) => void
+  patchBasicEffects: (
+    photoId: string,
+    effects: Partial<BasicEffectsState>,
+    historyLabel: string,
+    historyDelta?: number,
+  ) => void
+  patchShadowsHighlights: (
+    photoId: string,
+    fx: Partial<ShadowsHighlightsState>,
+    historyLabel: string,
+    historyDelta?: number,
+  ) => void
+  patchColorEffects: (
+    photoId: string,
+    fx: Partial<ColorEffectsState>,
+    historyLabel: string,
+    historyDelta?: number,
+  ) => void
   patchDarktableFx: (photoId: string, fx: Partial<DarktableFxState>) => void
   setEditPreview: (photoId: string | undefined, path: string | undefined) => void
   adjustEditPreviewPending: (delta: number) => void

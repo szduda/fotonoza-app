@@ -12,6 +12,8 @@ export type HistogramKey = {
   clarity: number
   vibrance: number
   saturation: number
+  temperature: number
+  tint: number
   shadows: number
   darks: number
   lights: number
@@ -29,6 +31,8 @@ const toCacheKey = (key: HistogramKey): string => {
     key.clarity,
     key.vibrance,
     key.saturation,
+    key.temperature,
+    key.tint,
     key.shadows,
     key.darks,
     key.lights,
@@ -56,8 +60,12 @@ export const loadCachedHistogram = (key: HistogramKey): Promise<HistogramData> =
       contrast: key.contrast,
       contrastBalance: key.contrastBalance,
       clarity: key.clarity,
+    },
+    {
       vibrance: key.vibrance,
       saturation: key.saturation,
+      temperature: key.temperature,
+      tint: key.tint,
     },
     {
       shadows: key.shadows,

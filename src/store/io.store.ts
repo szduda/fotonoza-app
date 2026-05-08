@@ -3,10 +3,11 @@ import {
   ensureLibrarySources,
   loadAppState,
   repairThumbnail,
+  saveStoreSnapshot,
 } from "@/lib/persistence"
 import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
-import { withUndo } from "./history.store"
+import { getTemporalSnapshots, withUndo, withoutTemporalRecord } from "./history.store"
 import { defaultUiLayout, type AppState, type Photo } from "@/types/domain"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
@@ -67,13 +68,15 @@ const patchThumbnailEntries = (
   entries: Array<{ sourcePath: string; thumbnailPath: string }>,
 ) => {
   const pathBySource = new Map(entries.map((entry) => [entry.sourcePath, entry.thumbnailPath]))
-  set(
-    produce((current: StoreShape) => {
-      for (const photo of current.present.photos) {
-        const thumbnailPath = pathBySource.get(photo.sourcePath)
-        if (thumbnailPath) photo.thumbnailPath = thumbnailPath
-      }
-    }),
+  withoutTemporalRecord(() =>
+    set(
+      produce((current: StoreShape) => {
+        for (const photo of current.present.photos) {
+          const thumbnailPath = pathBySource.get(photo.sourcePath)
+          if (thumbnailPath) photo.thumbnailPath = thumbnailPath
+        }
+      }),
+    ),
   )
 }
 
@@ -102,16 +105,18 @@ export const createIoActions = (
       if (loaded.past.length === 0 && present.history.length > 0) {
         present = { ...present, history: [], historyCursor: 0 }
       }
-      set(
-        produce((current: StoreShape) => {
-          current.present = present
-          setTemporalSnapshots(past, future)
-          current.present.historyCursor = loaded.past.length
-          current.editPreviewPath = undefined
-          current.editPreviewPhotoId = undefined
-          current.editPreviewEpoch = 0
-          current.editPreviewPending = 0
-        }),
+      withoutTemporalRecord(() =>
+        set(
+          produce((current: StoreShape) => {
+            current.present = present
+            setTemporalSnapshots(past, future)
+            current.present.historyCursor = loaded.past.length
+            current.editPreviewPath = undefined
+            current.editPreviewPhotoId = undefined
+            current.editPreviewEpoch = 0
+            current.editPreviewPending = 0
+          }),
+        ),
       )
 
       const presentSources = present.photos.map((photo) => photo.sourcePath)
@@ -131,9 +136,17 @@ export const createIoActions = (
     },
 
     setExportField: (key, value) =>
-      withUndo(set, `set-export-${String(key)}`, (s) => {
-        s.exportSettings[key] = value
-      }),
+      withoutTemporalRecord(() =>
+        set(
+          produce((current: StoreShape) => {
+            const exportSettings = { ...current.present.exportSettings, [key]: value }
+            const present = { ...current.present, exportSettings }
+            const { past, future } = getTemporalSnapshots()
+            void saveStoreSnapshot(present, past, future)
+            current.present = present
+          }),
+        ),
+      ),
 
     ensurePhotoThumbnail: (photoId) => {
       const photo = get().present.photos.find((p) => p.id === photoId)
@@ -141,13 +154,15 @@ export const createIoActions = (
 
       void repairThumbnail(photo.sourcePath).then((thumbPath) => {
         if (!thumbPath) return
-        set(
-          produce((current: StoreShape) => {
-            const p = current.present.photos.find((item) => item.id === photoId)
-            if (!p) return
-            p.thumbnailPath = thumbPath
-            p.thumbnailNonce = (p.thumbnailNonce ?? 0) + 1
-          }),
+        withoutTemporalRecord(() =>
+          set(
+            produce((current: StoreShape) => {
+              const p = current.present.photos.find((item) => item.id === photoId)
+              if (!p) return
+              p.thumbnailPath = thumbPath
+              p.thumbnailNonce = (p.thumbnailNonce ?? 0) + 1
+            }),
+          ),
         )
       })
     },

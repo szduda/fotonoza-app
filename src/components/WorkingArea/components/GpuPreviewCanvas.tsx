@@ -2,7 +2,7 @@ import { readFile } from "@tauri-apps/plugin-fs"
 import { isTauri } from "@tauri-apps/api/core"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement } from "react"
 import { hasLiveHistogramSubscribers, publishHistogramFromFrame } from "@/lib/liveHistogram"
-import type { BasicEffectsState, ShadowsHighlightsState } from "@/types/domain"
+import type { BasicEffectsState, ColorEffectsState, ShadowsHighlightsState } from "@/types/domain"
 
 type Size = { width: number; height: number }
 type Pan = { x: number; y: number }
@@ -16,7 +16,8 @@ type Props = {
   alt: string
   rendered: Size
   pan: Pan
-  effects: BasicEffectsState
+  basicEffects: BasicEffectsState
+  colorEffects: ColorEffectsState
   sh: ShadowsHighlightsState
   onImageNatural: (size: Size) => void
   onImageError: () => void
@@ -53,6 +54,8 @@ void main() {
   float clarity = u_basic0.w;
   float vibrance = u_basic1.x;
   float saturation = u_basic1.y;
+  float temperature = u_basic1.z;
+  float tint = u_basic1.w;
   float shadows = u_sh.x;
   float darks = u_sh.y;
   float lights = u_sh.z;
@@ -74,6 +77,11 @@ void main() {
   float micro = (c.r + c.g + c.b - 3.0 * y) / 3.0;
   c += vec3(micro * clarity * 0.7);
 
+  float tr = 1.0 + temperature * 0.15 + tint * 0.05;
+  float tg = 1.0 - tint * 0.12;
+  float tb = 1.0 - temperature * 0.15 + tint * 0.05;
+  c *= vec3(tr, tg, tb);
+
   float mx = max(c.r, max(c.g, c.b));
   float mn = min(c.r, min(c.g, c.b));
   float chroma = clamp(mx - mn, 0.0, 1.0);
@@ -92,7 +100,8 @@ export const GpuPreviewCanvas = ({
   alt,
   rendered,
   pan,
-  effects,
+  basicEffects,
+  colorEffects,
   sh,
   onImageNatural,
   onImageError,
@@ -126,21 +135,28 @@ export const GpuPreviewCanvas = ({
   const uniforms = useMemo(
     () => ({
       basic0: new Float32Array([
-        effects.exposure,
-        effects.contrast,
-        effects.contrastBalance,
-        effects.clarity,
+        basicEffects.exposure,
+        basicEffects.contrast,
+        basicEffects.contrastBalance,
+        basicEffects.clarity,
       ]),
-      basic1: new Float32Array([effects.vibrance, effects.saturation, 0, 0]),
+      basic1: new Float32Array([
+        colorEffects.vibrance,
+        colorEffects.saturation,
+        colorEffects.temperature,
+        colorEffects.tint,
+      ]),
       sh: new Float32Array([sh.shadows, sh.darks, sh.lights, sh.highlights]),
     }),
     [
-      effects.exposure,
-      effects.contrast,
-      effects.contrastBalance,
-      effects.clarity,
-      effects.vibrance,
-      effects.saturation,
+      basicEffects.exposure,
+      basicEffects.contrast,
+      basicEffects.contrastBalance,
+      basicEffects.clarity,
+      colorEffects.vibrance,
+      colorEffects.saturation,
+      colorEffects.temperature,
+      colorEffects.tint,
       sh.shadows,
       sh.darks,
       sh.lights,
@@ -246,12 +262,14 @@ export const GpuPreviewCanvas = ({
     draw()
   }, [
     src,
-    effects.exposure,
-    effects.contrast,
-    effects.contrastBalance,
-    effects.clarity,
-    effects.vibrance,
-    effects.saturation,
+    basicEffects.exposure,
+    basicEffects.contrast,
+    basicEffects.contrastBalance,
+    basicEffects.clarity,
+    colorEffects.vibrance,
+    colorEffects.saturation,
+    colorEffects.temperature,
+    colorEffects.tint,
     sh.shadows,
     sh.darks,
     sh.lights,
