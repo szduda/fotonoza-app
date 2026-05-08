@@ -1,8 +1,8 @@
+import { ensureThumbnailBatchResolved } from "@/lib/thumbnailJobs"
 import {
   ensureLibrarySources,
-  ensureThumbnails,
   loadAppState,
-  resolveThumbnailPaths,
+  repairThumbnail,
 } from "@/lib/persistence"
 import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
@@ -11,6 +11,7 @@ import { defaultUiLayout, type AppState, type Photo } from "@/types/domain"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
 type SetTemporalSnapshots = (past: AppState[], future: AppState[]) => void
+type GetStore = () => StoreShape
 
 const fileNameFromPath = (path: string): string => {
   return path.split(/[\\/]/).at(-1) ?? path
@@ -61,10 +62,29 @@ const normalizePresent = (present: AppState): AppState => {
   }
 }
 
+const patchThumbnailEntries = (
+  set: SetStore,
+  entries: Array<{ sourcePath: string; thumbnailPath: string }>,
+) => {
+  const pathBySource = new Map(entries.map((entry) => [entry.sourcePath, entry.thumbnailPath]))
+  set(
+    produce((current: StoreShape) => {
+      for (const photo of current.present.photos) {
+        const thumbnailPath = pathBySource.get(photo.sourcePath)
+        if (thumbnailPath) photo.thumbnailPath = thumbnailPath
+      }
+    }),
+  )
+}
+
 export const createIoActions = (
   set: SetStore,
   setTemporalSnapshots: SetTemporalSnapshots,
-): Pick<AppActions, "initialize" | "importPreviewPhotos" | "setExportField"> => {
+  get: GetStore,
+): Pick<
+  AppActions,
+  "initialize" | "importPreviewPhotos" | "setExportField" | "ensurePhotoThumbnail"
+> => {
   return {
     initialize: async () => {
       const loaded = await loadAppState()
@@ -79,7 +99,6 @@ export const createIoActions = (
       present = mapStateToLibrary(present, library)
       const past = loaded.past.map((state) => mapStateToLibrary(state, library))
       const future = loaded.future.map((state) => mapStateToLibrary(state, library))
-      void ensureThumbnails(present.photos.map((photo) => photo.sourcePath))
       if (loaded.past.length === 0 && present.history.length > 0) {
         present = { ...present, history: [], historyCursor: 0 }
       }
@@ -94,18 +113,11 @@ export const createIoActions = (
           current.editPreviewPending = 0
         }),
       )
-      void resolveThumbnailPaths(present.photos.map((photo) => photo.sourcePath)).then((entries) => {
-        const pathBySource = new Map(entries.map((entry) => [entry.sourcePath, entry.thumbnailPath]))
-        set(
-          produce((current: StoreShape) => {
-            for (const photo of current.present.photos) {
-              const thumbnailPath = pathBySource.get(photo.sourcePath)
-              if (thumbnailPath) photo.thumbnailPath = thumbnailPath
-            }
-          }),
-        )
-      })
+
+      const presentSources = present.photos.map((photo) => photo.sourcePath)
+      void ensureThumbnailBatchResolved(presentSources).then((entries) => patchThumbnailEntries(set, entries))
     },
+
     importPreviewPhotos: (paths) => {
       void ensureLibrarySources(paths).then((libraryEntries) => {
         const libraryPaths = libraryEntries.map((entry) => entry.libraryPath)
@@ -113,23 +125,31 @@ export const createIoActions = (
           s.photos.push(...libraryPaths.map(buildPhoto))
           s.mode = "view"
         })
-        void ensureThumbnails(libraryPaths)
-        void resolveThumbnailPaths(libraryPaths).then((entries) => {
-          const pathBySource = new Map(entries.map((entry) => [entry.sourcePath, entry.thumbnailPath]))
-          set(
-            produce((current: StoreShape) => {
-              for (const photo of current.present.photos) {
-                const thumbnailPath = pathBySource.get(photo.sourcePath)
-                if (thumbnailPath) photo.thumbnailPath = thumbnailPath
-              }
-            }),
-          )
-        })
+
+        void ensureThumbnailBatchResolved(libraryPaths).then((entries) => patchThumbnailEntries(set, entries))
       })
     },
+
     setExportField: (key, value) =>
       withUndo(set, `set-export-${String(key)}`, (s) => {
         s.exportSettings[key] = value
       }),
+
+    ensurePhotoThumbnail: (photoId) => {
+      const photo = get().present.photos.find((p) => p.id === photoId)
+      if (!photo) return
+
+      void repairThumbnail(photo.sourcePath).then((thumbPath) => {
+        if (!thumbPath) return
+        set(
+          produce((current: StoreShape) => {
+            const p = current.present.photos.find((item) => item.id === photoId)
+            if (!p) return
+            p.thumbnailPath = thumbPath
+            p.thumbnailNonce = (p.thumbnailNonce ?? 0) + 1
+          }),
+        )
+      })
+    },
   }
 }

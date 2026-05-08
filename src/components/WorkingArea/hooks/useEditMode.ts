@@ -26,6 +26,8 @@ import type { Photo } from "@/types/domain"
 export type EditModeModel = {
   selectedPhoto: Photo | undefined
   editImageSrc: string
+  /** Filesystem path for Tauri `readFile` (same photo as `editImageSrc`). */
+  diskSourcePath?: string
   /** Remount preview `<img>` when a new preview file is ready. */
   previewEpoch: number
   imageFailed: boolean
@@ -87,6 +89,12 @@ export const useEditMode = (): EditModeModel => {
       return localImageSrc(editPreviewPath)
     }
     return localImageSrc(selectedPhoto.sourcePath)
+  }, [selectedPhoto, editPreviewPath, editPreviewPhotoId])
+
+  const diskSourcePath = useMemo(() => {
+    if (!selectedPhoto) return undefined
+    if (editPreviewPath && editPreviewPhotoId === selectedPhoto.id) return editPreviewPath
+    return selectedPhoto.sourcePath
   }, [selectedPhoto, editPreviewPath, editPreviewPhotoId])
 
   const selectedPhotoRef = useRef(selectedPhoto)
@@ -205,16 +213,15 @@ export const useEditMode = (): EditModeModel => {
   }, [applyZoomAtCenter])
 
   useEffect(() => {
-    const currentWorked = selectedPhoto
-      ? { id: selectedPhoto.id, sourcePath: selectedPhoto.sourcePath }
-      : undefined
-    if (!isPhotoEqual(previousWorkedPhotoRef.current, currentWorked)) {
+    if (!selectedPhoto) return
+    const next = { id: selectedPhoto.id, sourcePath: selectedPhoto.sourcePath }
+    if (!isPhotoEqual(previousWorkedPhotoRef.current, next)) {
       fitToView()
       setImageNatural({ width: 0, height: 0 })
       setImageFailed(false)
-      previousWorkedPhotoRef.current = currentWorked
+      previousWorkedPhotoRef.current = next
     }
-  }, [selectedPhoto, fitToView])
+  }, [selectedPhoto?.id, selectedPhoto?.sourcePath, fitToView])
 
   useEffect(() => {
     setImageFailed(false)
@@ -318,6 +325,7 @@ export const useEditMode = (): EditModeModel => {
   return {
     selectedPhoto,
     editImageSrc,
+    diskSourcePath,
     previewEpoch,
     imageFailed,
     setImageNatural,

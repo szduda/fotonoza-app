@@ -48,7 +48,7 @@ export const useAppStore = create<StoreShape>()(
       editPreviewEpoch: 0,
       editPreviewPending: 0,
       actions: {
-        ...createIoActions(set, setTemporalSnapshots),
+        ...createIoActions(set, setTemporalSnapshots, get),
         ...createLibraryActions(set),
         ...createEffectsActions(set),
         ...createHistoryActions(set, get),

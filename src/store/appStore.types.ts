@@ -10,6 +10,8 @@ import type {
 
 export interface AppActions {
   initialize: () => Promise<void>
+  /** Regenerate JPEG thumb after load failure (`PhotoThumbnail` onError path). */
+  ensurePhotoThumbnail: (photoId: string) => void
   setMode: (mode: AppMode) => void
   importPreviewPhotos: (paths: string[]) => void
   toggleSelectPhoto: (photoId: string) => void

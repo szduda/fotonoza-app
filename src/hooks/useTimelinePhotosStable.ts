@@ -3,7 +3,7 @@ import type { Photo } from "@/types/domain"
 import { useAppStore } from "@/store/appStore"
 
 /** Ignores basicEffects / shadows / darktable changes — timeline strip metadata only. */
-function timelineStripEq(a: Photo[], b: Photo[]): boolean {
+const timelineStripEq = (a: Photo[], b: Photo[]): boolean => {
   if (a === b) return true
   if (a.length !== b.length) return false
   for (let i = 0; i < a.length; i++) {
@@ -13,7 +13,9 @@ function timelineStripEq(a: Photo[], b: Photo[]): boolean {
       x.id !== y.id ||
       x.selected !== y.selected ||
       x.sourcePath !== y.sourcePath ||
-      x.fileName !== y.fileName
+      x.fileName !== y.fileName ||
+      x.thumbnailPath !== y.thumbnailPath ||
+      (x.thumbnailNonce ?? 0) !== (y.thumbnailNonce ?? 0)
     ) {
       return false
     }
@@ -21,7 +23,7 @@ function timelineStripEq(a: Photo[], b: Photo[]): boolean {
   return true
 }
 
-export function useTimelinePhotosStable(): Photo[] {
+export const useTimelinePhotosStable = (): Photo[] => {
   const [photos, setPhotos] = useState<Photo[]>(() => useAppStore.getState().present.photos)
 
   useEffect(() => {

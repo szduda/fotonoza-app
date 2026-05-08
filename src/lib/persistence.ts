@@ -23,12 +23,15 @@ export type LibraryPathEntry = { sourcePath: string; libraryPath: string }
 
 const stripPhotoLocalState = (state: AppState): AppState => ({
   ...state,
-  photos: state.photos.map((photo) => ({
-    ...photo,
-    basicEffects: undefined,
-    shadowsHighlights: undefined,
-    darktableFx: undefined,
-  })),
+  photos: state.photos.map((photo) => {
+    const { thumbnailNonce: _discard, ...rest } = photo
+    return {
+      ...rest,
+      basicEffects: undefined,
+      shadowsHighlights: undefined,
+      darktableFx: undefined,
+    }
+  }),
 })
 
 export const saveStoreSnapshot = async (
@@ -140,6 +143,11 @@ export const ensureLibrarySources = async (sourcePaths: string[]): Promise<Libra
 export const resolveThumbnailPaths = async (sourcePaths: string[]): Promise<ThumbPathEntry[]> => {
   if (sourcePaths.length === 0) return []
   return invoke<ThumbPathEntry[]>("resolve_thumbnail_paths", { sourcePaths })
+}
+
+/** Regenerate one JPEG thumb on disk from source (blocking worker). Used after img load failure. */
+export const repairThumbnail = async (sourcePath: string): Promise<string | null> => {
+  return invoke<string | null>("repair_thumbnail", { sourcePath })
 }
 
 export const startExportJob = async (

@@ -49,7 +49,7 @@ export const buttonIconOnlySizes = {
 } as const
 
 const base =
-  "inline-flex items-center justify-center rounded font-medium transition-colors cursor-pointer disabled:text-inherit disabled:pointer-events-none"
+  "inline-flex items-center justify-center rounded font-medium transition-colors duration-150 ease-out cursor-pointer disabled:text-inherit disabled:pointer-events-none"
 
 export type ButtonProps = ComponentPropsWithoutRef<"button"> & {
   variant?: keyof typeof buttonVariants

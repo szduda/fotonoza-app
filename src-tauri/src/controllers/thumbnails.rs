@@ -15,14 +15,7 @@ pub struct ThumbPathEntry {
     thumbnail_path: String,
 }
 
-fn create_thumb_if_missing(source_path: &str, thumb_path: &Path) -> Result<(), String> {
-    if thumb_path.exists() {
-        return Ok(());
-    }
-    if !Path::new(source_path).exists() {
-        return Ok(());
-    }
-
+fn write_thumbnail_to_path(source_path: &str, thumb_path: &Path) -> Result<(), String> {
     let img = image::open(source_path).map_err(|e| format!("thumbnail decode: {e}"))?;
     let resized = img.thumbnail(THUMB_MAX, THUMB_MAX);
 
@@ -40,6 +33,16 @@ fn create_thumb_if_missing(source_path: &str, thumb_path: &Path) -> Result<(), S
     Ok(())
 }
 
+fn create_thumb_if_missing(source_path: &str, thumb_path: &Path) -> Result<(), String> {
+    if thumb_path.exists() {
+        return Ok(());
+    }
+    if !Path::new(source_path).exists() {
+        return Ok(());
+    }
+    write_thumbnail_to_path(source_path, thumb_path)
+}
+
 fn ensure_thumbnails_inner(source_paths: Vec<String>) {
     let Ok(import_dir) = fotonoza_import_dir() else {
         return;
@@ -55,12 +58,33 @@ fn ensure_thumbnails_inner(source_paths: Vec<String>) {
     });
 }
 
+fn repair_thumbnail_inner(source_path: &str) -> Result<Option<String>, String> {
+    let import_dir = fotonoza_import_dir()?;
+    let thumbs_dir = thumbs_dir(&import_dir);
+    if fs::create_dir_all(&thumbs_dir).is_err() {
+        return Err("create thumbs dir failed".into());
+    }
+    let thumb_path = thumb_path_for_source(&import_dir, source_path)?;
+    if !Path::new(source_path).exists() {
+        return Ok(None);
+    }
+    write_thumbnail_to_path(source_path, &thumb_path)?;
+    Ok(Some(thumb_path.to_string_lossy().into_owned()))
+}
+
 #[tauri::command]
 pub async fn ensure_thumbnails(source_paths: Vec<String>) -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(move || ensure_thumbnails_inner(source_paths))
         .await
         .map_err(|e| format!("thumbnail worker join: {e}"))?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn repair_thumbnail(source_path: String) -> Result<Option<String>, String> {
+    tauri::async_runtime::spawn_blocking(move || repair_thumbnail_inner(&source_path))
+        .await
+        .map_err(|e| format!("repair thumbnail worker join: {e}"))?
 }
 
 #[tauri::command]

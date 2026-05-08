@@ -6,7 +6,7 @@ use controllers::darktable::{get_photo_histogram, render_darktable_fx_preview, r
 use controllers::export::{get_default_export_directory, get_export_job_status, start_export_job};
 use controllers::library::ensure_library_sources;
 use controllers::preview::render_basic_effects_preview;
-use controllers::thumbnails::{ensure_thumbnails, resolve_thumbnail_paths};
+use controllers::thumbnails::{ensure_thumbnails, repair_thumbnail, resolve_thumbnail_paths};
 
 pub fn run() {
     tauri::Builder::default()
@@ -24,6 +24,7 @@ pub fn run() {
             render_basic_effects_preview,
             ensure_library_sources,
             ensure_thumbnails,
+            repair_thumbnail,
             resolve_thumbnail_paths,
             get_default_export_directory,
             start_export_job,

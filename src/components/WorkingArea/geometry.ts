@@ -7,11 +7,14 @@ export const clamp = (value: number, min: number, max: number): number => {
   return Math.min(max, Math.max(min, value))
 }
 
+/** Contain-fit for zoom; unknown viewport axes fall back to image size so layout 0×0 does not zero out display. */
 export const fitContainSize = (viewport: Size, image: Size, zoom: number): Size => {
-  if (viewport.width <= 0 || viewport.height <= 0 || image.width <= 0 || image.height <= 0) {
+  if (image.width <= 0 || image.height <= 0) {
     return { width: 0, height: 0 }
   }
-  const fit = Math.min(viewport.width / image.width, viewport.height / image.height)
+  const vw = viewport.width > 0 ? viewport.width : image.width
+  const vh = viewport.height > 0 ? viewport.height : image.height
+  const fit = Math.min(vw / image.width, vh / image.height)
   const scale = fit * zoom
   return { width: image.width * scale, height: image.height * scale }
 }

@@ -57,6 +57,8 @@ export interface Photo {
   fileName: string
   sourcePath: string
   thumbnailPath?: string
+  /** Bumps img URL after regenerate; stripped when persisting. */
+  thumbnailNonce?: number
   selected: boolean
   approved: boolean
   adjustments: PhotoAdjustment[]

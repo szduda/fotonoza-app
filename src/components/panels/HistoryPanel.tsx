@@ -32,7 +32,7 @@ export const HistoryPanel = (): ReactElement => {
           key={entry.id}
           type="button"
           onClick={() => jumpToHistory(idx)}
-          className={`flex w-full items-center px-2 py-1 text-left text-[11px] transition-colors ${
+          className={`flex w-full items-center px-2 py-1 text-left text-[11px] transition-colors duration-150 ease-out ${
             idx === historyCursor
               ? `${chrome.panelBg} ${chrome.panelText} bg-neutral-950/80 font-bold`
               : idx > historyCursor

@@ -13,6 +13,7 @@ export const EditModeArea = (props: EditModeModel): ReactElement => {
   const {
     selectedPhoto,
     editImageSrc,
+    diskSourcePath,
     previewEpoch,
     imageFailed,
     setImageNatural,
@@ -55,6 +56,7 @@ export const EditModeArea = (props: EditModeModel): ReactElement => {
             key={`${editImageSrc}-${previewEpoch}`}
             photoId={selectedPhoto.id}
             src={editImageSrc}
+            diskSourcePath={diskSourcePath}
             alt={selectedPhoto.fileName}
             rendered={rendered}
             pan={pan}

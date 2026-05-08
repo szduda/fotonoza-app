@@ -1,3 +1,5 @@
+import { readFile } from "@tauri-apps/plugin-fs"
+import { isTauri } from "@tauri-apps/api/core"
 import { useEffect, useMemo, useRef, type ReactElement } from "react"
 import { hasLiveHistogramSubscribers, publishLiveHistogram } from "@/lib/liveHistogram"
 import type { BasicEffectsState, ShadowsHighlightsState } from "@/types/domain"
@@ -7,7 +9,10 @@ type Pan = { x: number; y: number }
 
 type Props = {
   photoId: string
+  /** Asset URL for fetch fallback. */
   src: string
+  /** Absolute file path — in Tauri we read bytes here first (fetch(asset) is unreliable for raw previews). */
+  diskSourcePath?: string
   alt: string
   rendered: Size
   pan: Pan
@@ -82,6 +87,7 @@ void main() {
 export const GpuPreviewCanvas = ({
   photoId,
   src,
+  diskSourcePath,
   alt,
   rendered,
   pan,
@@ -174,7 +180,7 @@ export const GpuPreviewCanvas = ({
   }, [])
 
   useEffect(() => {
-    if (!src) {
+    if (!src && !diskSourcePath) {
       bitmapRef.current?.close()
       bitmapRef.current = null
       return
@@ -185,9 +191,21 @@ export const GpuPreviewCanvas = ({
 
     void (async () => {
       try {
-        const res = await fetch(src)
-        if (!res.ok) throw new Error(`fetch ${res.status}`)
-        const blob = await res.blob()
+        let blob: Blob
+        if (isTauri() && diskSourcePath) {
+          try {
+            const bytes = await readFile(diskSourcePath)
+            blob = new Blob([bytes])
+          } catch {
+            const res = await fetch(src)
+            if (!res.ok) throw new Error(`fetch ${res.status}`)
+            blob = await res.blob()
+          }
+        } else {
+          const res = await fetch(src)
+          if (!res.ok) throw new Error(`fetch ${res.status}`)
+          blob = await res.blob()
+        }
         const bmp = await createImageBitmap(blob)
         if (cancelled) {
           bmp.close()
@@ -209,7 +227,7 @@ export const GpuPreviewCanvas = ({
       bitmapRef.current?.close()
       bitmapRef.current = null
     }
-  }, [src])
+  }, [src, diskSourcePath])
 
   useEffect(() => {
     draw()

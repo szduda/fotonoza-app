@@ -1,16 +1,12 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type CSSProperties,
-  type MouseEvent,
-  type ReactElement,
-} from "react"
+import { type CSSProperties, type MouseEvent, type ReactElement } from "react"
 import { localImageSrc } from "@/lib/localImageSrc"
+import { useAppStore } from "@/store/appStore"
 import { chrome } from "./layout/chromeTheme"
 
 export const PhotoThumbnail = ({
-  sourcePath,
+  photoId,
+  thumbnailPath,
+  thumbnailNonce,
   className,
   style,
   alt,
@@ -18,7 +14,9 @@ export const PhotoThumbnail = ({
   heightDriven = false,
   onClick,
 }: {
-  sourcePath: string
+  photoId: string
+  thumbnailPath?: string | null
+  thumbnailNonce?: number
   className?: string
   style?: CSSProperties
   alt: string
@@ -28,33 +26,11 @@ export const PhotoThumbnail = ({
   heightDriven?: boolean
   onClick?: (event: MouseEvent<HTMLImageElement>) => void
 }): ReactElement => {
-  const [failed, setFailed] = useState(false)
-  const [retry, setRetry] = useState(0)
-  const src = useMemo(() => {
-    const base = localImageSrc(sourcePath)
-    if (!base) return ""
-    const isThumbPath = sourcePath.includes("/thumbs/") || sourcePath.includes("\\thumbs\\")
-    if (!isThumbPath) return base
-    const join = base.includes("?") ? "&" : "?"
-    return `${base}${join}v=${retry}`
-  }, [sourcePath, retry])
-  const isThumb = sourcePath.includes("/thumbs/") || sourcePath.includes("\\thumbs\\")
+  const enqueueRepair = useAppStore((s) => s.actions.ensurePhotoThumbnail)
+  const hasThumb = !!(thumbnailPath && thumbnailPath.length > 0)
+  const src = hasThumb ? localImageSrc(thumbnailPath, thumbnailNonce) : ""
 
-  useEffect(() => {
-    setFailed(false)
-    setRetry(0)
-  }, [sourcePath])
-
-  useEffect(() => {
-    if (!failed || !isThumb || retry >= 20) return
-    const id = window.setTimeout(() => {
-      setFailed(false)
-      setRetry((n) => n + 1)
-    }, 300)
-    return () => window.clearTimeout(id)
-  }, [failed, isThumb, retry])
-
-  if (!src || failed) {
+  if (!hasThumb) {
     return (
       <div
         className={`flex h-full min-h-0 w-full min-w-0 items-center justify-center overflow-hidden rounded bg-neutral-950/80 text-[10px] leading-tight ${chrome.mutedText} ${className ?? ""}`}
@@ -73,7 +49,7 @@ export const PhotoThumbnail = ({
 
   return (
     <div
-      className={`h-full shrink-0 min-h-0 aspect-3/2 overflow-hidden rounded ${className}`}
+      className={`h-full shrink-0 min-h-0 aspect-3/2 overflow-hidden rounded ${className ?? ""}`}
       style={style}
     >
       <img
@@ -83,10 +59,7 @@ export const PhotoThumbnail = ({
         draggable={false}
         onClick={onClick}
         onError={() => {
-          setFailed(true)
-        }}
-        onLoad={() => {
-          setFailed(false)
+          enqueueRepair(photoId)
         }}
       />
     </div>
