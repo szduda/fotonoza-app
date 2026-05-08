@@ -8,6 +8,7 @@ import {
 import { produce } from "immer"
 import type { AppActions, StoreShape } from "./appStore.types"
 import { getTemporalSnapshots, withUndo, withoutTemporalRecord } from "./history.store"
+import { OTHERS_COLLECTION_ID } from "@/lib/collections"
 import { defaultPhotoFilters, defaultUiLayout, type AppState, type Photo } from "@/types/domain"
 
 type SetStore = (fn: (current: StoreShape) => StoreShape) => void
@@ -50,9 +51,31 @@ const mapStateToLibrary = (
   photos: mapSourceToLibrary(state.photos, entries),
 })
 
+const sanitizeCollections = (state: AppState): AppState => {
+  const folders = state.collectionFolders ?? []
+  const ids = new Set(folders.map((f) => f.id))
+  const photos = state.photos.map((p) => {
+    if (p.collectionId && !ids.has(p.collectionId)) {
+      const { collectionId: _drop, ...rest } = p
+      return rest as Photo
+    }
+    return p
+  })
+  let collectionFilter = state.collectionFilter
+  if (
+    collectionFilter &&
+    collectionFilter !== OTHERS_COLLECTION_ID &&
+    !ids.has(collectionFilter)
+  ) {
+    collectionFilter = undefined
+  }
+  return { ...state, photos, collectionFolders: folders, collectionFilter }
+}
+
 const normalizePresent = (present: AppState): AppState => {
   const panelState = (present as Partial<AppState>).togglePanelExpanded
-  return {
+  const collectionFolders = Array.isArray(present.collectionFolders) ? present.collectionFolders : []
+  const base: AppState = {
     ...present,
     photos: present.photos.map((photo) => ({
       ...photo,
@@ -63,7 +86,9 @@ const normalizePresent = (present: AppState): AppState => {
     photoFilters: { ...defaultPhotoFilters(), ...(present.photoFilters ?? {}) },
     togglePanelExpanded:
       panelState && typeof panelState === "object" && !Array.isArray(panelState) ? panelState : {},
+    collectionFolders,
   }
+  return sanitizeCollections(base)
 }
 
 const patchThumbnailEntries = (

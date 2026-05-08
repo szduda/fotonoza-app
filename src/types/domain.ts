@@ -65,6 +65,14 @@ export const defaultDarktableFx = (): DarktableFxState => ({
   profiledDenoise: false,
 })
 
+/** Logical folder only (files stay under preview/import paths). */
+export interface CollectionFolder {
+  id: string
+  /** `null` = root level. */
+  parentId: string | null
+  name: string
+}
+
 export interface Photo {
   id: string
   fileName: string
@@ -76,6 +84,8 @@ export interface Photo {
   approved: boolean
   /** 0–5 stars; persisted with library snapshot. */
   rating?: number
+  /** Logical collection id from {@link CollectionFolder.id}; omit → shown under Others. */
+  collectionId?: string
   adjustments: PhotoAdjustment[]
   basicEffects?: BasicEffectsState
   colorEffects?: ColorEffectsState
@@ -188,6 +198,9 @@ export interface AppState {
   locale: "en" | "pl"
   layout: UiLayoutState
   photoFilters: PhotoFiltersState
+  collectionFolders: CollectionFolder[]
+  /** Timeline / grid filter: folder id, Others pseudo-id, or unset = all photos. */
+  collectionFilter?: string
 }
 
 /** Stored `HistoryEntry.label` values — keep in sync with `withUndo` / effect commits. */
@@ -263,6 +276,17 @@ export interface TranslationSchema {
     filterRatingAny: string
     noPhotosMatchFilters: string
     noPhotos: string
+    collections: string
+    collectionAll: string
+    collectionNew: string
+    collectionOthers: string
+    collectionNestLimit: string
+    collectionMoveSelected: string
+    collectionChooseCollection: string
+    collectionMoveAsk: string
+    collectionMoveYes: string
+    collectionMoveNo: string
+    collectionMoveFromMixed: string
   }
   exportModal: {
     title: string

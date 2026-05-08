@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useAppStore } from "@/store/appStore"
 
-/** In browse mode, keys 1–5 rate the last hovered grid photo (see view hover on thumbs). */
+/** In browse mode, keys 0–5 rate the last hovered grid photo (see view hover on thumbs). */
 export const useViewModeRating = (): void => {
   const mode = useAppStore((s) => s.present.mode)
 
@@ -13,7 +13,7 @@ export const useViewModeRating = (): void => {
       const el = e.target as HTMLElement | null
       if (el?.closest("input, textarea, select, [contenteditable=true]")) return
       const key = e.key
-      if (key < "1" || key > "5") return
+      if (key !== "0" && (key < "1" || key > "5")) return
       if (e.metaKey || e.ctrlKey || e.altKey) return
 
       const hovered = useAppStore.getState().viewHoveredPhotoId

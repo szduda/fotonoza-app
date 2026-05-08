@@ -21,12 +21,15 @@ export const RatingStars = ({ rating, onPick, disabled }: Props): ReactElement =
             key={n}
             type="button"
             disabled={disabled}
-            aria-label={`${n} stars`}
+            aria-label={n === 1 && clamped === 1 ? "Clear rating" : `${n} stars`}
             aria-pressed={filled}
             className={`group h-7 w-7 shrink-0 rounded p-0.5 outline-none disabled:opacity-40 ${
               disabled ? "cursor-default" : "cursor-pointer"
             }`}
-            onClick={() => onPick(n)}
+            onClick={() => {
+              if (n === 1 && clamped === 1) onPick(0)
+              else onPick(n)
+            }}
           >
             <svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden>
               <path

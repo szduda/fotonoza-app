@@ -69,8 +69,10 @@ export const ChromeEdgePanel = ({
   }`
 
   const contentGrow = panel === "topBar" ? "shrink-0" : "min-h-0 flex-1"
+  const sideScroll = panel === "leftSidebar" || panel === "rightSidebar"
+  const contentOverflow = sideScroll ? "overflow-x-hidden overflow-y-auto" : "overflow-hidden"
   const contentShell = (
-    <div className={collapsed ? "hidden" : `${contentGrow} overflow-hidden`}>{children}</div>
+    <div className={collapsed ? "hidden" : `${contentGrow} ${contentOverflow}`}>{children}</div>
   )
 
   const handles =

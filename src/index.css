@@ -28,6 +28,12 @@
 }
 
 @layer components {
+  /** Collection move-target mode: keep crosshair over interactive controls (buttons override body cursor otherwise). */
+  body[data-coll-move-pick],
+  body[data-coll-move-pick] * {
+    cursor: crosshair !important;
+  }
+
   .slider-dark {
     @apply w-full min-w-0 cursor-pointer bg-transparent;
     height: 1.5rem;

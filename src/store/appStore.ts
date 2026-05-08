@@ -9,6 +9,7 @@ import { createIoActions } from "./io.store"
 import { createLibraryActions } from "./library.store"
 import { createEffectsActions } from "./effects.store"
 import { createFilterActions } from "./filter.store"
+import { createCollectionsActions } from "./collections.store"
 
 const initialState: AppState = {
   mode: "import",
@@ -27,6 +28,7 @@ const initialState: AppState = {
   locale: "en",
   layout: { ...defaultUiLayout },
   photoFilters: defaultPhotoFilters(),
+  collectionFolders: [],
 }
 
 /** zundo merges partialized snapshots onto the root store; nest `present` so undo restores photos/history. */
@@ -68,6 +70,7 @@ export const useAppStore = create<StoreShape>()(
         ...createHistoryActions(set, get),
         ...createUiActions(set),
         ...createFilterActions(set),
+        ...createCollectionsActions(set, get),
       },
     }),
     {

@@ -64,6 +64,12 @@ export interface AppActions {
   setPhotoFilter: (partial: Partial<PhotoFiltersState>) => void
   /** In-memory EXIF rows for filter matching (not persisted). */
   mergeExifCache: (partial: Record<string, PhotoExifSummary>) => void
+  setCollectionFilter: (collectionFilter: string | undefined) => void
+  /** Returns new folder id, or null if max nesting depth blocks creation. */
+  addCollectionFolder: (name: string) => string | null
+  renameCollectionFolder: (folderId: string, name: string) => void
+  /** `null` = Others (clear `collectionId`). */
+  assignSelectedPhotosCollection: (folderId: string | null) => void
 }
 
 /** Edit chrome (sidebar buttons): zoom bounds & photo presence — not undo history. */

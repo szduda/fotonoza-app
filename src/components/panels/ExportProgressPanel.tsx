@@ -15,37 +15,36 @@ export const ExportProgressPanel = (): ReactElement | null => {
   const percent = status.total > 0 ? Math.min(100, Math.round((done / status.total) * 100)) : 0
 
   return (
-    <div className="shrink-0 border-t border-neutral-600/50">
-      <ToggledPanel id="export-progress" label="Export progress" height={120} defaultOpen>
-        <div className="px-2 py-1.5 text-xs">
-          <div className={`mb-1 flex items-center justify-between ${chrome.mutedText}`}>
-            <span>
-              {done} / {status.total}
-            </span>
-            <span>{percent}%</span>
+    <div className="shrink-0 border-t border-neutral-600/50 bg-neutral-900 z-10">
+      <ToggledPanel
+        id="export-progress"
+        label="Export progress"
+        className="bg-yellow-700/5"
+        height={120}
+        defaultOpen
+      >
+        <div className="px-2 py-3 text-xs flex flex-col gap-3">
+          <div>
+            <div className={`mb-1 flex items-center justify-between ${chrome.mutedText}`}>
+              <span>
+                {done} / {status.total}
+              </span>
+              <span>{percent}%</span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded bg-neutral-700/60">
+              <div
+                className="h-full bg-neutral-500/70 transition-all"
+                style={{ width: `${percent / 2}%` }}
+              />
+            </div>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded bg-neutral-700/60">
-            <div
-              className="h-full bg-neutral-300/80 transition-all"
-              style={{ width: `${percent}%` }}
-            />
-          </div>
-
           {isFinished && (
-            <div className="mt-3 flex flex-col items-start gap-2">
-              <div className="flex items-center gap-1 text-emerald-400">
+            <div className="w-full flex justify-between items-center gap-2">
+              <div className="flex items-center gap-1 text-emerald-400 font-medium">
                 <DoneIcon />
                 <span>Export finished</span>
               </div>
-              <Button
-                variant="outlined"
-                size="sm"
-                className={clsx(
-                  chrome.mutedText,
-                  "font-normal hover:text-neutral-800 enabled:hover:bg-neutral-400/40",
-                )}
-                onClick={close}
-              >
+              <Button variant="outlined" size="sm" onClick={close}>
                 Close
               </Button>
             </div>

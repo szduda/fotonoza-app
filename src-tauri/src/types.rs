@@ -28,6 +28,8 @@ pub struct PhotoState {
     pub approved: bool,
     #[serde(default)]
     pub rating: u8,
+    #[serde(default)]
+    pub collection_id: Option<String>,
     pub adjustments: serde_json::Value,
     #[serde(default)]
     pub basic_effects: Option<serde_json::Value>,
@@ -86,6 +88,15 @@ impl Default for LayoutState {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct CollectionFolder {
+    pub id: String,
+    #[serde(default)]
+    pub parent_id: Option<String>,
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AppState {
     pub mode: String,
     pub photos: Vec<PhotoState>,
@@ -100,6 +111,10 @@ pub struct AppState {
     pub layout: LayoutState,
     #[serde(default = "default_photo_filters")]
     pub photo_filters: serde_json::Value,
+    #[serde(default)]
+    pub collection_folders: Vec<CollectionFolder>,
+    #[serde(default)]
+    pub collection_filter: Option<String>,
 }
 
 fn default_photo_filters() -> serde_json::Value {

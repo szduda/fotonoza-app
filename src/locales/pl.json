@@ -67,7 +67,18 @@
     "filterRatingMin": "Min. ocena",
     "filterRatingAny": "Dowolna",
     "noPhotosMatchFilters": "Żadne zdjęcie nie pasuje do filtrów.",
-    "noPhotos": "Brak zdjęć"
+    "noPhotos": "Brak zdjęć",
+    "collections": "Kolekcje",
+    "collectionAll": "Wszystkie",
+    "collectionNew": "Nowa",
+    "collectionOthers": "Inne",
+    "collectionNestLimit": "Maksymalna głębokość folderów (poziom główny plus 3 zagnieżdżenia).",
+    "collectionMoveSelected": "Przenieś zaznaczone",
+    "collectionChooseCollection": "Wybierz kolekcję",
+    "collectionMoveAsk": "Przenieść {{n}} zdjęć z {{from}} do {{to}}?",
+    "collectionMoveYes": "Tak",
+    "collectionMoveNo": "Nie",
+    "collectionMoveFromMixed": "różnych kolekcji"
   },
   "exportModal": {
     "title": "Ustawienia eksportu",

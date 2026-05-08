@@ -5,7 +5,7 @@ import { ToggledPanel } from "@/components/generic/ToggledPanel"
 import { useExifPrefetchForFilters } from "@/hooks/useExifPrefetchForFilters"
 import { useAppStore } from "@/store/appStore"
 
-const inputCls = `w-full rounded border border-neutral-600/50 bg-neutral-900/40 px-2 py-1 text-[11px] outline-none focus:border-neutral-500 ${chrome.panelText}`
+const inputCls = `w-full rounded border border-neutral-600/50 bg-neutral-900/40 px-2 py-2 h-6 text-[11px] outline-none focus:border-neutral-500 ${chrome.panelText}`
 
 const FilterField = ({
   label,
@@ -16,8 +16,8 @@ const FilterField = ({
   value: string
   onChange: (next: string) => void
 }): ReactElement => (
-  <label className="flex flex-col gap-0.5 px-2 py-1">
-    <span className={`text-[8px] font-medium uppercase ${chrome.faintText}`}>{label}</span>
+  <label className="flex flex gap-0.5 px-2 py-1 items-center">
+    <span className={`text-[8px] w-20 font-medium uppercase ${chrome.faintText}`}>{label}</span>
     <input
       type="search"
       autoComplete="off"
@@ -63,8 +63,8 @@ export const FilterPanel = (): ReactElement => {
           onChange={(lens) => setPhotoFilter({ lens })}
         />
 
-        <label className="flex flex-col gap-0.5 px-2 py-1">
-          <span className={`text-[8px] font-medium uppercase ${chrome.faintText}`}>
+        <label className="flex gap-0.5 px-2 py-1 items-center">
+          <span className={`text-[8px] w-20 font-medium uppercase ${chrome.faintText}`}>
             {t(locale, (m) => m.labels.filterRatingMin)}
           </span>
           <select

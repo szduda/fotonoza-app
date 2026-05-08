@@ -16,7 +16,7 @@ export const RightSidebar = () => {
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2.5">
+    <div className="flex w-full min-w-0 flex-col gap-2 overflow-x-hidden p-2.5">
       <HistogramCanvas />
       {selectedPhoto ? (
         <>

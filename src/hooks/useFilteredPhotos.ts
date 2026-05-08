@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import { shallow } from "zustand/shallow"
+import { photoMatchesCollection } from "@/lib/collections"
 import { photoMatchesFilters } from "@/lib/photoFilters"
 import { useAppStore } from "@/store/appStore"
 import type { StoreShape } from "@/store/appStore.types"
@@ -13,9 +14,15 @@ export const useFilteredPhotos = (): Photo[] => {
   const selector = useMemo(() => {
     let last: Photo[] | undefined
     return (s: StoreShape): Photo[] => {
-      const next = s.present.photos.filter((p) =>
-        photoMatchesFilters(p, s.present.photoFilters, s.exifCache[p.sourcePath]),
-      )
+      const next = s.present.photos.filter((p) => {
+        if (!photoMatchesFilters(p, s.present.photoFilters, s.exifCache[p.sourcePath]))
+          return false
+        return photoMatchesCollection(
+          p,
+          s.present.collectionFilter,
+          s.present.collectionFolders ?? [],
+        )
+      })
       if (last !== undefined && shallow(last, next)) return last
       last = next
       return next

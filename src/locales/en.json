@@ -67,7 +67,18 @@
     "filterRatingMin": "Min. rating",
     "filterRatingAny": "Any",
     "noPhotosMatchFilters": "No photos match the current filters.",
-    "noPhotos": "No photos yet"
+    "noPhotos": "No photos yet",
+    "collections": "Collections",
+    "collectionAll": "All",
+    "collectionNew": "New",
+    "collectionOthers": "Others",
+    "collectionNestLimit": "Maximum folder depth reached (top level plus 3 nested).",
+    "collectionMoveSelected": "Move selected",
+    "collectionChooseCollection": "Choose Collection",
+    "collectionMoveAsk": "Move {{n}} photos from {{from}} to {{to}}?",
+    "collectionMoveYes": "Yes",
+    "collectionMoveNo": "No",
+    "collectionMoveFromMixed": "multiple collections"
   },
   "exportModal": {
     "title": "Export settings",
