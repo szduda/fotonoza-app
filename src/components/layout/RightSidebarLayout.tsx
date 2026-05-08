@@ -13,7 +13,7 @@ export const RightSidebarLayout = ({
     return null
   }
   return (
-    <div className={`flex w-full min-w-0 flex-col ${chrome.panelBg} ${chrome.panelText}`}>
+    <div className={`flex w-full h-full min-w-0 flex-col ${chrome.panelBg} ${chrome.panelText}`}>
       {children}
     </div>
   )
