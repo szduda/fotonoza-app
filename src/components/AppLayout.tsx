@@ -11,9 +11,11 @@ import { RightSidebar } from "./sidebars/RightSidebar"
 import { Timeline } from "./sidebars/Timeline"
 import { WorkingArea } from "./WorkingArea"
 import { ExportModal } from "./ExportModal"
+import { useAppStore } from "@/store/appStore"
 
 export const AppLayout = (): ReactElement => {
   const [exportOpen, setExportOpen] = useState(false)
+  const mode = useAppStore((s) => s.present.mode)
 
   return (
     <>
@@ -39,7 +41,7 @@ export const AppLayout = (): ReactElement => {
           </RightSidebarLayout>
         }
         timeline={
-          <TimelineLayout>
+          <TimelineLayout mode={mode}>
             <Timeline />
           </TimelineLayout>
         }

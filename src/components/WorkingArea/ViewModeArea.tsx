@@ -1,20 +1,20 @@
 import { Grid } from "react-window"
-import { useEffect, useMemo, useState, type ReactElement } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactElement } from "react"
 import { t } from "@/lib/i18n"
 import { useAppStore } from "@/store/appStore"
 import { chrome } from "@/components/layout/chromeTheme"
 import { GridCols } from "./components/GridCols"
 import { ViewModeGridThumb } from "./components/ViewModeGridThumb"
-import type { ViewGridMeasure } from "./hooks/useViewGridLayout"
 import { useGridCols } from "./hooks/useGridCols"
 import type { Photo } from "@/types/domain"
 
 type ThumbExtras = { cols: number; cellW: number; photos: Photo[] }
 
 /** Simple virtual photo grid — sizing from {@link Grid} `onResize`. */
-export const ViewModeArea = ({ viewGridRef }: ViewGridMeasure): ReactElement => {
+export const ViewModeArea = (): ReactElement => {
   const { photos, locale } = useAppStore((s) => s.present)
   const { viewGridCols } = useGridCols()
+  const viewGridRef = useRef<HTMLDivElement | null>(null)
 
   const [vw, setVw] = useState(0)
 
