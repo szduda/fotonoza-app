@@ -1,7 +1,7 @@
 import { readFile } from "@tauri-apps/plugin-fs"
 import { isTauri } from "@tauri-apps/api/core"
-import { useEffect, useMemo, useRef, type ReactElement } from "react"
-import { hasLiveHistogramSubscribers, publishLiveHistogram } from "@/lib/liveHistogram"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement } from "react"
+import { hasLiveHistogramSubscribers, publishHistogramFromFrame } from "@/lib/liveHistogram"
 import type { BasicEffectsState, ShadowsHighlightsState } from "@/types/domain"
 
 type Size = { width: number; height: number }
@@ -110,6 +110,8 @@ export const GpuPreviewCanvas = ({
   const needsTexUploadRef = useRef(true)
   const histDirtyRef = useRef(true)
   const histBufferRef = useRef<Uint8Array | null>(null)
+  /** Bumps when a new bitmap is decoded so draw runs even if `rendered` dimensions match the previous image (same `src`, new file). */
+  const [texEpoch, setTexEpoch] = useState(0)
 
   useEffect(() => {
     onImageNaturalRef.current = onImageNatural
@@ -144,10 +146,14 @@ export const GpuPreviewCanvas = ({
     ],
   )
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const gl = canvas.getContext("webgl", { antialias: false, premultipliedAlpha: false })
+    const gl = canvas.getContext("webgl", {
+      antialias: false,
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: true,
+    })
     if (!gl) return
     const prog = initProgram(gl)
     if (!prog) return
@@ -168,7 +174,7 @@ export const GpuPreviewCanvas = ({
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
 
-    queueMicrotask(() => draw())
+    draw()
 
     return () => {
       if (progRef.current) gl.deleteProgram(progRef.current)
@@ -216,7 +222,7 @@ export const GpuPreviewCanvas = ({
         needsTexUploadRef.current = true
         histDirtyRef.current = true
         onImageNaturalRef.current({ width: bmp.width, height: bmp.height })
-        draw()
+        setTexEpoch((n) => n + 1)
       } catch {
         if (!cancelled) onImageErrorRef.current()
       }
@@ -229,11 +235,11 @@ export const GpuPreviewCanvas = ({
     }
   }, [src, diskSourcePath])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     draw()
-  }, [uniforms, rendered.width, rendered.height, src, photoId])
+  }, [texEpoch, uniforms, rendered.width, rendered.height, src, photoId])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     histDirtyRef.current = true
     draw()
   }, [
@@ -298,72 +304,6 @@ export const GpuPreviewCanvas = ({
       histDirtyRef.current = false
     }
   }
-}
-
-// const HIST_TARGET_SAMPLES = 65_536
-const HIST_TARGET_SAMPLES = 4096
-const HIST_SMOOTH_BLEND = 0.7
-
-const publishHistogramFromFrame = (
-  gl: WebGLRenderingContext,
-  width: number,
-  height: number,
-  photoId: string,
-  histBufferRef: { current: Uint8Array | null },
-): void => {
-  const pixelCount = Math.max(1, width * height)
-  const stride = Math.max(1, Math.floor(Math.sqrt(pixelCount / HIST_TARGET_SAMPLES)))
-  const neededSize = width * height * 4
-  const packed =
-    histBufferRef.current && histBufferRef.current.length === neededSize
-      ? histBufferRef.current
-      : new Uint8Array(neededSize)
-  histBufferRef.current = packed
-  gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, packed)
-
-  const red = new Array<number>(256).fill(0)
-  const green = new Array<number>(256).fill(0)
-  const blue = new Array<number>(256).fill(0)
-  const luma = new Array<number>(256).fill(0)
-  const rowStride = width * 4
-
-  for (let y = 0; y < height; y += stride) {
-    const rowOffset = y * rowStride
-    for (let x = 0; x < width; x += stride) {
-      const idx = rowOffset + x * 4
-      const r = packed[idx]
-      const g = packed[idx + 1]
-      const b = packed[idx + 2]
-      red[r] += 1
-      green[g] += 1
-      blue[b] += 1
-      const yVal = Math.min(255, Math.round(0.2126 * r + 0.7152 * g + 0.0722 * b))
-      luma[yVal] += 1
-    }
-  }
-
-  publishLiveHistogram(photoId, {
-    red: smoothBins(red),
-    green: smoothBins(green),
-    blue: smoothBins(blue),
-    luma: smoothBins(luma),
-  })
-}
-
-const smoothBins = (bins: number[]): number[] => {
-  const n = bins.length
-  if (n < 3) return bins
-  const out = new Array<number>(n)
-  out[0] = bins[0]
-  out[n - 1] = bins[n - 1]
-
-  for (let i = 1; i < n - 1; i += 1) {
-    // Small 3-tap gaussian-ish kernel: [1, 2, 1] / 4.
-    const blurred = (bins[i - 1] + 2 * bins[i] + bins[i + 1]) * 0.25
-    out[i] = bins[i] * (1 - HIST_SMOOTH_BLEND) + blurred * HIST_SMOOTH_BLEND
-  }
-
-  return out
 }
 
 function initProgram(gl: WebGLRenderingContext): WebGLProgram | null {
