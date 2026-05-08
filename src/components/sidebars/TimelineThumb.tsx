@@ -22,18 +22,24 @@ export const TimelineThumb = ({
   if (!photo) return <div style={style} />
 
   const isCurr = photo.id === currentPhotoId
-
   return (
     <div style={style}>
       <button
         type="button"
-        className={`flex justify-center items-center border-r border-neutral-600/20 transition-colors duration-150 ease-out p-3 ${
-          isCurr ? "bg-yellow-200/15 hover:bg-yellow-200/20" : "hover:bg-neutral-700/50"
+        className={`flex justify-center items-center border-r border-neutral-700/20  transition-colors duration-150 ease-out p-3 ${
+          isCurr
+            ? "bg-yellow-200/15 hover:bg-yellow-200/20"
+            : photo.selected
+              ? "bg-neutral-600/30 hover:bg-neutral-500/40"
+              : "bg-neutral-900/20 hover:bg-yellow-200/5"
         }`}
         style={{ width: "100%", height: "100%" }}
         onClick={(e: MouseEvent<HTMLButtonElement>) => {
           const { toggleSelectPhoto, openInEditor } = useAppStore.getState().actions
-          if (e.ctrlKey) {
+          const multiSelect = e.ctrlKey || e.metaKey
+          if (multiSelect) {
+            e.preventDefault()
+            e.stopPropagation()
             toggleSelectPhoto(photo.id)
             return
           }
@@ -46,6 +52,7 @@ export const TimelineThumb = ({
           thumbnailNonce={photo.thumbnailNonce}
           alt={photo.fileName}
           fit="contain"
+          className="border border-neutral-700/30"
           style={{ aspectRatio: 3 / 2 }}
         />
       </button>

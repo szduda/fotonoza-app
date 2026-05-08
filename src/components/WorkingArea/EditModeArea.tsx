@@ -4,8 +4,7 @@ import { useAppStore } from "@/store/appStore"
 import { Spinner } from "@/components/generic/Spinner"
 import { chrome } from "@/components/layout/chromeTheme"
 import { useEditMode } from "./hooks/useEditMode"
-import { GpuPreviewCanvas } from "./components/GpuPreviewCanvas"
-import { defaultBasicEffects, defaultShadowsHighlights } from "@/types/domain"
+import { EditModePreviewLayers } from "./EditModePreviewLayers"
 
 export const EditModeArea = (): ReactElement => {
   const { locale } = useAppStore((s) => s.present)
@@ -32,19 +31,7 @@ export const EditModeArea = (): ReactElement => {
         )}
 
         {edit.selectedPhoto && edit.editImageSrc && !edit.imageFailed ? (
-          <GpuPreviewCanvas
-            key={`${edit.editImageSrc}-${edit.previewEpoch}`}
-            photoId={edit.selectedPhoto.id}
-            src={edit.editImageSrc}
-            diskSourcePath={edit.diskSourcePath}
-            alt={edit.selectedPhoto.fileName}
-            rendered={edit.rendered}
-            pan={edit.pan}
-            effects={{ ...defaultBasicEffects(), ...edit.selectedPhoto.basicEffects }}
-            sh={{ ...defaultShadowsHighlights(), ...edit.selectedPhoto.shadowsHighlights }}
-            onImageNatural={edit.setImageNatural}
-            onImageError={() => edit.setImageFailed(true)}
-          />
+          <EditModePreviewLayers edit={edit} selectedPhoto={edit.selectedPhoto} />
         ) : (
           <div className={`grid h-full w-full place-items-center text-sm ${chrome.mutedText}`}>
             {edit.selectedPhoto?.fileName || <p>"Select photo to edit."</p>}

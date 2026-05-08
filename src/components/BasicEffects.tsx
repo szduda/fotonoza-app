@@ -59,10 +59,10 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
     setLocal((prev) => {
       const next = { ...prev, ...patch }
       localRef.current = next
-      useAppStore.getState().actions.mergePhotoFromDisk(selectedPhoto.id, {
-        basicEffects: next,
-      })
       return next
+    })
+    useAppStore.getState().actions.mergePhotoFromDisk(selectedPhoto.id, {
+      basicEffects: localRef.current,
     })
     schedulePersist()
   }

@@ -36,7 +36,7 @@ export const AppLayout = (): ReactElement => {
           </WorkingAreaLayout>
         }
         rightSidebar={
-          <RightSidebarLayout>
+          <RightSidebarLayout mode={mode}>
             <RightSidebar />
           </RightSidebarLayout>
         }

@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { localImageSrc } from "@/lib/localImageSrc"
+import { armTimelineKeyboardStepScroll } from "@/lib/timelineKeyboardStepScroll"
 import { useAppStore } from "@/store/appStore"
 import type { Photo } from "@/types/domain"
 
@@ -61,12 +62,18 @@ export const useCurrentPhoto = (): CurrentPhotoModel => {
 
       if (e.key === "ArrowLeft") {
         const next = photos[idx - 1]
-        if (next) actions.openInEditor(next.id)
+        if (next && next.id !== currentPhotoId) {
+          armTimelineKeyboardStepScroll()
+          actions.openInEditor(next.id)
+        }
         return
       }
 
       const next = photos[idx + 1]
-      if (next) actions.openInEditor(next.id)
+      if (next && next.id !== currentPhotoId) {
+        armTimelineKeyboardStepScroll()
+        actions.openInEditor(next.id)
+      }
     }
 
     window.addEventListener("keydown", onCtrlArrow, { capture: true })

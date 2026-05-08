@@ -1,6 +1,8 @@
 import {
   useEffect,
+  useMemo,
   useRef,
+  useState,
   type Dispatch,
   type PointerEvent as ReactPointerEvent,
   type RefObject,
@@ -40,13 +42,32 @@ export type EditModeModel = {
   zoomIn: () => void
   zoomOut: () => void
   centerView: () => void
+  setThumbNatural: Dispatch<SetStateAction<Size>>
 }
 
 export const useEditMode = (): EditModeModel => {
   const actions = useAppStore((s) => s.actions)
   const curr = useCurrentPhoto()
   const asset = useImageAsset(curr.editImageSrc)
-  const zoom = useZoom({ curr, asset })
+  const [thumbNatural, setThumbNatural] = useState<Size>({ width: 0, height: 0 })
+
+  useEffect(() => {
+    setThumbNatural({ width: 0, height: 0 })
+  }, [curr.selectedPhoto?.id])
+
+  const layoutNatural = useMemo((): Size => {
+    if (asset.imageNatural.width > 0 && asset.imageNatural.height > 0) return asset.imageNatural
+    if (thumbNatural.width > 0 && thumbNatural.height > 0) return thumbNatural
+    return { width: 0, height: 0 }
+  }, [asset.imageNatural, thumbNatural])
+
+  const zoom = useZoom({
+    curr,
+    asset: {
+      ...asset,
+      imageNatural: layoutNatural,
+    },
+  })
   const drag = useDrag({ curr, zoom })
   const previousWorkedPhotoRef = useRef<{ id: string; sourcePath: string } | undefined>(undefined)
 
@@ -77,6 +98,7 @@ export const useEditMode = (): EditModeModel => {
   }, [
     curr.selectedPhoto?.id,
     curr.selectedPhoto?.sourcePath,
+    curr.previewEpoch,
     zoom.fitToView,
     asset.setImageNatural,
     asset.setImageFailed,
@@ -87,5 +109,6 @@ export const useEditMode = (): EditModeModel => {
     ...asset,
     ...zoom,
     ...drag,
+    setThumbNatural,
   } as const
 }

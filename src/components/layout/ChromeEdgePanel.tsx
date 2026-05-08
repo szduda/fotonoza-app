@@ -38,7 +38,7 @@ export const ChromeEdgePanel = ({
   const patchLayout = useAppStore((s) => s.actions.patchLayout)
   const ctx = useChromeLayoutControllerContext()
 
-  if (panel === "timeline" && mode === "view") {
+  if ((panel === "timeline" || panel === "rightSidebar") && mode === "view") {
     return null
   }
 

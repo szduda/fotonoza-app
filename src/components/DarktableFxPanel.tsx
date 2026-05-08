@@ -58,13 +58,14 @@ export const DarktableFxPanel = ({ selectedPhoto }: { selectedPhoto: Photo }): R
   }, [selectedPhoto.id, selectedPhoto.sourcePath])
 
   const onPatch = (patch: Partial<DarktableFxState>) => {
+    let next!: DarktableFxState
     setLocal((prev) => {
-      const next = { ...prev, ...patch }
-      useAppStore.getState().actions.mergePhotoFromDisk(selectedPhoto.id, { darktableFx: next })
-      void useAppStore.getState().actions.patchDarktableFx(selectedPhoto.id, next)
-      void runBackgroundPreview(next)
+      next = { ...prev, ...patch }
       return next
     })
+    useAppStore.getState().actions.mergePhotoFromDisk(selectedPhoto.id, { darktableFx: next })
+    void useAppStore.getState().actions.patchDarktableFx(selectedPhoto.id, next)
+    void runBackgroundPreview(next)
   }
 
   return (

@@ -58,10 +58,10 @@ export const ShadowsHighlightsPanel = ({ selectedPhoto }: { selectedPhoto: Photo
     setLocal((prev) => {
       const next = { ...prev, ...patch }
       localRef.current = next
-      useAppStore.getState().actions.mergePhotoFromDisk(selectedPhoto.id, {
-        shadowsHighlights: next,
-      })
       return next
+    })
+    useAppStore.getState().actions.mergePhotoFromDisk(selectedPhoto.id, {
+      shadowsHighlights: localRef.current,
     })
     schedulePersist()
   }

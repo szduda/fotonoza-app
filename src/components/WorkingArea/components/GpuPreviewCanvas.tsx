@@ -20,6 +20,7 @@ type Props = {
   sh: ShadowsHighlightsState
   onImageNatural: (size: Size) => void
   onImageError: () => void
+  className?: string
 }
 
 const VERT_SRC = `
@@ -95,6 +96,7 @@ export const GpuPreviewCanvas = ({
   sh,
   onImageNatural,
   onImageError,
+  className,
 }: Props): ReactElement => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const glRef = useRef<WebGLRenderingContext | null>(null)
@@ -152,7 +154,7 @@ export const GpuPreviewCanvas = ({
     const gl = canvas.getContext("webgl", {
       antialias: false,
       premultipliedAlpha: false,
-      preserveDrawingBuffer: true,
+      preserveDrawingBuffer: false,
     })
     if (!gl) return
     const prog = initProgram(gl)
@@ -267,7 +269,7 @@ export const GpuPreviewCanvas = ({
     <canvas
       ref={canvasRef}
       aria-label={alt}
-      className="pointer-events-none absolute left-1/2 top-1/2 max-h-none max-w-none select-none"
+      className={className ?? "pointer-events-none absolute left-1/2 top-1/2 max-h-none max-w-none select-none"}
       style={style}
     />
   )
