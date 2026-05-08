@@ -26,6 +26,7 @@ const buildPhoto = (path: string): Photo => {
     thumbnailPath: undefined,
     selected: false,
     approved: false,
+    rating: 0,
     adjustments: [],
   }
 }
@@ -55,6 +56,7 @@ const normalizePresent = (present: AppState): AppState => {
     ...present,
     photos: present.photos.map((photo) => ({
       ...photo,
+      rating: photo.rating ?? 0,
       thumbnailPath: photo.thumbnailPath?.endsWith(".thumb") ? undefined : photo.thumbnailPath,
     })),
     layout: { ...defaultUiLayout, ...(present.layout ?? {}) },

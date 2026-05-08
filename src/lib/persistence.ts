@@ -9,6 +9,7 @@ import type {
   ExportTaskPhoto,
   HistogramData,
   Photo,
+  PhotoExifSummary,
   ShadowsHighlightsState,
 } from "@/types/domain"
 
@@ -164,4 +165,8 @@ export const startExportJob = async (
 
 export const getExportJobStatus = async (jobId: string): Promise<ExportJobStatus | null> => {
   return invoke<ExportJobStatus | null>("get_export_job_status", { jobId })
+}
+
+export const getPhotoExif = async (sourcePath: string): Promise<PhotoExifSummary> => {
+  return invoke<PhotoExifSummary>("get_photo_exif", { sourcePath })
 }

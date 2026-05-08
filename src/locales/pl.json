@@ -36,7 +36,8 @@
     "shadows-highlights-shadows": "Cienia i światła: cienie",
     "shadows-highlights-darks": "Cienia i światła: ciemne tony",
     "shadows-highlights-lights": "Cienia i światła: światła",
-    "shadows-highlights-highlights": "Cienia i światła: prześwietlenia"
+    "shadows-highlights-highlights": "Cienia i światła: prześwietlenia",
+    "set-photo-rating": "Ocena gwiazdkowa"
   },
   "labels": {
     "selectedCount": "Zaznaczone zdjęcia",
@@ -49,6 +50,14 @@
     "denoiseProfiled": "Odszumianie profilowane",
     "filmstrip": "Bieżąca kolekcja",
     "history": "Historia",
+    "metadata": "Metadane",
+    "fileName": "Nazwa pliku",
+    "dateTaken": "Data zdjęcia",
+    "exposure": "Ekspozycja",
+    "camera": "Aparat",
+    "lens": "Obiektyw",
+    "rating": "Ocena",
+    "metadataPickPhoto": "Najedź na zdjęcie lub zaznacz je, aby zobaczyć szczegóły.",
     "noPhotos": "Brak zdjęć"
   },
   "exportModal": {

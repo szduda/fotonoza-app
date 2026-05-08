@@ -22,6 +22,8 @@ export interface AppActions {
   ensureEditPhoto: (photoId: string) => void
   approvePhoto: (photoId: string) => void
   declinePhoto: (photoId: string) => void
+  /** 0–5; recorded in undo/history. */
+  setPhotoRating: (photoId: string, rating: number) => void
   mergePhotoFromDisk: (photoId: string, partial: Partial<Photo>) => void
   patchBasicEffects: (
     photoId: string,
@@ -55,6 +57,8 @@ export interface AppActions {
   setTogglePanelExpanded: (id: string, expanded: boolean) => void
   patchLayout: (partial: Partial<UiLayoutState>) => void
   syncEditChrome: (next: EditChromeState) => void
+  /** View grid hover target for metadata + keyboard ratings (not undo). */
+  setViewHoveredPhoto: (photoId: string | undefined) => void
 }
 
 /** Edit chrome (sidebar buttons): zoom bounds & photo presence — not undo history. */
@@ -67,6 +71,7 @@ export interface EditChromeState {
 export interface StoreShape {
   present: AppState
   editChrome: EditChromeState
+  viewHoveredPhotoId?: string
   editPreviewPath?: string
   editPreviewPhotoId?: string
   editPreviewEpoch: number

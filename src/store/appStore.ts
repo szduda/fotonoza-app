@@ -53,6 +53,7 @@ export const useAppStore = create<StoreShape>()(
         canZoomOut: false,
         hasWorkPhoto: false,
       },
+      viewHoveredPhotoId: undefined,
       editPreviewPath: undefined,
       editPreviewPhotoId: undefined,
       editPreviewEpoch: 0,

@@ -74,6 +74,8 @@ export interface Photo {
   thumbnailNonce?: number
   selected: boolean
   approved: boolean
+  /** 0–5 stars; persisted with library snapshot. */
+  rating?: number
   adjustments: PhotoAdjustment[]
   basicEffects?: BasicEffectsState
   colorEffects?: ColorEffectsState
@@ -114,6 +116,15 @@ export interface HistogramData {
   green: number[]
   blue: number[]
   luma: number[]
+}
+
+export interface PhotoExifSummary {
+  dateTimeOriginal?: string
+  exposureSummary?: string
+  cameraMake?: string
+  cameraModel?: string
+  lensMake?: string
+  lensModel?: string
 }
 
 export interface HistoryEntry {
@@ -183,6 +194,7 @@ export type HistoryStoredLabel =
   | "shadows-highlights-darks"
   | "shadows-highlights-lights"
   | "shadows-highlights-highlights"
+  | "set-photo-rating"
 
 export interface TranslationSchema {
   appTitle: string
@@ -213,6 +225,14 @@ export interface TranslationSchema {
     denoiseProfiled: string
     filmstrip: string
     history: string
+    metadata: string
+    fileName: string
+    dateTaken: string
+    exposure: string
+    camera: string
+    lens: string
+    rating: string
+    metadataPickPhoto: string
     noPhotos: string
   }
   exportModal: {

@@ -35,6 +35,10 @@ export const ViewModeGridThumb = ({
           photo.selected ? `bg-neutral-500/40` : `bg-neutral-700/20`
         }`}
         style={{ width: cellW, height: cellW }}
+        onPointerEnter={() => {
+          if (useAppStore.getState().present.mode !== "view") return
+          useAppStore.getState().actions.setViewHoveredPhoto(photo.id)
+        }}
         onClick={() => {
           useAppStore.getState().actions.toggleSelectPhoto(photo.id)
         }}

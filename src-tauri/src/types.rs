@@ -26,6 +26,8 @@ pub struct PhotoState {
     pub source_path: String,
     pub selected: bool,
     pub approved: bool,
+    #[serde(default)]
+    pub rating: u8,
     pub adjustments: serde_json::Value,
     #[serde(default)]
     pub basic_effects: Option<serde_json::Value>,
@@ -117,6 +119,23 @@ pub struct HistogramData {
     pub green: Vec<u32>,
     pub blue: Vec<u32>,
     pub luma: Vec<u32>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PhotoExifSummary {
+    #[serde(default)]
+    pub date_time_original: Option<String>,
+    #[serde(default)]
+    pub exposure_summary: Option<String>,
+    #[serde(default)]
+    pub camera_make: Option<String>,
+    #[serde(default)]
+    pub camera_model: Option<String>,
+    #[serde(default)]
+    pub lens_make: Option<String>,
+    #[serde(default)]
+    pub lens_model: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

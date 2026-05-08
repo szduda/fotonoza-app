@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type ReactElement } from "react"
 import { t } from "@/lib/i18n"
 import { useAppStore } from "@/store/appStore"
 import { chrome } from "@/components/layout/chromeTheme"
+import { useViewModeRating } from "@/hooks/useViewModeRating"
 import { GridCols } from "./components/GridCols"
 import { ViewModeGridThumb } from "./components/ViewModeGridThumb"
 import { useGridCols } from "./hooks/useGridCols"
@@ -13,6 +14,7 @@ type ThumbExtras = { cols: number; cellW: number; photos: Photo[] }
 /** Simple virtual photo grid — sizing from {@link Grid} `onResize`. */
 export const ViewModeArea = (): ReactElement => {
   const { photos, locale } = useAppStore((s) => s.present)
+  useViewModeRating()
   const { viewGridCols } = useGridCols()
   const viewGridRef = useRef<HTMLDivElement | null>(null)
 

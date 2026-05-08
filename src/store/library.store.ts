@@ -21,6 +21,7 @@ export const createLibraryActions = (
   | "ensureEditPhoto"
   | "approvePhoto"
   | "declinePhoto"
+  | "setPhotoRating"
 > => {
   return {
     toggleSelectPhoto: (photoId) =>
@@ -66,5 +67,12 @@ export const createLibraryActions = (
         s.photos = s.photos.filter((photo) => photo.id !== photoId)
         if (s.currentPhotoId === photoId) s.currentPhotoId = undefined
       }),
+    setPhotoRating: (photoId, rating) => {
+      const clamped = Math.min(5, Math.max(0, Math.round(rating)))
+      withUndo(set, "set-photo-rating", (s) => {
+        const photo = s.photos.find((p) => p.id === photoId)
+        if (photo) photo.rating = clamped
+      })
+    },
   }
 }

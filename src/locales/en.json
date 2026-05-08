@@ -36,7 +36,8 @@
     "shadows-highlights-shadows": "Shadows & highlights: shadows",
     "shadows-highlights-darks": "Shadows & highlights: darks",
     "shadows-highlights-lights": "Shadows & highlights: lights",
-    "shadows-highlights-highlights": "Shadows & highlights: highlights"
+    "shadows-highlights-highlights": "Shadows & highlights: highlights",
+    "set-photo-rating": "Star rating"
   },
   "labels": {
     "selectedCount": "Selected photos",
@@ -49,6 +50,14 @@
     "denoiseProfiled": "Profiled Denoise",
     "filmstrip": "Filmstrip",
     "history": "History",
+    "metadata": "Metadata",
+    "fileName": "Filename",
+    "dateTaken": "Date taken",
+    "exposure": "Exposure",
+    "camera": "Camera",
+    "lens": "Lens",
+    "rating": "Rating",
+    "metadataPickPhoto": "Hover a photo or select one to see details.",
     "noPhotos": "No photos yet"
   },
   "exportModal": {

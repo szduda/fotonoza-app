@@ -8,7 +8,10 @@ type SetStore = (fn: (current: StoreShape) => StoreShape) => void
 
 export const createUiActions = (
   set: SetStore,
-): Pick<AppActions, "setMode" | "setLocale" | "setTogglePanelExpanded" | "patchLayout" | "syncEditChrome"> => {
+): Pick<
+  AppActions,
+  "setMode" | "setLocale" | "setTogglePanelExpanded" | "patchLayout" | "syncEditChrome" | "setViewHoveredPhoto"
+> => {
   return {
     setMode: (mode: AppMode) => {
       withoutTemporalRecord(() =>
@@ -18,6 +21,7 @@ export const createUiActions = (
             const { past, future } = getTemporalSnapshots()
             void saveStoreSnapshot(present, past, future)
             current.present = present
+            if (mode !== "view") current.viewHoveredPhotoId = undefined
           }),
         ),
       )
@@ -74,6 +78,15 @@ export const createUiActions = (
               return
             }
             current.editChrome = next
+          }),
+        ),
+      )
+    },
+    setViewHoveredPhoto: (photoId) => {
+      withoutTemporalRecord(() =>
+        set(
+          produce((current: StoreShape) => {
+            current.viewHoveredPhotoId = photoId
           }),
         ),
       )
