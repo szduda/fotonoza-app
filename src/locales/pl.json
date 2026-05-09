@@ -64,7 +64,7 @@
     "filterExposure": "Ekspozycja",
     "filterCamera": "Aparat",
     "filterLens": "Obiektyw",
-    "filterRatingMin": "Min. ocena",
+    "filterRatingMin": "Ocena",
     "filterRatingAny": "Dowolna",
     "noPhotosMatchFilters": "Żadne zdjęcie nie pasuje do filtrów.",
     "noPhotos": "Brak zdjęć",
@@ -78,7 +78,9 @@
     "collectionMoveAsk": "Przenieść {{n}} zdjęć z {{from}} do {{to}}?",
     "collectionMoveYes": "Tak",
     "collectionMoveNo": "Nie",
-    "collectionMoveFromMixed": "różnych kolekcji"
+    "collectionMoveFromMixed": "różnych kolekcji",
+    "focusPeaking": "Peakowanie ostrości",
+    "highlightClipping": "Wyświetlaj przesterowanie świateł"
   },
   "exportModal": {
     "title": "Ustawienia eksportu",

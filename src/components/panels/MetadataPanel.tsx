@@ -14,7 +14,7 @@ const joinClean = (a?: string, b?: string): string | undefined => {
 
 const MetaRow = ({ label, value }: { label: string; value?: string }): ReactElement => (
   <div className="px-2 py-1 gap-1 flex items-baseline justify-between">
-    <dt className={`text-[8px] font-medium uppercase text-right ${chrome.faintText}`}>{label}</dt>
+    <dt className={`text-[8px] font-medium uppercase text-right ${chrome.mutedText}`}>{label}</dt>
     <dd
       className={`text-[11px] text-right ${chrome.panelText} ${value ? "opacity-100" : "opacity-20 !text-[8px]"}`}
       style={{ lineHeight: "14px" }}
@@ -43,18 +43,13 @@ export const MetadataPanel = (): ReactElement => {
   const lensLine = joinClean(exif?.lensMake, exif?.lensModel)
 
   return (
-    <ToggledPanel
-      id="metadata"
-      label={t(locale, (m) => m.labels.metadata)}
-      defaultOpen
-     featurePanel
-    >
+    <ToggledPanel id="metadata" label={t(locale, (m) => m.labels.metadata)} defaultOpen>
       {!metaPhoto ? (
         <p className={`px-2 py-2 text-[11px] ${chrome.mutedText}`}>
           {t(locale, (m) => m.labels.metadataPickPhoto)}
         </p>
       ) : (
-        <dl className="py-1">
+        <dl className="py-2">
           <MetaRow label={t(locale, (m) => m.labels.fileName)} value={metaPhoto.fileName} />
           <MetaRow label={t(locale, (m) => m.labels.dateTaken)} value={exif?.dateTimeOriginal} />
 

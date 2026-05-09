@@ -4,7 +4,6 @@ import { chrome } from "@/components/layout/chromeTheme"
 
 type ToggledPanelProps = {
   id: string
-  featurePanel?: boolean
   label: ReactNode
   children: ReactNode
   height?: number | string
@@ -12,6 +11,7 @@ type ToggledPanelProps = {
   contentRef?: RefObject<HTMLDivElement | null>
   className?: string
   contentPadding?: string
+  toggleClassName?: string
 }
 
 export const ToggledPanel = ({
@@ -23,6 +23,7 @@ export const ToggledPanel = ({
   contentRef,
   className,
   contentPadding = "px-2",
+  toggleClassName,
 }: ToggledPanelProps): ReactElement => {
   const expandedState = useAppStore((s) => s.present.togglePanelExpanded)
   const setTogglePanelExpanded = useAppStore((s) => s.actions.setTogglePanelExpanded)
@@ -36,7 +37,7 @@ export const ToggledPanel = ({
       }
     >
       <button
-        className={`bg-neutral-900 hover:text-neutral-500 text-left relative shrink-0 cursor-pointer px-4 py-1.5 text-[10px] font-medium uppercase tracking-wide border-y ${expanded ? "border-neutral-600/20" : "border-b-neutral-600/10 border-t-transparent"} ${chrome.mutedText}`}
+        className={`bg-neutral-900 hover:text-neutral-500 text-left relative shrink-0 cursor-pointer px-4 py-1.5 text-[10px] font-medium uppercase tracking-wide border-y ${expanded ? "border-neutral-600/20" : "border-b-neutral-600/10 border-t-transparent"} ${chrome.mutedText} ${toggleClassName}`}
         onClick={() => setTogglePanelExpanded(id, !expanded)}
       >
         {label}

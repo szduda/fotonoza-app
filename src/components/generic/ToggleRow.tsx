@@ -10,8 +10,8 @@ type ToggleRowProps = {
 
 export const ToggleRow = ({ label, enabled, onChange, className }: ToggleRowProps): ReactElement => {
   return (
-    <div className={`flex items-center justify-between gap-2 text-xs ${chrome.mutedText} ${className}`}>
-      <span className="text-[8px] font-medium uppercase flex-1">{label}</span>
+    <div className={`flex items-center justify-between gap-2 text-xs ${chrome.panelText} ${className}`}>
+      <span className="text-[8.5px] font-medium uppercase flex-1">{label}</span>
       <button
         type="button"
         role="switch"

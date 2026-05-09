@@ -13,7 +13,7 @@ export const RatingStars = ({ rating, onPick, disabled }: Props): ReactElement =
   const clamped = Math.min(5, Math.max(0, rating))
 
   return (
-    <div className="flex justify-center gap-0.5 py-2" role="group" aria-label="Rating">
+    <div className="flex justify-center gap-0.5" role="group" aria-label="Rating">
       {[1, 2, 3, 4, 5].map((n) => {
         const filled = clamped >= n
         return (

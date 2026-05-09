@@ -25,7 +25,7 @@ export const HistoryPanel = (): ReactElement => {
       label={t(locale, (m) => m.labels.history)}
       height="200px"
       contentRef={contentRef}
-      contentPadding=""
+      contentPadding="pb-2"
     >
       {history.map((entry, idx) => (
         <button

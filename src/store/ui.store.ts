@@ -1,6 +1,11 @@
 import { saveStoreSnapshot } from "@/lib/persistence"
 import { produce } from "immer"
-import type { AppActions, EditChromeState, StoreShape } from "./appStore.types"
+import type {
+  AppActions,
+  EditChromeState,
+  GpuPreviewAssistState,
+  StoreShape,
+} from "./appStore.types"
 import { getTemporalSnapshots, withUndo, withoutTemporalRecord } from "./history.store"
 import { defaultUiLayout, type AppMode } from "@/types/domain"
 
@@ -10,7 +15,13 @@ export const createUiActions = (
   set: SetStore,
 ): Pick<
   AppActions,
-  "setMode" | "setLocale" | "setTogglePanelExpanded" | "patchLayout" | "syncEditChrome" | "setViewHoveredPhoto"
+  | "setMode"
+  | "setLocale"
+  | "setTogglePanelExpanded"
+  | "patchLayout"
+  | "syncEditChrome"
+  | "setViewHoveredPhoto"
+  | "patchGpuPreviewAssist"
 > => {
   return {
     setMode: (mode: AppMode) => {
@@ -87,6 +98,15 @@ export const createUiActions = (
         set(
           produce((current: StoreShape) => {
             current.viewHoveredPhotoId = photoId
+          }),
+        ),
+      )
+    },
+    patchGpuPreviewAssist: (partial: Partial<GpuPreviewAssistState>) => {
+      withoutTemporalRecord(() =>
+        set(
+          produce((current: StoreShape) => {
+            Object.assign(current.gpuPreviewAssist, partial)
           }),
         ),
       )

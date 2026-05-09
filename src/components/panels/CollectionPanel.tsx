@@ -133,48 +133,8 @@ export const CollectionPanel = (): ReactElement => {
 
   return (
     <div ref={clusterRef} className="relative">
-      <ToggledPanel
-        id="collections"
-        label={t(locale, (m) => m.labels.collections)}
-       featurePanel
-      >
-        <div className="flex flex-col gap-2 px-2 pb-2">
-          <div className="flex justify-between flex-wrap items-center gap-1 py-1">
-            <Button
-              variant="outlined"
-              size="xs"
-              className={clsx(
-                "font-normal normal-case",
-                !collectionFilter && "border-yellow-500/50",
-              )}
-              onClick={() => setCollectionFilter(undefined)}
-            >
-              {t(locale, (m) => m.labels.collectionAll)}
-            </Button>
-            <div className="flex flex-wrap items-center gap-1">
-              <Button
-                variant="subtle"
-                size="xs"
-                className={`font-normal normal-case text-yellow-500/70 bg-yellow-900/15 ${moveFlowActive && "pointer-events-none"}`}
-                disabled={!hasSelection}
-                onClick={onMoveToolbarClick}
-              >
-                {moveFlowActive
-                  ? t(locale, (m) => m.labels.collectionChooseCollection)
-                  : t(locale, (m) => m.labels.collectionMoveSelected)}
-              </Button>
-              <Button
-                variant="outlined"
-                size="xs"
-                className="font-normal normal-case"
-                disabled={!canNest}
-                title={!canNest ? t(locale, (m) => m.labels.collectionNestLimit) : undefined}
-                onClick={onAddFolder}
-              >
-                {defaultName}
-              </Button>
-            </div>
-          </div>
+      <ToggledPanel id="collections" label={t(locale, (m) => m.labels.collections)}>
+        <div className="flex flex-col gap-2 px-2 py-2">
           <div
             className={clsx(
               "flex min-h-0 flex-col gap-0.5 py-1 rounded border border-neutral-600/10 bg-neutral-500/5",
@@ -199,6 +159,7 @@ export const CollectionPanel = (): ReactElement => {
               onMoveTargetPick={onMoveTargetPick}
               subtreeCounts={subtreeCounts}
             />
+
             <div className="relative z-0 flex items-center gap-0.5 hover:z-10 focus-within:z-10">
               <span className="inline-block w-4 shrink-0" />
               <Button
@@ -214,6 +175,45 @@ export const CollectionPanel = (): ReactElement => {
                 }}
               >
                 {othersLbl} ({othersPhotoN})
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex justify-between flex-wrap items-center gap-1 py-1">
+            <Button
+              variant="outlined"
+              size="xs"
+              className={clsx(
+                "font-normal normal-case",
+                !collectionFilter && "border-yellow-500/50",
+              )}
+              onClick={() => setCollectionFilter(undefined)}
+            >
+              {t(locale, (m) => m.labels.collectionAll)}
+            </Button>
+
+            <div className="flex flex-wrap items-center gap-1">
+              <Button
+                variant="subtle"
+                size="xs"
+                className={`font-normal normal-case text-yellow-500/70 bg-yellow-900/15 ${moveFlowActive && "pointer-events-none"}`}
+                disabled={!hasSelection}
+                onClick={onMoveToolbarClick}
+              >
+                {moveFlowActive
+                  ? t(locale, (m) => m.labels.collectionChooseCollection)
+                  : t(locale, (m) => m.labels.collectionMoveSelected)}
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="xs"
+                className="font-normal normal-case"
+                disabled={!canNest}
+                title={!canNest ? t(locale, (m) => m.labels.collectionNestLimit) : undefined}
+                onClick={onAddFolder}
+              >
+                {defaultName}
               </Button>
             </div>
           </div>

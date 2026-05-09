@@ -64,7 +64,7 @@
     "filterExposure": "Exposure",
     "filterCamera": "Camera",
     "filterLens": "Lens",
-    "filterRatingMin": "Min. rating",
+    "filterRatingMin": "Rating",
     "filterRatingAny": "Any",
     "noPhotosMatchFilters": "No photos match the current filters.",
     "noPhotos": "No photos yet",
@@ -78,7 +78,9 @@
     "collectionMoveAsk": "Move {{n}} photos from {{from}} to {{to}}?",
     "collectionMoveYes": "Yes",
     "collectionMoveNo": "No",
-    "collectionMoveFromMixed": "multiple collections"
+    "collectionMoveFromMixed": "multiple collections",
+    "focusPeaking": "Focus Peaking",
+    "highlightClipping": "Show Highlights Clipping"
   },
   "exportModal": {
     "title": "Export settings",

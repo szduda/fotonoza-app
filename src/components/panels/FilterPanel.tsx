@@ -1,11 +1,12 @@
 import type { ChangeEvent, ReactElement } from "react"
 import { t } from "@/lib/i18n"
 import { chrome } from "@/components/layout/chromeTheme"
+import { RatingStars } from "@/components/generic/RatingStars"
 import { ToggledPanel } from "@/components/generic/ToggledPanel"
 import { useExifPrefetchForFilters } from "@/hooks/useExifPrefetchForFilters"
 import { useAppStore } from "@/store/appStore"
 
-const inputCls = `w-full rounded border border-neutral-600/50 bg-neutral-900/40 px-2 py-2 h-6 text-[11px] outline-none focus:border-neutral-500 ${chrome.panelText}`
+const inputCls = `w-full rounded border border-neutral-600/50  px-2 py-2 h-6 text-[11px] outline-none focus-within:border-neutral-500/90 ${chrome.panelText}`
 
 const FilterField = ({
   label,
@@ -17,7 +18,11 @@ const FilterField = ({
   onChange: (next: string) => void
 }): ReactElement => (
   <label className="flex flex gap-0.5 px-2 py-1 items-center">
-    <span className={`text-[8px] w-20 font-medium uppercase ${value ? "text-yellow-500" : chrome.faintText}`}>{label}</span>
+    <span
+      className={`text-[8px] w-20 font-medium uppercase ${value ? "text-yellow-500/70" : chrome.mutedText}`}
+    >
+      {label}
+    </span>
     <input
       type="search"
       autoComplete="off"
@@ -35,12 +40,8 @@ export const FilterPanel = (): ReactElement => {
   useExifPrefetchForFilters()
 
   return (
-    <ToggledPanel
-      id="filter"
-      label={t(locale, (m) => m.labels.filter)}
-     featurePanel
-    >
-      <div className="flex flex-col pb-2">
+    <ToggledPanel id="filter" label={t(locale, (m) => m.labels.filter)}>
+      <div className="flex flex-col py-2">
         <FilterField
           label={t(locale, (m) => m.labels.filterFileName)}
           value={photoFilters.fileName}
@@ -67,23 +68,22 @@ export const FilterPanel = (): ReactElement => {
           onChange={(lens) => setPhotoFilter({ lens })}
         />
 
-        <label className="flex gap-0.5 px-2 py-1 items-center">
-          <span className={`text-[8px] w-20 font-medium uppercase ${chrome.faintText}`}>
+        <label className="flex flex-row items-center gap-0.5 px-2">
+          <span
+            className={`w-20 shrink-0 text-[8px] font-medium uppercase ${photoFilters.ratingAtLeast ? "text-yellow-500/70" : chrome.mutedText}`}
+          >
             {t(locale, (m) => m.labels.filterRatingMin)}
           </span>
-          <select
-            value={photoFilters.ratingAtLeast}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-              setPhotoFilter({ ratingAtLeast: Number(e.target.value) })
-            }
-            className={inputCls}
-          >
-            {[0, 1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>
-                {n === 0 ? t(locale, (m) => m.labels.filterRatingAny) : `${n}+`}
-              </option>
-            ))}
-          </select>
+          <div className="min-w-0 flex-1 pr-6 opacity-50">
+            <RatingStars
+              rating={photoFilters.ratingAtLeast}
+              onPick={(stars) =>
+                setPhotoFilter({
+                  ratingAtLeast: stars === photoFilters.ratingAtLeast && stars > 0 ? 0 : stars,
+                })
+              }
+            />
+          </div>
         </label>
       </div>
     </ToggledPanel>

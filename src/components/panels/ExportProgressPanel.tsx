@@ -26,11 +26,11 @@ export const ExportProgressPanel = (): ReactElement | null => {
       <ToggledPanel
         id="export-progress"
         label="Export progress"
-        className="bg-yellow-700/5"
-        height={112}
+        className="outline outline-yellow-500/50"
+        // toggleClassName="!bg-neutral-900/10 !text-neutral-500/95 hover:!text-neutral-400/95"
         defaultOpen
       >
-        <div className="px-2 pt-3 pb-2 text-xs flex flex-col gap-3">
+        <div className="px-2 py-3 text-xs flex flex-col gap-3">
           <div>
             <div className={`mb-1 flex items-center justify-between ${chrome.mutedText}`}>
               <span>
@@ -47,18 +47,20 @@ export const ExportProgressPanel = (): ReactElement | null => {
           </div>
           {isFinished && (
             <div className="w-full flex justify-between items-center gap-2">
-              <div className="flex items-center gap-1 text-emerald-400 text-[11px] font-medium">
+              <div className="flex items-center gap-1 text-emerald-400/90 text-[11px] font-medium">
                 <DoneIcon />
                 <span>Export finished</span>
               </div>
-              <div className="flex items-center gap-1">
-                <Button variant="outlined" size="xs" onClick={showExportFolder} disabled={!outputDir} >
-                  Show
-                </Button>
-                <Button variant="subtle" size="xs" onClick={close} className="bg-transparent">
-                  Close
-                </Button>
-              </div>
+
+              <Button
+                variant="outlined"
+                size="xs"
+                onClick={showExportFolder}
+                className="bg-transparent"
+                disabled={!outputDir}
+              >
+                Open Folder
+              </Button>
             </div>
           )}
         </div>

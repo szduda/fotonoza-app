@@ -58,6 +58,7 @@ export const useAppStore = create<StoreShape>()(
         canZoomOut: false,
         hasWorkPhoto: false,
       },
+      gpuPreviewAssist: { focusPeaking: false, highlightClipping: false },
       exifCache: {},
       viewHoveredPhotoId: undefined,
       editPreviewPath: undefined,

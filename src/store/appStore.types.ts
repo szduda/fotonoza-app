@@ -59,6 +59,7 @@ export interface AppActions {
   setTogglePanelExpanded: (id: string, expanded: boolean) => void
   patchLayout: (partial: Partial<UiLayoutState>) => void
   syncEditChrome: (next: EditChromeState) => void
+  patchGpuPreviewAssist: (partial: Partial<GpuPreviewAssistState>) => void
   /** View grid hover target for metadata + keyboard ratings (not undo). */
   setViewHoveredPhoto: (photoId: string | undefined) => void
   setPhotoFilter: (partial: Partial<PhotoFiltersState>) => void
@@ -79,10 +80,17 @@ export interface EditChromeState {
   hasWorkPhoto: boolean
 }
 
+/** Edit GPU preview overlays (histogram source); not persisted. */
+export interface GpuPreviewAssistState {
+  focusPeaking: boolean
+  highlightClipping: boolean
+}
+
 export interface StoreShape {
   present: AppState
   isBooting: boolean
   editChrome: EditChromeState
+  gpuPreviewAssist: GpuPreviewAssistState
   /** Populated for filter matching only. */
   exifCache: Record<string, PhotoExifSummary>
   viewHoveredPhotoId?: string

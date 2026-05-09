@@ -3,6 +3,7 @@ import { isTauri } from "@tauri-apps/api/core"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactElement } from "react"
 import { hasLiveHistogramSubscribers, publishHistogramFromFrame } from "@/lib/liveHistogram"
 import type { BasicEffectsState, ColorEffectsState, ShadowsHighlightsState } from "@/types/domain"
+import { GPU_PREVIEW_FRAG_SRC } from "./gpuPreviewFragSrc"
 
 type Size = { width: number; height: number }
 type Pan = { x: number; y: number }
@@ -19,6 +20,10 @@ type Props = {
   basicEffects: BasicEffectsState
   colorEffects: ColorEffectsState
   sh: ShadowsHighlightsState
+  /** Laplacian map as sparse red dots (source texture luminance). */
+  focusPeaking?: boolean
+  /** Tint clipped highlights magenta-red on graded RGB. */
+  highlightClipping?: boolean
   onImageNatural: (size: Size) => void
   onImageError: () => void
   className?: string
@@ -34,65 +39,6 @@ void main() {
 }
 `
 
-const FRAG_SRC = `
-precision highp float;
-uniform sampler2D u_tex;
-uniform vec4 u_basic0;
-uniform vec4 u_basic1;
-uniform vec4 u_sh;
-varying vec2 v_uv;
-float lum(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
-float smoothx(float a, float b, float x) {
-  float t = clamp((x - a) / (b - a), 0.0, 1.0);
-  return t * t * (3.0 - 2.0 * t);
-}
-void main() {
-  vec4 src = texture2D(u_tex, v_uv);
-  float exposure = u_basic0.x;
-  float contrast = u_basic0.y;
-  float contrastBalance = u_basic0.z;
-  float clarity = u_basic0.w;
-  float vibrance = u_basic1.x;
-  float saturation = u_basic1.y;
-  float temperature = u_basic1.z;
-  float tint = u_basic1.w;
-  float shadows = u_sh.x;
-  float darks = u_sh.y;
-  float lights = u_sh.z;
-  float highlights = u_sh.w;
-
-  vec3 c = src.rgb * exp2(exposure);
-  float y = lum(c);
-  float pivot = clamp(0.5 + contrastBalance * 0.25, 0.2, 0.8);
-  c = (c - vec3(pivot)) * contrast + vec3(pivot);
-
-  float shw = smoothx(0.0, 0.45, 1.0 - y);
-  float drk = smoothx(0.15, 0.6, 1.0 - y);
-  float lgt = smoothx(0.4, 0.85, y);
-  float hlt = smoothx(0.65, 1.0, y);
-  float tonemap = shadows * 0.25 * shw + darks * 0.2 * drk + lights * 0.2 * lgt + highlights * 0.25 * hlt;
-  c += vec3(tonemap);
-
-  y = lum(c);
-  float micro = (c.r + c.g + c.b - 3.0 * y) / 3.0;
-  c += vec3(micro * clarity * 0.7);
-
-  float tr = 1.0 + temperature * 0.15 + tint * 0.05;
-  float tg = 1.0 - tint * 0.12;
-  float tb = 1.0 - temperature * 0.15 + tint * 0.05;
-  c *= vec3(tr, tg, tb);
-
-  float mx = max(c.r, max(c.g, c.b));
-  float mn = min(c.r, min(c.g, c.b));
-  float chroma = clamp(mx - mn, 0.0, 1.0);
-  float vibT = pow(clamp(1.0 - chroma, 0.0, 1.0), 1.35);
-  float satGain = saturation + vibrance * vibT;
-  c = mix(vec3(y), c, satGain);
-
-  gl_FragColor = vec4(clamp(c, 0.0, 1.0), src.a);
-}
-`
-
 export const GpuPreviewCanvas = ({
   photoId,
   src,
@@ -103,6 +49,8 @@ export const GpuPreviewCanvas = ({
   basicEffects,
   colorEffects,
   sh,
+  focusPeaking = false,
+  highlightClipping = false,
   onImageNatural,
   onImageError,
   className,
@@ -114,6 +62,9 @@ export const GpuPreviewCanvas = ({
   const uBasic0Ref = useRef<WebGLUniformLocation | null>(null)
   const uBasic1Ref = useRef<WebGLUniformLocation | null>(null)
   const uShRef = useRef<WebGLUniformLocation | null>(null)
+  const uTexelRef = useRef<WebGLUniformLocation | null>(null)
+  const uFocusPeakingRef = useRef<WebGLUniformLocation | null>(null)
+  const uHighlightClipRef = useRef<WebGLUniformLocation | null>(null)
   /** Decoded via fetch+blob so WebGL texImage2D is allowed (asset URLs taint HTMLImageElement on WebKit). */
   const bitmapRef = useRef<ImageBitmap | null>(null)
   const onImageNaturalRef = useRef(onImageNatural)
@@ -184,6 +135,9 @@ export const GpuPreviewCanvas = ({
     uBasic0Ref.current = gl.getUniformLocation(prog, "u_basic0")
     uBasic1Ref.current = gl.getUniformLocation(prog, "u_basic1")
     uShRef.current = gl.getUniformLocation(prog, "u_sh")
+    uTexelRef.current = gl.getUniformLocation(prog, "u_texel")
+    uFocusPeakingRef.current = gl.getUniformLocation(prog, "u_focusPeaking")
+    uHighlightClipRef.current = gl.getUniformLocation(prog, "u_highlightClip")
 
     gl.useProgram(prog)
     gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -255,7 +209,16 @@ export const GpuPreviewCanvas = ({
 
   useLayoutEffect(() => {
     draw()
-  }, [texEpoch, uniforms, rendered.width, rendered.height, src, photoId])
+  }, [
+    texEpoch,
+    uniforms,
+    rendered.width,
+    rendered.height,
+    src,
+    photoId,
+    focusPeaking,
+    highlightClipping,
+  ])
 
   useLayoutEffect(() => {
     histDirtyRef.current = true
@@ -275,6 +238,8 @@ export const GpuPreviewCanvas = ({
     sh.lights,
     sh.highlights,
     photoId,
+    focusPeaking,
+    highlightClipping,
   ])
 
   const style = {
@@ -318,6 +283,12 @@ export const GpuPreviewCanvas = ({
     if (uBasic0Ref.current) gl.uniform4fv(uBasic0Ref.current, uniforms.basic0)
     if (uBasic1Ref.current) gl.uniform4fv(uBasic1Ref.current, uniforms.basic1)
     if (uShRef.current) gl.uniform4fv(uShRef.current, uniforms.sh)
+    if (uTexelRef.current) {
+      gl.uniform2f(uTexelRef.current, 1 / Math.max(bmp.width, 1), 1 / Math.max(bmp.height, 1))
+    }
+    if (uFocusPeakingRef.current) gl.uniform1f(uFocusPeakingRef.current, focusPeaking ? 1 : 0)
+    if (uHighlightClipRef.current)
+      gl.uniform1f(uHighlightClipRef.current, highlightClipping ? 1 : 0)
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
     if (histDirtyRef.current && hasLiveHistogramSubscribers()) {
       publishHistogramFromFrame(gl, canvas.width, canvas.height, photoId, histBufferRef)
@@ -328,7 +299,7 @@ export const GpuPreviewCanvas = ({
 
 function initProgram(gl: WebGLRenderingContext): WebGLProgram | null {
   const vs = compile(gl, gl.VERTEX_SHADER, VERT_SRC)
-  const fs = compile(gl, gl.FRAGMENT_SHADER, FRAG_SRC)
+  const fs = compile(gl, gl.FRAGMENT_SHADER, GPU_PREVIEW_FRAG_SRC)
   if (!vs || !fs) return null
   const prog = gl.createProgram()
   if (!prog) return null

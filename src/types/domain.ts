@@ -287,6 +287,10 @@ export interface TranslationSchema {
     collectionMoveYes: string
     collectionMoveNo: string
     collectionMoveFromMixed: string
+    /** Edit GPU overlay: sharpen map as red dots. */
+    focusPeaking: string
+    /** Edit GPU overlay: tint blown highlights red. */
+    highlightClipping: string
   }
   exportModal: {
     title: string

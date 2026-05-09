@@ -7,6 +7,7 @@ import {
   defaultShadowsHighlights,
 } from "@/types/domain"
 import { GpuPreviewCanvas } from "@/components/WorkingArea/components/GpuPreviewCanvas"
+import { useAppStore } from "@/store/appStore"
 import type { EditModeModel } from "@/components/WorkingArea/hooks/useEditMode"
 import type { Size } from "@/components/WorkingArea/geometry"
 
@@ -19,6 +20,7 @@ const canvasFrame =
   "pointer-events-none absolute left-1/2 top-1/2 max-h-none max-w-none select-none"
 
 export const EditModePreviewLayers = ({ edit, selectedPhoto }: Props): ReactElement => {
+  const gpuAssist = useAppStore((s) => s.gpuPreviewAssist)
   const previewKey = `${edit.editImageSrc}-${edit.previewEpoch}`
   const [mainDecoded, setMainDecoded] = useState(false)
 
@@ -76,6 +78,8 @@ export const EditModePreviewLayers = ({ edit, selectedPhoto }: Props): ReactElem
         basicEffects={{ ...defaultBasicEffects(), ...selectedPhoto.basicEffects }}
         colorEffects={{ ...defaultColorEffects(), ...selectedPhoto.colorEffects }}
         sh={{ ...defaultShadowsHighlights(), ...selectedPhoto.shadowsHighlights }}
+        focusPeaking={gpuAssist.focusPeaking}
+        highlightClipping={gpuAssist.highlightClipping}
         onImageNatural={onImageNatural}
         onImageError={() => edit.setImageFailed(true)}
       />
