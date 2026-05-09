@@ -52,6 +52,7 @@ export const useAppStore = create<StoreShape>()(
   temporal(
     (set, get) => ({
       present: initialState,
+      isBooting: true,
       editChrome: {
         canZoomIn: false,
         canZoomOut: false,

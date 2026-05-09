@@ -118,37 +118,47 @@ export const createIoActions = (
 > => {
   return {
     initialize: async () => {
-      const loaded = await loadAppState()
-      if (!loaded) return
-      let present = normalizePresent(loaded.present)
-      const allSourcePaths = [
-        ...present.photos.map((photo) => photo.sourcePath),
-        ...loaded.past.flatMap((state) => state.photos.map((photo) => photo.sourcePath)),
-        ...loaded.future.flatMap((state) => state.photos.map((photo) => photo.sourcePath)),
-      ]
-      const library = await ensureLibrarySources(allSourcePaths)
-      present = mapStateToLibrary(present, library)
-      const past = loaded.past.map((state) => mapStateToLibrary(normalizePresent(state), library))
-      const future = loaded.future.map((state) => mapStateToLibrary(normalizePresent(state), library))
-      if (loaded.past.length === 0 && present.history.length > 0) {
-        present = { ...present, history: [], historyCursor: 0 }
-      }
-      withoutTemporalRecord(() =>
-        set(
-          produce((current: StoreShape) => {
-            current.present = present
-            setTemporalSnapshots(past, future)
-            current.present.historyCursor = loaded.past.length
-            current.editPreviewPath = undefined
-            current.editPreviewPhotoId = undefined
-            current.editPreviewEpoch = 0
-            current.editPreviewPending = 0
-          }),
-        ),
-      )
+      try {
+        const loaded = await loadAppState()
+        if (!loaded) return
+        let present = normalizePresent(loaded.present)
+        const allSourcePaths = [
+          ...present.photos.map((photo) => photo.sourcePath),
+          ...loaded.past.flatMap((state) => state.photos.map((photo) => photo.sourcePath)),
+          ...loaded.future.flatMap((state) => state.photos.map((photo) => photo.sourcePath)),
+        ]
+        const library = await ensureLibrarySources(allSourcePaths)
+        present = mapStateToLibrary(present, library)
+        const past = loaded.past.map((state) => mapStateToLibrary(normalizePresent(state), library))
+        const future = loaded.future.map((state) => mapStateToLibrary(normalizePresent(state), library))
+        if (loaded.past.length === 0 && present.history.length > 0) {
+          present = { ...present, history: [], historyCursor: 0 }
+        }
+        withoutTemporalRecord(() =>
+          set(
+            produce((current: StoreShape) => {
+              current.present = present
+              setTemporalSnapshots(past, future)
+              current.present.historyCursor = loaded.past.length
+              current.editPreviewPath = undefined
+              current.editPreviewPhotoId = undefined
+              current.editPreviewEpoch = 0
+              current.editPreviewPending = 0
+            }),
+          ),
+        )
 
-      const presentSources = present.photos.map((photo) => photo.sourcePath)
-      void ensureThumbnailBatchResolved(presentSources).then((entries) => patchThumbnailEntries(set, entries))
+        const presentSources = present.photos.map((photo) => photo.sourcePath)
+        void ensureThumbnailBatchResolved(presentSources).then((entries) => patchThumbnailEntries(set, entries))
+      } finally {
+        withoutTemporalRecord(() =>
+          set(
+            produce((current: StoreShape) => {
+              current.isBooting = false
+            }),
+          ),
+        )
+      }
     },
 
     importPreviewPhotos: (paths) => {

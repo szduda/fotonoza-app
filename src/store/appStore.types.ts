@@ -81,6 +81,7 @@ export interface EditChromeState {
 
 export interface StoreShape {
   present: AppState
+  isBooting: boolean
   editChrome: EditChromeState
   /** Populated for filter matching only. */
   exifCache: Record<string, PhotoExifSummary>
