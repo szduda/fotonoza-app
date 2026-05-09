@@ -71,7 +71,7 @@
     "collections": "Collections",
     "collectionAll": "All",
     "collectionNew": "New",
-    "collectionOthers": "Others",
+    "collectionOthers": "No Collection",
     "collectionNestLimit": "Maximum folder depth reached (top level plus 3 nested).",
     "collectionMoveSelected": "Move selected",
     "collectionChooseCollection": "Choose Collection",

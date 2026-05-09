@@ -15,7 +15,12 @@ const joinClean = (a?: string, b?: string): string | undefined => {
 const MetaRow = ({ label, value }: { label: string; value?: string }): ReactElement => (
   <div className="px-2 py-1 gap-1 flex items-baseline justify-between">
     <dt className={`text-[8px] font-medium uppercase text-right ${chrome.faintText}`}>{label}</dt>
-    <dd className={`text-[11px] leading-snug text-right ${chrome.panelText}`}>{value ?? "—"}</dd>
+    <dd
+      className={`text-[11px] text-right ${chrome.panelText} ${value ? "opacity-100" : "opacity-20 !text-[8px]"}`}
+      style={{ lineHeight: "14px" }}
+    >
+      {value ?? "N/D"}
+    </dd>
   </div>
 )
 
@@ -42,14 +47,14 @@ export const MetadataPanel = (): ReactElement => {
       id="metadata"
       label={t(locale, (m) => m.labels.metadata)}
       defaultOpen
-      className="border-b border-neutral-600/50"
+      className="border-b border-neutral-600/50 pb-1"
     >
       {!metaPhoto ? (
         <p className={`px-2 py-2 text-[11px] ${chrome.mutedText}`}>
           {t(locale, (m) => m.labels.metadataPickPhoto)}
         </p>
       ) : (
-        <dl>
+        <dl className="pt-1">
           <MetaRow label={t(locale, (m) => m.labels.fileName)} value={metaPhoto.fileName} />
           <MetaRow label={t(locale, (m) => m.labels.dateTaken)} value={exif?.dateTimeOriginal} />
 

@@ -60,9 +60,7 @@ export const CollBranch = ({
       const hasKids = children.length > 0
       const open = !collapsed.has(folder.id)
       const active =
-        folder.id === OTHERS_COLLECTION_ID
-          ? filter === OTHERS_COLLECTION_ID
-          : filter === folder.id
+        folder.id === OTHERS_COLLECTION_ID ? filter === OTHERS_COLLECTION_ID : filter === folder.id
       const editing = editingId === folder.id
       const pickMove = movePickActive && !!onMoveTargetPick
       const subN = subtreeCounts.get(folder.id) ?? 0
@@ -73,21 +71,18 @@ export const CollBranch = ({
             className="relative z-0 flex min-w-0 items-center hover:z-10 focus-within:z-10"
             style={{ paddingLeft: depth * 16 }}
           >
-            {hasKids ? (
-              <Button
-                variant="subtleText"
-                size="xs"
-                className="!h-5 !min-h-5 w-4 shrink-0 !bg-transparent p-0 text-[15px] leading-none enabled:hover:!bg-neutral-800/50 -translate-y-[1px]"
-                onClick={(e: MouseEvent<HTMLButtonElement>) => {
-                  e.stopPropagation()
-                  toggle(folder.id)
-                }}
-              >
-                {open ? "-" : "+"}
-              </Button>
-            ) : (
-              <span className="inline-block w-4 shrink-0" />
-            )}
+            <Button
+              variant="subtleText"
+              size="xs"
+              className="!h-5 !min-h-5 w-4 shrink-0 !bg-transparent p-0 text-[15px] leading-none enabled:hover:!bg-neutral-800/50 -translate-y-[1px]"
+              onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                e.stopPropagation()
+                toggle(folder.id)
+              }}
+            >
+              {open ? "-" : "+"}
+            </Button>
+
             {editing ? (
               <input
                 ref={inputRef}

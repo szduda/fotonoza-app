@@ -145,7 +145,7 @@ export const CollectionPanel = (): ReactElement => {
               size="xs"
               className={clsx(
                 "font-normal normal-case",
-                collectionFilter === undefined && "border-neutral-500 bg-neutral-600/40",
+                !collectionFilter && "border-yellow-500/50",
               )}
               onClick={() => setCollectionFilter(undefined)}
             >

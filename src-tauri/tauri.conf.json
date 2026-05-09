@@ -9,6 +9,11 @@
     "devUrl": "http://localhost:1420",
     "frontendDist": "../dist"
   },
+  "plugins": {
+    "shell": {
+      "open": "(?:/|[A-Za-z]:\\\\).+"
+    }
+  },
   "app": {
     "windows": [
       {
