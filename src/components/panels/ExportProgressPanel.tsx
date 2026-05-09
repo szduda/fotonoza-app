@@ -20,10 +20,10 @@ export const ExportProgressPanel = (): ReactElement | null => {
         id="export-progress"
         label="Export progress"
         className="bg-yellow-700/5"
-        height={120}
+        height={112}
         defaultOpen
       >
-        <div className="px-2 py-3 text-xs flex flex-col gap-3">
+        <div className="px-2 pt-3 pb-2 text-xs flex flex-col gap-3">
           <div>
             <div className={`mb-1 flex items-center justify-between ${chrome.mutedText}`}>
               <span>
