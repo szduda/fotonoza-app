@@ -47,14 +47,14 @@ export const MetadataPanel = (): ReactElement => {
       id="metadata"
       label={t(locale, (m) => m.labels.metadata)}
       defaultOpen
-      className="border-b border-neutral-600/50 pb-1"
+     featurePanel
     >
       {!metaPhoto ? (
         <p className={`px-2 py-2 text-[11px] ${chrome.mutedText}`}>
           {t(locale, (m) => m.labels.metadataPickPhoto)}
         </p>
       ) : (
-        <dl className="pt-1">
+        <dl className="py-1">
           <MetaRow label={t(locale, (m) => m.labels.fileName)} value={metaPhoto.fileName} />
           <MetaRow label={t(locale, (m) => m.labels.dateTaken)} value={exif?.dateTimeOriginal} />
 

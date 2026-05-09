@@ -6,14 +6,18 @@ import type { Photo } from "@/types/domain"
 import { ToggledPanel } from "./generic/ToggledPanel"
 import { SliderRow } from "./generic/SliderRow"
 
-export const ShadowsHighlightsPanel = ({ selectedPhoto }: { selectedPhoto: Photo }): ReactElement => {
+export const ShadowsHighlightsPanel = ({
+  selectedPhoto,
+}: {
+  selectedPhoto: Photo
+}): ReactElement => {
   const { locale } = useAppStore((s) => s.present)
   const { local, defaultValues, startGesture, finishCommit, onLive } =
     useShadowsGradeSliders(selectedPhoto)
 
   return (
     <ToggledPanel id="shadows-highlights" label={t(locale, (m) => m.labels.shadowsHighlights)}>
-      <div className="space-y-1 px-1 pb-2 pt-3">
+      <div className="space-y-1 px-1 py-2">
         <SliderRow
           label="Shadows"
           min={-1}
@@ -56,9 +60,7 @@ export const ShadowsHighlightsPanel = ({ selectedPhoto }: { selectedPhoto: Photo
           defaultValue={defaultValues.highlights}
           onGestureStart={startGesture}
           onLiveChange={(v) => onLive({ highlights: v })}
-          onCommitChange={() =>
-            finishCommit("shadows-highlights-highlights", (s) => s.highlights)
-          }
+          onCommitChange={() => finishCommit("shadows-highlights-highlights", (s) => s.highlights)}
         />
       </div>
     </ToggledPanel>

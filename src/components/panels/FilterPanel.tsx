@@ -17,7 +17,7 @@ const FilterField = ({
   onChange: (next: string) => void
 }): ReactElement => (
   <label className="flex flex gap-0.5 px-2 py-1 items-center">
-    <span className={`text-[8px] w-20 font-medium uppercase ${chrome.faintText}`}>{label}</span>
+    <span className={`text-[8px] w-20 font-medium uppercase ${value ? "text-yellow-500" : chrome.faintText}`}>{label}</span>
     <input
       type="search"
       autoComplete="off"
@@ -35,7 +35,11 @@ export const FilterPanel = (): ReactElement => {
   useExifPrefetchForFilters()
 
   return (
-    <ToggledPanel id="filter" label={t(locale, (m) => m.labels.filter)} className="border-b border-neutral-600/50">
+    <ToggledPanel
+      id="filter"
+      label={t(locale, (m) => m.labels.filter)}
+     featurePanel
+    >
       <div className="flex flex-col pb-2">
         <FilterField
           label={t(locale, (m) => m.labels.filterFileName)}
@@ -76,9 +80,7 @@ export const FilterPanel = (): ReactElement => {
           >
             {[0, 1, 2, 3, 4, 5].map((n) => (
               <option key={n} value={n}>
-                {n === 0
-                  ? t(locale, (m) => m.labels.filterRatingAny)
-                  : `${n}+`}
+                {n === 0 ? t(locale, (m) => m.labels.filterRatingAny) : `${n}+`}
               </option>
             ))}
           </select>

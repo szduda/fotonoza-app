@@ -11,7 +11,7 @@ export const LeftSidebar = (): ReactElement => {
   const mode = useAppStore((s) => s.present.mode)
 
   return (
-    <div className="flex w-full min-w-0 flex-col">
+    <div className="flex w-full min-w-0 flex-col -translate-y-[1px]">
       <HistoryPanel />
       <CollectionPanel />
       <MetadataPanel />

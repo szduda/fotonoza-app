@@ -31,7 +31,7 @@ const App = (): ReactElement => {
       <AppLayout />
       {showOverlay && (
         <div
-          className={`fixed inset-0 z-50 flex items-center justify-center bg-neutral-900 transition-opacity duration-800 ease-in-out ${
+          className={`fixed inset-0 z-[100000] flex items-center justify-center bg-neutral-900 transition-opacity duration-1000 delay-300 ease-in ${
             isBooting ? "opacity-100" : "opacity-0"
           }`}
         >

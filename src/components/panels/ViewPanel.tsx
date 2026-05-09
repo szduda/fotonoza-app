@@ -10,7 +10,11 @@ export const ViewPanel = (): ReactElement => {
   const { canZoomIn, canZoomOut, hasWorkPhoto } = useAppStore((s) => s.editChrome)
 
   return (
-    <ToggledPanel id="edit-fit" label="View" className="border-b border-neutral-600/50">
+    <ToggledPanel
+      id="edit-fit"
+      label="View"
+     featurePanel
+    >
       <div className="flex gap-1 px-2 pt-2 pb-3 flex-wrap">
         <Button
           variant="outlined"

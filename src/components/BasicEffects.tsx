@@ -13,7 +13,7 @@ export const BasicEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
 
   return (
     <ToggledPanel id="basic-effects" label={t(locale, (m) => m.labels.basicEffects)} defaultOpen>
-      <div className="space-y-1 px-1 pb-2 pt-3">
+      <div className="space-y-1 px-1 py-2">
         <SliderRow
           label="Exposure"
           min={-3}

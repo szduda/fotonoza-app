@@ -16,8 +16,11 @@ export const RightSidebar = () => {
   }
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-2 overflow-x-hidden p-2.5">
+    <div className="flex w-full min-w-0 flex-col overflow-x-hidden">
+      <div className="p-2.5">
+
       <HistogramCanvas />
+      </div>
       {selectedPhoto ? (
         <>
           <BasicEffects selectedPhoto={selectedPhoto} />

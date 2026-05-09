@@ -25,7 +25,7 @@ export const HistoryPanel = (): ReactElement => {
       label={t(locale, (m) => m.labels.history)}
       height="200px"
       contentRef={contentRef}
-      className="border-b border-neutral-600/50"
+      contentPadding=""
     >
       {history.map((entry, idx) => (
         <button
@@ -34,7 +34,7 @@ export const HistoryPanel = (): ReactElement => {
           onClick={() => jumpToHistory(idx)}
           className={`flex w-full items-center px-2 py-1 text-left text-[11px] transition-colors duration-150 ease-out ${
             idx === historyCursor
-              ? `${chrome.panelBg} ${chrome.panelText} bg-neutral-950/80 font-bold`
+              ? `${chrome.panelText} font-bold bg-yellow-500/3`
               : idx > historyCursor
                 ? `${chrome.faintText} opacity-70 hover:bg-neutral-800/70 cursor-pointer`
                 : `${chrome.panelText} hover:bg-neutral-800/90 cursor-pointer`

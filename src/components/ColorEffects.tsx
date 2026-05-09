@@ -13,7 +13,7 @@ export const ColorEffects = ({ selectedPhoto }: { selectedPhoto: Photo }): React
 
   return (
     <ToggledPanel id="color-effects" label={t(locale, (m) => m.labels.colorEffects)}>
-      <div className="space-y-1 px-1 pb-2 pt-3">
+      <div className="space-y-1 px-1 py-2">
         <SliderRow
           label="Temperature"
           min={-1}

@@ -136,7 +136,7 @@ export const CollectionPanel = (): ReactElement => {
       <ToggledPanel
         id="collections"
         label={t(locale, (m) => m.labels.collections)}
-        className="border-b border-neutral-600/50"
+       featurePanel
       >
         <div className="flex flex-col gap-2 px-2 pb-2">
           <div className="flex justify-between flex-wrap items-center gap-1 py-1">
@@ -175,10 +175,9 @@ export const CollectionPanel = (): ReactElement => {
               </Button>
             </div>
           </div>
-          <div className="border-t border-dotted border-neutral-600/50 -mx-2" />
           <div
             className={clsx(
-              "flex min-h-0 flex-col gap-0.5 py-1 rounded",
+              "flex min-h-0 flex-col gap-0.5 py-1 rounded border border-neutral-600/10 bg-neutral-500/5",
               moveFlowActive && "bg-yellow-500/10",
             )}
           >

@@ -80,7 +80,7 @@ export const SliderRow = ({
 
   return (
     <label
-      className={`grid grid-cols-[3.5rem_minmax(0,1fr)_2rem] gap-2 text-xs items-center ${chrome.mutedText}`}
+      className={`grid grid-cols-[3.5rem_minmax(0,1fr)_2rem] gap-2 text-xs items-center ${chrome.panelText}`}
       onDoubleClick={handleDblClick}
     >
       <span className="text-[8px] font-medium uppercase text-right">{label}</span>
