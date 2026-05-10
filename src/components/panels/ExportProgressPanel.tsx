@@ -8,7 +8,7 @@ import { useExportMonitor } from "@/hooks/useExportMonitor"
 import { DoneIcon } from "@/components/icons/DoneIcon"
 
 export const ExportProgressPanel = (): ReactElement | null => {
-  const { status, isVisible, isFinished, close } = useExportMonitor()
+  const { status, isVisible, isFinished } = useExportMonitor()
 
   if (!isVisible || !status) return null
 
