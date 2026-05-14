@@ -37,17 +37,85 @@ const stripPhotoLocalState = (state: AppState): AppState => ({
   }),
 })
 
-export const saveStoreSnapshot = async (
-  present: AppState,
-  past: AppState[],
-  future: AppState[],
-): Promise<void> => {
-  const presentDisk = stripPhotoLocalState(present)
-  const pastDisk = past.map(stripPhotoLocalState)
-  const futureDisk = future.map(stripPhotoLocalState)
+const SNAP_DEBOUNCE_MS = 320
+
+type SnapPending = { present: AppState; past: AppState[]; future: AppState[] }
+
+/**
+ * Deep snapshot for async debounced save. Call sites often pass `{ ...draftPresent, … }` — the root is
+ * plain but nested values can still be Immer proxies; `structuredClone` then throws and aborts the store
+ * update. JSON round-trip reads proxies while the producer still runs.
+ */
+const toPersistableAppState = (s: AppState): AppState => JSON.parse(JSON.stringify(s)) as AppState
+
+let snapPending: SnapPending | null = null
+let snapDebounceTimer: ReturnType<typeof setTimeout> | null = null
+let snapSaving = false
+
+const runSaveAppState = async (p: SnapPending): Promise<void> => {
+  const presentDisk = stripPhotoLocalState(p.present)
+  const pastDisk = p.past.map(stripPhotoLocalState)
+  const futureDisk = p.future.map(stripPhotoLocalState)
   await invoke("save_app_state", {
     snapshot: { ...presentDisk, undoPast: pastDisk, undoFuture: futureDisk },
   })
+}
+
+const scheduleSnapFlush = (): void => {
+  if (snapDebounceTimer != null) clearTimeout(snapDebounceTimer)
+  snapDebounceTimer = setTimeout(() => {
+    snapDebounceTimer = null
+    void flushSnapOnce()
+  }, SNAP_DEBOUNCE_MS)
+}
+
+const flushSnapOnce = async (): Promise<void> => {
+  if (snapSaving || snapPending === null) return
+  const payload = snapPending
+  snapPending = null
+  snapSaving = true
+  try {
+    await runSaveAppState(payload)
+  } finally {
+    snapSaving = false
+    if (snapPending !== null) scheduleSnapFlush()
+  }
+}
+
+/** Persists app + undo stacks; debounced so typing and sliders do not invoke disk/IPC every tick. */
+export const saveStoreSnapshot = (present: AppState, past: AppState[], future: AppState[]): void => {
+  snapPending = {
+    present: toPersistableAppState(present),
+    past: past.map(toPersistableAppState),
+    future: future.map(toPersistableAppState),
+  }
+  if (snapSaving) return
+  scheduleSnapFlush()
+}
+
+/** Run pending debounced save(s) until idle (e.g. before window close). */
+export const flushStoreSnapshot = async (): Promise<void> => {
+  if (snapDebounceTimer != null) {
+    clearTimeout(snapDebounceTimer)
+    snapDebounceTimer = null
+  }
+  for (let i = 0; i < 24 && (snapPending !== null || snapSaving); i++) {
+    if (snapSaving) {
+      await new Promise<void>((r) => setTimeout(r, 40))
+      continue
+    }
+    if (snapPending !== null) {
+      const payload = snapPending
+      snapPending = null
+      snapSaving = true
+      try {
+        await runSaveAppState(payload)
+      } finally {
+        snapSaving = false
+      }
+    }
+  }
+  if (snapPending !== null && !snapSaving) scheduleSnapFlush()
 }
 
 export const loadAppState = async (): Promise<LoadedStore | null> => {

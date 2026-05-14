@@ -40,6 +40,12 @@
 }
 
 @layer components {
+  /** Export modal: uniform keyboard focus (fields use outline-none elsewhere). */
+  .export-modal-panel :is(input, button, [role="switch"]):focus-visible {
+    outline: 2px solid rgb(161 98 7 / 0.7) !important;
+    outline-offset: 2px !important;
+  }
+
   /** Collection move-target mode: keep crosshair over interactive controls (buttons override body cursor otherwise). */
   body[data-coll-move-pick],
   body[data-coll-move-pick] * {
@@ -123,6 +129,95 @@
       0 0 0 2px rgb(23 23 23),
       0 0 0 4px rgb(163 163 163 / 0.45),
       0 1px 2px rgb(0 0 0 / 0.35);
+  }
+
+  /** Export modal quality row: taller hit area, thicker track, nudged down to align with adjacent fields. */
+  .slider-export-quality {
+    @apply w-full min-w-0 cursor-pointer bg-transparent;
+    height: 2.25rem;
+    transform: translateY(-2px);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .slider-export-quality:focus {
+    outline: none;
+  }
+
+  .slider-export-quality::-webkit-slider-runnable-track {
+    height: 5px;
+    border-radius: 9999px;
+    background: rgb(48 48 48);
+  }
+
+  .slider-export-quality::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 13px;
+    height: 13px;
+    margin-top: -4px;
+    border-radius: 9999px;
+    background: rgb(212 212 212);
+    border: 1px solid rgb(64 64 64);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+  }
+
+  .slider-export-quality:hover::-webkit-slider-thumb {
+    background: rgb(229 229 229);
+  }
+
+  .slider-export-quality:active::-webkit-slider-thumb {
+    background: rgb(245 245 245);
+  }
+
+  .slider-export-quality:focus-visible::-webkit-slider-thumb {
+    box-shadow:
+      0 0 0 2px rgb(23 23 23),
+      0 0 0 4px rgb(163 163 163 / 0.45);
+  }
+
+  .slider-export-quality::-moz-range-track {
+    height: 5px;
+    border-radius: 9999px;
+    background: rgb(48 48 48);
+    box-shadow: inset 0 0 0 1px rgb(28 28 28 / 0.85);
+  }
+
+  .slider-export-quality::-moz-range-progress {
+    height: 5px;
+    border-radius: 9999px;
+    background: rgb(82 82 82 / 0.95);
+  }
+
+  .slider-export-quality::-moz-range-thumb {
+    width: 13px;
+    height: 13px;
+    border: none;
+    border-radius: 9999px;
+    background: rgb(212 212 212);
+    box-shadow:
+      0 0 0 1px rgb(64 64 64),
+      0 1px 2px rgb(0 0 0 / 0.35);
+  }
+
+  .slider-export-quality:hover::-moz-range-thumb {
+    background: rgb(229 229 229);
+  }
+
+  .slider-export-quality:focus-visible::-moz-range-thumb {
+    box-shadow:
+      0 0 0 2px rgb(23 23 23),
+      0 0 0 4px rgb(163 163 163 / 0.45),
+      0 1px 2px rgb(0 0 0 / 0.35);
+  }
+
+  .slider-export-quality.slider-export-quality--narrow {
+    height: 2rem;
+    transform: translateY(0);
+  }
+
+  .slider-export-quality.slider-export-quality--narrow::-webkit-slider-thumb {
+    margin-top: -3px;
   }
 }
 

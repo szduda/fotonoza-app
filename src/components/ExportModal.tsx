@@ -4,7 +4,10 @@ import { useEffect, useState, type ReactElement } from "react"
 import { useAppStore } from "@/store/appStore"
 import { t } from "@/lib/i18n"
 import { Button } from "./generic/Button"
-import { chrome } from "./layout/chromeTheme"
+import { SelectMenu } from "./generic/SelectMenu"
+import { SwitchToggle } from "./generic/SwitchToggle"
+import { chrome, chromeFieldBase } from "./layout/chromeTheme"
+import { presetExportCollectionName } from "@/lib/dirNameSanitize"
 import { getDefaultExportDirectory } from "@/lib/persistence"
 import { useExportMonitor } from "@/hooks/useExportMonitor"
 
@@ -13,17 +16,29 @@ interface ExportModalProps {
   onClose: () => void
 }
 
-const field =
-  "mt-1 w-full rounded border border-neutral-600/45 bg-neutral-500/80 px-2 py-1 text-neutral-800 placeholder:text-neutral-600"
+const field = `mt-1 ${chromeFieldBase}`
 
 export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement | null => {
   const { exportSettings, locale, photos } = useAppStore((state) => state.present)
   const setExportField = useAppStore((state) => state.actions.setExportField)
   const { start } = useExportMonitor()
   const selectedPhotos = photos.filter((photo) => photo.selected)
-  const [collectionName, setCollectionName] = useState(defaultCollectionName)
-  const [editingCollection, setEditingCollection] = useState(false)
+  const [collectionName, setCollectionName] = useState("")
   const [directoryAuto, setDirectoryAuto] = useState(true)
+
+  useEffect(() => {
+    if (!open) return
+    const { collectionFilter, collectionFolders } = useAppStore.getState().present
+    setCollectionName(presetExportCollectionName(collectionFilter, collectionFolders ?? []))
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    document.body.dataset.exportModalOpen = "1"
+    return () => {
+      delete document.body.dataset.exportModalOpen
+    }
+  }, [open])
 
   useEffect(() => {
     if (!open || !directoryAuto) return
@@ -64,7 +79,7 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35">
       <div
-        className={`w-[560px] rounded-lg border border-neutral-600/50 p-5 shadow-xl ${chrome.panelBg} ${chrome.panelText}`}
+        className={`export-modal-panel w-[560px] rounded-lg border border-neutral-600/50 p-5 shadow-xl ${chrome.panelBg} ${chrome.panelText}`}
       >
         <h2 className={`mb-4 text-lg font-medium ${chrome.panelText}`}>
           {t(locale, (m) => m.exportModal.title)}
@@ -72,32 +87,11 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
         <div className={`grid grid-cols-2 gap-3 text-sm ${chrome.mutedText}`}>
           <label className="col-span-2">
             Collection
-            <div className="mt-1">
-              {editingCollection ? (
-                <input
-                  autoFocus
-                  value={collectionName}
-                  onChange={(e) => setCollectionName(e.target.value)}
-                  onBlur={() => setEditingCollection(false)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault()
-                      setEditingCollection(false)
-                    }
-                  }}
-                  className={field}
-                />
-              ) : (
-                <Button
-                  variant="outlined"
-                  size="md"
-                  onClick={() => setEditingCollection(true)}
-                  className="w-full justify-start text-left font-normal enabled:hover:bg-neutral-400/40"
-                >
-                  {collectionName}
-                </Button>
-              )}
-            </div>
+            <input
+              value={collectionName}
+              onChange={(e) => setCollectionName(e.target.value)}
+              className={field}
+            />
           </label>
           <label className="col-span-2">
             {t(locale, (m) => m.exportModal.directory)}
@@ -108,14 +102,15 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
                   setDirectoryAuto(false)
                   setExportField("directory", e.target.value)
                 }}
-                className={field}
+                className={clsx(field, "min-h-9 min-w-0 flex-1")}
               />
               <Button
                 variant="outlined"
-                size="sm"
+                iconOnly
+                size="md"
                 className={clsx(
                   chrome.mutedText,
-                  "shrink-0 font-normal enabled:hover:bg-neutral-400/40 enabled:hover:text-neutral-800",
+                  "!size-9 shrink-0 font-normal enabled:hover:bg-neutral-400/40 enabled:hover:text-neutral-800",
                 )}
                 onClick={() => void onPickDirectory()}
               >
@@ -125,53 +120,60 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
           </label>
           <label>
             {t(locale, (m) => m.exportModal.format)}
-            <select
+            <SelectMenu
               value={exportSettings.format}
-              onChange={(e) => setExportField("format", e.target.value as "jpg" | "png")}
-              className={field}
-            >
-              <option value="jpg">jpg</option>
-              <option value="png">png</option>
-            </select>
+              options={[
+                { value: "jpg", label: "jpg" },
+                { value: "png", label: "png" },
+              ]}
+              onChange={(format) => setExportField("format", format as "jpg" | "png")}
+            />
           </label>
           <label>
             {t(locale, (m) => m.exportModal.quality)} {exportSettings.quality}%
-            <input
-              type="range"
-              min={30}
-              max={100}
-              value={exportSettings.quality}
-              onChange={(e) => setExportField("quality", Number(e.target.value))}
-              className="slider-dark"
-            />
+            <div className="mt-1 flex min-h-9 w-full items-center">
+              <input
+                type="range"
+                min={30}
+                max={100}
+                value={exportSettings.quality}
+                onChange={(e) => setExportField("quality", Number(e.currentTarget.value))}
+                className="slider-export-quality"
+              />
+            </div>
           </label>
-          <label>
-            {t(locale, (m) => m.exportModal.maxWidth)}
-            <input
-              type="number"
-              value={exportSettings.maxWidth}
-              onChange={(e) => setExportField("maxWidth", Number(e.target.value))}
-              className={field}
-            />
-          </label>
-          <label>
-            {t(locale, (m) => m.exportModal.maxHeight)}
-            <input
-              type="number"
-              value={exportSettings.maxHeight}
-              onChange={(e) => setExportField("maxHeight", Number(e.target.value))}
-              className={field}
-            />
-          </label>
-          <label className="col-span-2 flex items-center gap-2 pt-2">
-            <input
-              type="checkbox"
-              className="rounded border border-neutral-600/45 accent-neutral-600"
-              checked={exportSettings.dontEnlarge}
-              onChange={(e) => setExportField("dontEnlarge", e.target.checked)}
-            />
-            {t(locale, (m) => m.exportModal.dontEnlarge)}
-          </label>
+          <div className="col-span-2 grid grid-cols-3 gap-3">
+            <label className="min-w-0">
+              {t(locale, (m) => m.exportModal.maxWidth)}
+              <input
+                type="number"
+                value={exportSettings.maxWidth}
+                onChange={(e) => setExportField("maxWidth", Number(e.target.value))}
+                className={field}
+              />
+            </label>
+            <label className="min-w-0">
+              {t(locale, (m) => m.exportModal.maxHeight)}
+              <input
+                type="number"
+                value={exportSettings.maxHeight}
+                onChange={(e) => setExportField("maxHeight", Number(e.target.value))}
+                className={field}
+              />
+            </label>
+            <div className="flex min-w-0 flex-col gap-1">
+              <span className="block" id="export-dont-enlarge-label">
+                {t(locale, (m) => m.exportModal.dontEnlarge)}
+              </span>
+              <div className="mt-1 flex items-center">
+                <SwitchToggle
+                  enabled={exportSettings.dontEnlarge}
+                  onChange={(v) => setExportField("dontEnlarge", v)}
+                  aria-labelledby="export-dont-enlarge-label"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div className="mt-4 flex justify-end gap-2">
           <Button
@@ -198,14 +200,4 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
       </div>
     </div>
   )
-}
-
-const defaultCollectionName = (): string => {
-  const now = new Date()
-  const year = String(now.getFullYear()).slice(-2)
-  const month = String(now.getMonth() + 1).padStart(2, "0")
-  const day = String(now.getDate()).padStart(2, "0")
-  const hours = String(now.getHours()).padStart(2, "0")
-  const mins = String(now.getMinutes()).padStart(2, "0")
-  return `${year}${month}${day}-${hours}${mins}`
 }

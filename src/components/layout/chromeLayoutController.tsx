@@ -30,6 +30,8 @@ const isTypingTarget = (target: EventTarget | null): boolean => {
   return tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT"
 }
 
+const isExportModalOpen = (): boolean => document.body?.dataset.exportModalOpen === "1"
+
 export type ChromeLayoutControllerValue = {
   clearTabSnapshot: () => void
   startResizeDrag: (kind: ChromeDragKind) => (e: ReactPointerEvent) => void
@@ -73,6 +75,7 @@ const useChromeLayoutController = (): ChromeLayoutControllerValue => {
   const onTabKey = useCallback(
     (event: KeyboardEvent) => {
       if (event.key !== "Tab" || event.repeat) return
+      if (isExportModalOpen()) return
       if (isTypingTarget(event.target)) return
       event.preventDefault()
 
