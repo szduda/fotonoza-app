@@ -1,4 +1,5 @@
 import type { CollectionFolder } from "@/types/domain"
+import { OTHERS_COLLECTION_ID } from "@/lib/collections"
 
 /** Host OS for directory-segment rules (macOS vs Linux vs Windows). */
 export type DirNamePlatform = "darwin" | "linux" | "windows" | "unknown"
@@ -45,14 +46,16 @@ export const sanitizeDirNameSegment = (
 /**
  * Default export “collection” folder name from the collection sidebar filter.
  * - All (no filter): empty
- * - A folder: that folder’s `name`, sanitized for the filesystem
+ * - No Collection / Others (`OTHERS_COLLECTION_ID`): empty
+ * - A real folder: that folder’s `name`, sanitized for the filesystem
  */
 export const presetExportCollectionName = (
   collectionFilter: string | undefined,
   folders: readonly CollectionFolder[],
 ): string => {
   if (collectionFilter == null || collectionFilter === "") return ""
-  const folder = folders.find((f) => f.id === collectionFilter) || folders[0]
+  if (collectionFilter === OTHERS_COLLECTION_ID) return ""
+  const folder = folders.find((f) => f.id === collectionFilter)
   if (!folder) return ""
   return sanitizeDirNameSegment(folder.name)
 }

@@ -15,6 +15,23 @@ const App = (): ReactElement => {
     void initialize()
   }, [initialize])
 
+  /** Thick focus ring only when navigating with Tab; pointer use keeps border-only cues. */
+  useEffect(() => {
+    const root = document.documentElement
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Tab") root.dataset.kbdFocus = ""
+    }
+    const onPtr = () => {
+      delete root.dataset.kbdFocus
+    }
+    window.addEventListener("keydown", onKey, true)
+    window.addEventListener("pointerdown", onPtr, true)
+    return () => {
+      window.removeEventListener("keydown", onKey, true)
+      window.removeEventListener("pointerdown", onPtr, true)
+    }
+  }, [])
+
   useEffect(() => {
     if (isBooting) {
       setShowOverlay(true)

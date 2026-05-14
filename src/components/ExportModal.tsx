@@ -16,10 +16,9 @@ interface ExportModalProps {
   onClose: () => void
 }
 
-const field = `mt-1 ${chromeFieldBase}`
-
 export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement | null => {
   const { exportSettings, locale, photos } = useAppStore((state) => state.present)
+  const collectionFilter = useAppStore((state) => state.present.collectionFilter)
   const setExportField = useAppStore((state) => state.actions.setExportField)
   const { start } = useExportMonitor()
   const selectedPhotos = photos.filter((photo) => photo.selected)
@@ -28,9 +27,9 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
 
   useEffect(() => {
     if (!open) return
-    const { collectionFilter, collectionFolders } = useAppStore.getState().present
+    const { collectionFolders } = useAppStore.getState().present
     setCollectionName(presetExportCollectionName(collectionFilter, collectionFolders ?? []))
-  }, [open])
+  }, [open, collectionFilter])
 
   useEffect(() => {
     if (!open) return
@@ -90,7 +89,7 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
             <input
               value={collectionName}
               onChange={(e) => setCollectionName(e.target.value)}
-              className={field}
+              className={clsx(chromeFieldBase, 'mt-1')}
             />
           </label>
           <label className="col-span-2">
@@ -102,7 +101,7 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
                   setDirectoryAuto(false)
                   setExportField("directory", e.target.value)
                 }}
-                className={clsx(field, "min-h-9 min-w-0 flex-1")}
+                className={clsx(chromeFieldBase, "min-h-9 min-w-0 flex-1")}
               />
               <Button
                 variant="outlined"
@@ -149,7 +148,7 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
                 type="number"
                 value={exportSettings.maxWidth}
                 onChange={(e) => setExportField("maxWidth", Number(e.target.value))}
-                className={field}
+                className={clsx(chromeFieldBase, 'mt-1')}
               />
             </label>
             <label className="min-w-0">
@@ -158,7 +157,7 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
                 type="number"
                 value={exportSettings.maxHeight}
                 onChange={(e) => setExportField("maxHeight", Number(e.target.value))}
-                className={field}
+                className={clsx(chromeFieldBase, 'mt-1')}
               />
             </label>
             <div className="flex min-w-0 flex-col gap-1">

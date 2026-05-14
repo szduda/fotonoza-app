@@ -53,16 +53,27 @@ export const useCollMove = (
     }
   }, [isMoveTargeting])
 
+  /**
+   * Dismiss on outside click (not pointerdown): pointerdown can run before the row's click
+   * and clear move mode so the click then calls onPick instead of onMoveTargetPick.
+   */
   useEffect(() => {
     if (!movePicking && !isMoveConfirm) return
-    const onDown = (e: PointerEvent) => {
-      const node = e.target as Node
-      if (clusterRef.current?.contains(node)) return
-      if (modalRef.current?.contains(node)) return
+    const onDocClick = (e: MouseEvent) => {
+      if (e.button !== 0) return
+      const root = clusterRef.current
+      if (!root) return
+      const t = e.target
+      if (!(t instanceof Node)) return
+      const modal = modalRef.current
+      const path = e.composedPath()
+      if (root.contains(t)) return
+      if (modal?.contains(t)) return
+      if (path.includes(root) || (modal && path.includes(modal))) return
       resetMove()
     }
-    document.addEventListener("pointerdown", onDown, true)
-    return () => document.removeEventListener("pointerdown", onDown, true)
+    document.addEventListener("click", onDocClick)
+    return () => document.removeEventListener("click", onDocClick)
   }, [movePicking, isMoveConfirm, resetMove])
 
   const [modalPos, setModalPos] = useState<{ top: number; left: number } | null>(null)

@@ -1,4 +1,5 @@
 import type { ReactElement, RefObject } from "react"
+import { createPortal } from "react-dom"
 import { Button } from "@/components/generic/Button"
 import { chrome } from "@/components/layout/chromeTheme"
 
@@ -20,12 +21,13 @@ export const CollMoveModal = ({
   onNo: () => void
 }): ReactElement | null => {
   if (!pos) return null
-  return (
+  /** Portal: dialog was `fixed` beside the sidebar but painted under the working-area flex sibling. */
+  return createPortal(
     <div
       ref={modalRef}
       role="dialog"
       aria-modal="true"
-      className={`fixed z-[100] w-[min(280px,calc(100vw-16px))] rounded border border-neutral-600/60 bg-neutral-900/98 p-3 shadow-xl backdrop-blur-sm ${chrome.panelText}`}
+      className={`fixed z-[10050] w-[min(280px,calc(100vw-16px))] rounded border border-neutral-600/60 bg-neutral-900/98 p-3 shadow-xl backdrop-blur-sm ${chrome.panelText}`}
       style={{ top: pos.top, left: pos.left }}
     >
       <p className="mb-3 text-[11px] leading-snug">{askText}</p>
@@ -42,6 +44,7 @@ export const CollMoveModal = ({
           {noLabel}
         </Button>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

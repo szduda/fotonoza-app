@@ -40,8 +40,13 @@
 }
 
 @layer components {
-  /** Export modal: uniform keyboard focus (fields use outline-none elsewhere). */
-  .export-modal-panel :is(input, button, [role="switch"]):focus-visible {
+  /**
+   * Export modal: thick focus ring only after Tab (see App.tsx `data-kbd-focus`).
+   * Text inputs often match :focus-visible on pointer focus too; border styling stays on :focus via chromeFieldBase / components.
+   */
+  html[data-kbd-focus]
+    .export-modal-panel
+    :is(input:not([type="range"]), button, [role="switch"]):focus-visible {
     outline: 2px solid rgb(161 98 7 / 0.7) !important;
     outline-offset: 2px !important;
   }
