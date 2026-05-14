@@ -89,7 +89,7 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
             <input
               value={collectionName}
               onChange={(e) => setCollectionName(e.target.value)}
-              className={clsx(chromeFieldBase, 'mt-1')}
+              className={clsx(chromeFieldBase, "mt-1")}
             />
           </label>
           <label className="col-span-2">
@@ -148,7 +148,7 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
                 type="number"
                 value={exportSettings.maxWidth}
                 onChange={(e) => setExportField("maxWidth", Number(e.target.value))}
-                className={clsx(chromeFieldBase, 'mt-1')}
+                className={clsx(chromeFieldBase, "mt-1")}
               />
             </label>
             <label className="min-w-0">
@@ -157,20 +157,18 @@ export const ExportModal = ({ open, onClose }: ExportModalProps): ReactElement |
                 type="number"
                 value={exportSettings.maxHeight}
                 onChange={(e) => setExportField("maxHeight", Number(e.target.value))}
-                className={clsx(chromeFieldBase, 'mt-1')}
+                className={clsx(chromeFieldBase, "mt-1")}
               />
             </label>
-            <div className="flex min-w-0 flex-col gap-1">
-              <span className="block" id="export-dont-enlarge-label">
+            <div className="flex min-w-0 flex gap-2 mt-6 items-center justify-end">
+              <SwitchToggle
+                enabled={exportSettings.dontEnlarge}
+                onChange={(v) => setExportField("dontEnlarge", v)}
+                aria-labelledby="export-dont-enlarge-label"
+              />
+              <span id="export-dont-enlarge-label">
                 {t(locale, (m) => m.exportModal.dontEnlarge)}
               </span>
-              <div className="mt-1 flex items-center">
-                <SwitchToggle
-                  enabled={exportSettings.dontEnlarge}
-                  onChange={(v) => setExportField("dontEnlarge", v)}
-                  aria-labelledby="export-dont-enlarge-label"
-                />
-              </div>
             </div>
           </div>
         </div>
